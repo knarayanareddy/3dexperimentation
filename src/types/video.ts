@@ -11,7 +11,7 @@ export interface Shot {
     // Uber film cast
     | 'Rider' | 'Driver' | 'Official'
     // OpenAI film cast
-    | 'Sam' | 'Ilya' | 'Researcher' | 'Board';
+    | 'Scientist' | 'Caret' | 'Chair';
   visualPrompt: string;
   codeSnippet?: string;
   technicalNote?: string;

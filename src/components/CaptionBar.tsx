@@ -25,14 +25,7 @@ export const CaptionBar: React.FC<CaptionBarProps> = ({
     Narrator: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40',
     Clawd: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
     Engineer: 'bg-sky-500/15 text-sky-300 border-sky-500/40',
-    Jevons: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
-    Sam: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50',
-    Ilya: 'bg-purple-500/20 text-purple-300 border-purple-500/50',
-    Researcher: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50',
-    Board: 'bg-rose-500/20 text-rose-300 border-rose-500/50',
-    Rider: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
-    Driver: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
-    Official: 'bg-rose-500/15 text-rose-300 border-rose-500/40'
+    Jevons: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
   };
   const speakerStyle = speakerStyles[shot.speaker] || speakerStyles.Narrator;
 

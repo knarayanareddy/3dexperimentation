@@ -181,13 +181,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
         if (modeRef.current === 'song') {
           if (trackEngine.ready && film.song) {
             trackEngine.playSec(film.song.songTimeForFilm(nominalTime()));
-          } else if (film.song) {
-            setTrackLoading(true);
-            const playT = nominalTime();
-            trackEngine.ensureDefault(film.song.url).then(() => {
-              setTrackTick(n => n + 1);
-              trackEngine.playSec(film.song!.songTimeForFilm(playT));
-            }).finally(() => setTrackLoading(false));
           }
         } else if (musicEnabled && !isMuted) {
           audioEngine.startMusic();
@@ -253,6 +246,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
 
   // ---------- master loop ----------
   useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     let mounted = true;
 
     const loop = (ts: number) => {
@@ -268,7 +265,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
         fpsTimerRef.current = ts;
       }
 
-      boilClockRef.current += dt;
+      if (isPlaying) boilClockRef.current += dt;
 
       const songMode = modeRef.current === 'song';
 
@@ -363,12 +360,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
       const sIdx = shotIdxRef.current;
       const renderT = SHOTS[sIdx].startTime + Math.min(shotLocalRef.current, shotDur(SHOTS[sIdx]) - 0.001);
 
-      if (canvasRef.current) {
-        const ctx = canvasRef.current.getContext('2d');
-        if (ctx) {
-          renderFrame(filmRef.current, ctx, 1280, 720, renderT, dt, isSpeaking, boilClockRef.current);
-        }
-      }
+      renderFrame(filmRef.current, ctx, 1280, 720, renderT, dt, isSpeaking, boilClockRef.current);
 
       animFrameIdRef.current = requestAnimationFrame(loop);
     };
@@ -398,7 +390,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
           className="w-full h-full object-contain block"
           onClick={togglePlay}
         />
-
         {!isPlaying && (
           <div
             onClick={togglePlay}

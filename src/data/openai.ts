@@ -1,497 +1,456 @@
 import { Chapter } from '../types/video';
 
 /**
- * "TO BENEFIT ALL OF HUMANITY" — The Story of OpenAI, 2015 to Now & Beyond.
+ * "THE TEXT BOX" — OpenAI, from a nonprofit letter in 2015 to a billion
+ * weekly conversations.
  *
- * 7 Acts, 28 Shots, 216s nominal timeline.
- * Visual and narrative grammar aligned with the PDoomVideo engine.
- * Cast: The OpenAI Bloom glyph, researchers, whiteboards, robotic hands,
- * game arenas, datacenters, the chat interface, and reasoning trees.
+ * Same grammar as the other films: 7 acts, 28 shots, 216 s nominal.
+ * Cast is bespoke (openaiCast.ts): CARET (the blinking cursor) and BLOOM
+ * (the six-petal knot that stands for the model), plus researchers.
+ *
+ * Figures verified against OpenAI's own posts and contemporaneous reporting:
+ * Dec 2015 founding; GPT-1 117M (2018); GPT-2 1.5B staged release (2019);
+ * Microsoft $1B + capped-profit (2019); scaling laws (2020); GPT-3 175B;
+ * ChatGPT 30 Nov 2022, ~100M users in two months; GPT-4 (Mar 2023);
+ * board crisis 17–22 Nov 2023, 745 of ~770 employees signed; GPT-4o and
+ * o1 (2024); Stargate $500B (Jan 2025); recapitalisation 28 Oct 2025 —
+ * OpenAI Group PBC under the OpenAI Foundation (~26%), Microsoft ~27%;
+ * ~1B weekly users and ~$40B+ annualised revenue reported during 2026.
  */
 
 export const OPENAI_CHAPTERS: Chapter[] = [
   {
     id: 'oa1',
     number: 1,
-    title: 'The Rosewood Covenant',
-    subtitle: '2015–2017: A Menlo Park dinner, an open non-profit charter, and the mission to save humanity',
+    title: 'A Letter and a Promise',
+    subtitle: '2015–2018: a nonprofit, a charter, and a machine that learns by playing itself',
     startTime: 0,
     endTime: 32,
     duration: 32,
     themeColor: '#10A37F',
-    accentColor: '#34D399',
-    summary: 'At a quiet dinner in Silicon Valley, a small group of researchers and founders pledge $1 billion to create an open research lab—a counterweight to Big Tech monopolies, dedicated to safe AGI.',
+    accentColor: '#5FD4B4',
+    summary: 'A research lab is founded on an unusual premise: build the most powerful technology imaginable, and give the upside away.',
     shots: [
       {
         id: 'oa1-1', chapterId: 'oa1', startTime: 0, endTime: 8,
         speaker: 'Narrator',
-        cue: 'Menlo Park, late 2015. At the Rosewood hotel, a dinner takes place with an audacious premise: build safe superintelligence before anyone else, and give it away.',
-        read: 'A candlelit dinner table in Menlo Park. Silhouettes lean over a paper charter. Outside, the headlights of Silicon Valley stream into the night.',
-        visualPrompt: 'Quiet hotel dining room, paper contract with "OpenAI Non-Profit Charter", illuminated silhouettes, warm candle glow.',
-        technicalNote: 'Founded December 11, 2015 by Sam Altman, Elon Musk, Greg Brockman, Ilya Sutskever, Wojciech Zaremba, and John Schulman with a $1B pledge.',
-        codeSnippet: `// The Original Charter (2015)
-interface NonProfitLab {
-  mission: "Ensure AGI benefits all of humanity";
-  ownership: "Public trust (No shareholders)";
-  ipPolicy: "Openly publish all research and code";
-  commercialPressure: 0.0;
-}`
+        cue: 'December 2015. A small group announces a nonprofit research lab with a billion dollars pledged and one sentence as its purpose.',
+        read: 'A quiet lit room; a letter unfolds and the mission sentence is written across it in ink.',
+        visualPrompt: 'Unfolding letter, hand-lettered mission line, soft lamp glow, dark surroundings.',
+        technicalNote: 'OpenAI was announced in December 2015 as a nonprofit research company, with $1B in pledged donations from its backers.',
+        codeSnippet: `mission:
+  "ensure that artificial general intelligence
+   benefits all of humanity"
+// the hard part was never the first clause`
       },
       {
         id: 'oa1-2', chapterId: 'oa1', startTime: 8, endTime: 16,
-        speaker: 'Researcher',
-        cue: 'We set up shop in an old luggage factory in the Mission. No product, no business plan—just folding tables, whiteboards, and the conviction that intelligence could be computed.',
-        read: 'A sunlit San Francisco brick warehouse. Whiteboards covered in loss gradients. A newborn green Bloom glyph wakes up and looks around curiously.',
-        visualPrompt: 'San Francisco loft, exposed brick, sprawling equations, laptops on trestle tables, nascent OpenAI spiral emblem glowing on screen.',
-        technicalNote: 'Pioneer Building in SF Mission District. Early focus was broad reinforcement learning environments (Gym, Universe) to benchmark agent behaviors.',
-        codeSnippet: `const lab = new ResearchLab({
-  location: "Pioneer Building, SF",
-  furniture: "IKEA desks + folding chairs",
-  initialFocus: ["OpenAI Gym", "Universe"],
-  target: "Universal Learning Agents"
-});`
+        speaker: 'Scientist',
+        cue: 'The bet underneath it is simple and unproven: that general intelligence is less a puzzle to be solved than a thing to be grown.',
+        read: 'A six-petal knot is sketched in faint ink, then one petal lights for the first time.',
+        visualPrompt: 'Bloom knot drawn in construction lines, one petal igniting teal.',
+        technicalNote: 'The founding wager: general capability would emerge from scale and general methods rather than hand-built domain logic.',
+        codeSnippet: `two schools:
+  engineer the rules   -> brittle, bounded
+  grow the capability  -> general, unproven
+// they bet the lab on the second`
       },
       {
         id: 'oa1-3', chapterId: 'oa1', startTime: 16, endTime: 24,
-        speaker: 'Ilya',
-        cue: 'We released Gym and Universe. We told the world: standardise your environments. If the machine can play any game, it can learn any world.',
-        read: 'Retro Atari games and simulated desktop environments flicker across floating monitor tiles. The Bloom character balances atop a stack of virtual arcade cabinets.',
-        visualPrompt: 'Array of game screens—Pong, Breakout, racing sims—connecting with colorful wires into a central neural core.',
-        technicalNote: 'OpenAI Gym (April 2016) became the global standard for RL benchmarks. Universe (Dec 2016) gave AI access to web browsers and games.',
-        codeSnippet: `import gymnasium as gym
-env = gym.make("WorldSim-v0")
-observation, info = env.reset()
-action = policy.predict(observation)
-// the dream: one policy to solve all environments`
+        speaker: 'Narrator',
+        cue: 'First it learned by playing. Millions of games against itself, and a robot hand teaching itself a Rubik\'s cube in simulation.',
+        read: 'A looping arena where two identical agents replay a match; beside it a painted hand turns a cube.',
+        visualPrompt: 'Self-play arena loop, mirrored agents, robot hand rotating a cube.',
+        technicalNote: 'Reinforcement learning with self-play (OpenAI Five, 2018–19) and sim-to-real dexterity work established the scale-plus-RL pattern.',
+        codeSnippet: `for episode in range(10_000_000):
+    a = policy(state)            // play yourself
+    policy = improve(policy, reward)
+// no human games required`
       },
       {
         id: 'oa1-4', chapterId: 'oa1', startTime: 24, endTime: 32,
-        speaker: 'Narrator',
-        cue: 'The original pledge was an open gift to the world. But deep learning was about to collide with a brutal physical truth: compute is not free, and algorithms are hungry.',
-        read: 'A glowing open padlock dissolves as electricity meters spin furiously. Thermal heat maps bleed across server chassis blueprints.',
-        visualPrompt: 'Open-source symbol surrounded by climbing electricity watt-meters and GPU heating manifolds.',
-        technicalNote: 'Initial donors had delivered only ~$130M of the pledged $1B. Deep learning was rapidly transitioning from clever math to brute compute scale.',
-        codeSnippet: `const computeCostPerRun = (params: number, tokens: number) => {
-  const flops = 6 * params * tokens;
-  return (flops / 1e18) * COST_PER_EXAFLOP;
-  // Exponential scaling makes philanthropic funding impossible
-};`
+        speaker: 'Caret',
+        cue: 'Then in 2018 a quieter result: pretrain a transformer on plain text, and fine-tuning it for anything becomes almost easy.',
+        read: 'A cursor blinks into existence on a blank page and types its very first line.',
+        visualPrompt: 'Blank paper, Caret appears and types, small and new.',
+        technicalNote: 'GPT-1 (2018): 117M parameters, generative pretraining then supervised fine-tuning — strong transfer across many NLP tasks.',
+        codeSnippet: `GPT-1, 2018
+  params: 117,000,000
+  step 1: predict the next token, on a lot of text
+  step 2: fine-tune for the task you want
+// step 1 turned out to be the whole trick`
       }
     ]
   },
   {
     id: 'oa2',
     number: 2,
-    title: 'Games and Metal',
-    subtitle: '2017–2019: Dota 2 arenas, robotic Rubik\'s cubes, and the first whisper of unsupervised text',
+    title: 'Scale Is the Secret',
+    subtitle: '2019–2020: a model held back, a capped profit, and a straight line on a log plot',
     startTime: 32,
-    endTime: 62,
-    duration: 30,
-    themeColor: '#3B82F6',
-    accentColor: '#93C5FD',
-    summary: 'OpenAI pits five bots against world champion esports players and trains a mechanical hand to solve a Rubik\'s cube. Meanwhile, an overlooked language paper reveals the secret power of raw prediction.',
+    endTime: 64,
+    duration: 32,
+    themeColor: '#6C5CE7',
+    accentColor: '#A397F0',
+    summary: 'The lab discovers that making the same model bigger keeps working — and that discovery forces it to change what kind of organisation it is.',
     shots: [
       {
-        id: 'oa2-1', chapterId: 'oa2', startTime: 32, endTime: 39,
+        id: 'oa2-1', chapterId: 'oa2', startTime: 32, endTime: 40,
         speaker: 'Narrator',
-        cue: 'August 2018. Five neural networks play eighty thousand years of Dota in twenty-four hours, crushing human champions with alien teamwork.',
-        read: 'Esports arena stage with health bars and spell effects. Five small glowing Bloom avatars coordinate tactical ganks against frantic silhouettes.',
-        visualPrompt: 'Dark esports stadium, neon health bars, mini-map pings, five glowing bots executing frame-perfect coordinated spells.',
-        technicalNote: 'OpenAI Five used Rapid (scaled PPO) on 128,000 CPU cores and 256 GPUs, playing 180 years of game experience every day.',
-        codeSnippet: `agent = DistributedPPO({
-  experiencePerDay: "180 human years",
-  teamCoordination: "Continuous cross-agent reward",
-  reactionTime: "20ms (frame-perfect precision)"
-}); // The International 2018-2019`
+        cue: 'In 2019 they build GPT-2 and then hesitate, releasing it in stages because they are not sure what it will be used for.',
+        read: 'A larger bloom glows behind glass; a staged release ladder lights one rung at a time.',
+        visualPrompt: 'Model behind a glass vitrine, staged release ladder, guarded glow.',
+        technicalNote: 'GPT-2 (1.5B) was released in stages through 2019 over misuse concerns — the first time a lab withheld a model on those grounds.',
+        codeSnippet: `GPT-2, 1,500,000,000 params
+release: 124M -> 355M -> 774M -> 1.5B
+// the debate it started outlived the model`
       },
       {
-        id: 'oa2-2', chapterId: 'oa2', startTime: 39, endTime: 46,
-        speaker: 'Researcher',
-        cue: 'In the robotics lab, a five-fingered mechanical hand learns to solve a Rubik\'s cube one-handed—not by programming fingers, but through extreme simulation chaos.',
-        read: 'A metallic shadow robot hand rotates a colorful Rubik\'s cube. Ghostly holographic perturbations tug at the joints as domain randomization tests every angle.',
-        visualPrompt: 'Robotic hand with articulating steel fingers rotating a scrambled cube under fluctuating simulated gravity and friction overlays.',
-        technicalNote: 'Domain Randomization (ADR): training solely in simulation under randomized physics allowed zero-shot sim-to-real physical transfer.',
-        codeSnippet: `AutomaticDomainRandomization({
-  friction: range(0.1, 4.0),
-  gravity: vec3(0, -9.81 * rand(0.8, 1.2), 0),
-  surfaceTexture: perturb(noise)
-}) -> Sim2Real(ShadowHand);`
+        id: 'oa2-2', chapterId: 'oa2', startTime: 40, endTime: 48,
+        speaker: 'Scientist',
+        cue: 'Training these things costs more than donations can cover. So the nonprofit grows a commercial arm with a ceiling on its returns.',
+        read: 'The letter from act one grows a second panel; a capped meter fills to a marked line and stops.',
+        visualPrompt: 'Two-panel structure diagram, a return meter hitting a hard cap line.',
+        technicalNote: 'In 2019 OpenAI created a capped-profit entity under nonprofit control and took a $1B investment from Microsoft.',
+        codeSnippet: `structure, 2019
+  nonprofit  ── controls ──> capped-profit LP
+  investor returns: capped multiple, then
+  everything above flows back to the mission`
       },
       {
-        id: 'oa2-3', chapterId: 'oa2', startTime: 46, endTime: 54,
-        speaker: 'Ilya',
-        cue: 'While the world watched robots and games, a quieter realization took hold. If you predict the next token on enough text, the model must understand the reality behind the words.',
-        read: 'Streaming sentences of raw internet text feed into a deep neural stack. Internal attention heads illuminate, forming semantic galaxy clusters.',
-        visualPrompt: 'Cascade of raw text tokens folding through multi-headed attention layers, transforming into structured conceptual nodes.',
-        technicalNote: 'Alec Radford led GPT-1 (2018), demonstrating that generative pre-training on unlabeled text followed by discriminative fine-tuning beat supervised baselines.',
-        codeSnippet: `// Radford et al. (June 2018)
-// L1: Unsupervised pre-training
-L1(U) = sum(log P(u_i | u_i-k, ..., u_i-1; Theta))
-// Compression is equivalent to general intelligence`
+        id: 'oa2-3', chapterId: 'oa2', startTime: 48, endTime: 56,
+        speaker: 'Scientist',
+        cue: 'And then the clearest result of all. Plot loss against size, data and compute, and you get a straight line that refuses to bend.',
+        read: 'A log-log plot draws itself; the line runs clean off the edge of the paper.',
+        visualPrompt: 'Log-log scaling plot, straight descending line leaving the page.',
+        technicalNote: 'Kaplan et al. (2020): test loss falls as a smooth power law in parameters, dataset size and compute — making capability forecastable.',
+        codeSnippet: `L(N) ∝ N^−α     // parameters
+L(D) ∝ D^−β     // data
+L(C) ∝ C^−γ     // compute
+// if the line holds, the roadmap is just money`
       },
       {
-        id: 'oa2-4', chapterId: 'oa2', startTime: 54, endTime: 62,
-        speaker: 'Narrator',
-        cue: 'February 2019. GPT-2 writes fictional stories about unicorns in the Andes. For the first time, OpenAI refuses to release the weights, citing the danger of synthetic deception.',
-        read: 'A paper titled "Too Dangerous to Release" stamps itself over a redacted 1.5-billion-parameter network. Public debate erupts across newspapers and forums.',
-        visualPrompt: 'Glowing unicorn silhouette sketched in green neon lines behind a locked glass vault with a "1.5 Billion Parameters" plaque.',
-        technicalNote: 'GPT-2 (Feb 2019) demonstrated convincing prose and zero-shot task transfer. Staged release sparked controversy over safety vs open science.',
-        codeSnippet: `const gpt2 = new Model({
-  params: "1.5B",
-  status: "STAGED_RELEASE",
-  warning: "Large-scale synthetic text generation risks",
-  capabilities: ["zero-shot translation", "summarization", "unicorn prose"]
-});`
+        id: 'oa2-4', chapterId: 'oa2', startTime: 56, endTime: 64,
+        speaker: 'Caret',
+        cue: 'GPT-3 follows: a hundred and seventy-five billion parameters, and the strange new trick of learning a task from the prompt itself.',
+        read: 'The bloom opens to full size; a prompt with three examples produces a correct fourth.',
+        visualPrompt: 'Full six-petal bloom, few-shot prompt card resolving an answer.',
+        technicalNote: 'GPT-3 (2020): 175B parameters; few-shot in-context learning meant new tasks needed examples in the prompt, not gradient updates.',
+        codeSnippet: `sea otter  => loutre de mer
+cheese     => fromage
+plush girafe => ?
+// no training step. the answer just arrives.`
       }
     ]
   },
   {
     id: 'oa3',
     number: 3,
-    title: 'The Capped-Profit Crossroads',
-    subtitle: '2019–2020: The split with Musk, the $1 billion Microsoft alliance, and the hybrid LP company',
-    startTime: 62,
-    endTime: 92,
-    duration: 30,
-    themeColor: '#F59E0B',
-    accentColor: '#FCD34D',
-    summary: 'Philanthropy cannot purchase supercomputers. To survive the scaling race, OpenAI invents an unprecedented legal structure—a capped-profit commercial entity governed by a non-profit board.',
+    title: 'The Text Box',
+    subtitle: '2021–2022: code, pictures, the alignment step, and the night it went public',
+    startTime: 64,
+    endTime: 96,
+    duration: 32,
+    themeColor: '#E8A33D',
+    accentColor: '#F2C87E',
+    summary: 'The research becomes products — and one unglamorous training step turns a powerful model into something an ordinary person can actually use.',
     shots: [
       {
-        id: 'oa3-1', chapterId: 'oa3', startTime: 62, endTime: 69,
+        id: 'oa3-1', chapterId: 'oa3', startTime: 64, endTime: 72,
+        speaker: 'Scientist',
+        cue: 'First it writes code. A model trained on public repositories starts completing functions from nothing but their names.',
+        read: 'An editor panel; a comment is typed and the body of the function writes itself beneath it.',
+        visualPrompt: 'Code editor, comment line, auto-written function body, ghost text.',
+        technicalNote: 'Codex (2021) powered the first in-editor completion products and showed natural language as a programming interface.',
+        codeSnippet: `# return the nth fibonacci number
+def fib(n):
+    a, b = 0, 1
+    for _ in range(n): a, b = b, a + b
+    return a
+# the comment was the only input`
+      },
+      {
+        id: 'oa3-2', chapterId: 'oa3', startTime: 72, endTime: 80,
         speaker: 'Narrator',
-        cue: 'By 2019, the math was indisputable. Training frontier models would cost hundreds of millions of dollars. A 501(c)(3) could not fund the computing frontier.',
-        read: 'An exponential curve of training compute requirements breaks through the ceiling of a modest stone non-profit building.',
-        visualPrompt: 'Logarithmic chart of compute vs time rocketing upwards, cracking through a classical marble building pediment.',
-        technicalNote: 'Training compute had begun doubling every 3.4 months (300,000x from 2012 to 2018), far outstripping Moore\'s Law and philanthropic grants.',
-        codeSnippet: `const computeGrowth = Math.pow(2, months / 3.4);
-// Between AlexNet and GPT-3: >300,000x compute increase
-// Philanthropic donations: linear
-// Deficit: existential`
+        cue: 'Then it paints. Type a sentence that has never been true, and an image of it arrives anyway.',
+        read: 'A line of text dissolves into a grid of painted frames that resolve into one picture.',
+        visualPrompt: 'Text prompt dissolving into noise grid, resolving into an image.',
+        technicalNote: 'DALL·E 2 (2022) brought diffusion-based image generation to a general audience and made the prompt itself a creative medium.',
+        codeSnippet: `prompt -> latent noise -> denoise x N -> image
+// the model has never seen this exact thing
+// which is the entire point`
       },
       {
-        id: 'oa3-2', chapterId: 'oa3', startTime: 69, endTime: 77,
-        speaker: 'Sam',
-        cue: 'Elon walked away. He believed we had fallen fatally behind Google. We had to choose: remain a pure charity and become irrelevant, or invent a new kind of company.',
-        read: 'Two silhouetted figures part ways at a crossroad. One walks toward a rocket launchpad, the other toward a shimmering glass tower with a turbine.',
-        visualPrompt: 'Split path: one direction leading to automotive/rocket factories, the other toward an architectural glass cube housing high-performance servers.',
-        technicalNote: 'Musk resigned from the board in Feb 2018 over disagreements on leadership and control, later cancelling his remaining donation commitments.',
-        codeSnippet: `class StructuralPivot {
-  founderDeparture = "Elon Musk (Feb 2018)";
-  reason = "Disagreement over path to AGI & ownership";
-  remainingRunway = "Critical";
-  decision = "Create a commercial vehicle without sacrificing the charter";
-}`
+        id: 'oa3-3', chapterId: 'oa3', startTime: 80, endTime: 88,
+        speaker: 'Scientist',
+        cue: 'But raw models are not helpful. The step that changes everything is teaching it, from human preferences, how to actually answer.',
+        read: 'Two candidate answers appear; a hand marks the better one; the bloom re-tunes toward it.',
+        visualPrompt: 'A/B answer cards, human preference tick, model re-tuning.',
+        technicalNote: 'InstructGPT / RLHF: supervised demonstrations plus a reward model trained on human comparisons, then policy optimisation.',
+        codeSnippet: `1. demonstrations      -> supervised fine-tune
+2. human comparisons   -> reward model
+3. optimise policy against the reward
+// smaller + aligned beat bigger + raw`
       },
       {
-        id: 'oa3-3', chapterId: 'oa3', startTime: 77, endTime: 85,
-        speaker: 'Narrator',
-        cue: 'They created OpenAI LP: a capped-profit vehicle. Investors could earn up to one hundred times their capital; every penny beyond that would belong to humanity.',
-        read: 'A golden scale balances two weights: a limited 100x return stack on one side, and the open Earth globe on the other, tied by legal seals.',
-        visualPrompt: 'Legal diagram where commercial profits are piped into a cistern with a fixed spillway overflow marked "All excess to Public Trust".',
-        technicalNote: 'OpenAI LP created in March 2019 with a 100x return cap on first-round investors, governed entirely by the non-profit OpenAI Inc. board.',
-        codeSnippet: `function distributeReturns(profit: number, invested: number) {
-  const cap = invested * 100;
-  const investorPayout = Math.min(profit, cap);
-  const humanitySurplus = Math.max(0, profit - cap);
-  return { investorPayout, humanitySurplus };
-}`
-      },
-      {
-        id: 'oa3-4', chapterId: 'oa3', startTime: 85, endTime: 92,
-        speaker: 'Sam',
-        cue: 'July 2019. Satya Nadella bets one billion dollars on our vision. Microsoft gets the exclusive cloud partnership, and we get the supercomputing supergrid.',
-        read: 'A glowing handshake between the emerald Bloom and an Azure blue cloud. Beneath them, rows of server blades ignite with pulse lights.',
-        visualPrompt: 'Handshake between glowing green OpenAI ribbon and azure Microsoft logo, with thousands of server racks powering up in unison.',
-        technicalNote: 'Microsoft invested $1B in July 2019, agreeing to build custom Azure supercomputing infrastructure with thousands of interconnected Nvidia V100s.',
-        codeSnippet: `const alliance = {
-  investor: "Microsoft",
-  amount: "$1,000,000,000",
-  infrastructure: "Custom Azure AI Supercomputer (10,000+ GPUs)",
-  exclusiveCloud: true,
-  charterSafetyPrecedence: true
-};`
+        id: 'oa3-4', chapterId: 'oa3', startTime: 88, endTime: 96,
+        speaker: 'Caret',
+        cue: 'November the thirtieth, 2022. They put a text box on the internet as a research preview, and a hundred million people arrive in two months.',
+        read: 'The chat box appears, small and plain; crowds of tiny figures stream toward it from every edge.',
+        visualPrompt: 'Plain chat box glowing, converging crowd, counter climbing.',
+        technicalNote: 'ChatGPT launched 30 November 2022 as a research preview and was reported to reach ~100M monthly users within about two months.',
+        codeSnippet: `the model had existed for months.
+the box was new.
+
+  research preview, 30 Nov 2022
+  ~100,000,000 users in ~2 months`
       }
     ]
   },
   {
     id: 'oa4',
     number: 4,
-    title: 'The Scaling Hypothesis',
-    subtitle: '2020–2022: GPT-3, the prompt paradigm, the alignment secret, and the departure of Anthropic',
-    startTime: 92,
-    endTime: 124,
-    duration: 32,
-    themeColor: '#8B5CF6',
-    accentColor: '#C4B5FD',
-    summary: 'GPT-3 stuns the world with one hundred and seventy-five billion parameters. The prompt replaces code. But safety tensions mount, leading key researchers to walk out.',
+    title: 'Five Days in November',
+    subtitle: '2023: GPT-4, the whole world shipping, and the week the company nearly ended',
+    startTime: 96,
+    endTime: 130,
+    duration: 34,
+    themeColor: '#E2574C',
+    accentColor: '#F09A92',
+    summary: 'The most capable model yet, a global race it triggered, and then an internal crisis that answered the question of who actually controls the thing.',
     shots: [
       {
-        id: 'oa4-1', chapterId: 'oa4', startTime: 92, endTime: 100,
-        speaker: 'Ilya',
-        cue: 'May 2020. One hundred and seventy-five billion parameters. GPT-3 proved that scaling laws were real. More compute didn\'t just give higher accuracy—it gave emergence.',
-        read: 'A colossal monolith of neural weights dwarfs a small human silhouette. Words entered at the base emerge from the summit as poems, code, and reasoning.',
-        visualPrompt: 'Towering crystalline neural network with 175B glowing parameter junctions, casting a deep violet shadow across the landscape.',
-        technicalNote: 'Brown et al. (May 2020) revealed few-shot in-context learning. Scaling law predictions from Kaplan et al. held across four orders of magnitude.',
-        codeSnippet: `// Kaplan et al. Scaling Law:
-// Test loss L scales as a power-law with compute C, dataset size D, and model size N:
-// L(N) = (N_c / N)^alpha_N
-// Smooth loss reduction produces discontinuous emergent capabilities`
-      },
-      {
-        id: 'oa4-2', chapterId: 'oa4', startTime: 100, endTime: 108,
-        speaker: 'Researcher',
-        cue: 'For seventy years, computers spoke in rigid syntax: semicolons, loops, compilers. Now, programming was just talking to the machine in English.',
-        read: 'An old command line terminal with blinking green cursor dissolves into natural prose. A user types "Write a poem about relativity" and prose flowers out.',
-        visualPrompt: 'C++ syntax fading into human cursive script; prompts transform directly into running software and diagrams without intermediate code.',
-        technicalNote: 'The OpenAI API launched in June 2020, inaugurating prompt engineering as the new interface to software computation.',
-        codeSnippet: `// Old Paradigm:
-function solve(input: Data): Output { return algorithm(input); }
-
-// New Paradigm:
-const output = await openai.chat.completions.create({
-  model: "text-davinci-003",
-  prompt: "Explain quantum electrodynamics to a ten-year-old:"
-});`
-      },
-      {
-        id: 'oa4-3', chapterId: 'oa4', startTime: 108, endTime: 116,
+        id: 'oa4-1', chapterId: 'oa4', startTime: 96, endTime: 104,
         speaker: 'Narrator',
-        cue: 'Late 2020. Inside the lab, a schism deepened over commercialization and existential risk. Dario Amodei and eleven core researchers resigned to form Anthropic.',
-        read: 'A fault line cracks across the building floor. Eleven figures carry notebooks through the doorway, stepping out under a constellation named Claude.',
-        visualPrompt: 'Split in the laboratory: one team remains beside the compute cluster, another team departs under an amber sky to build Constitutional AI.',
-        technicalNote: 'VP of Research Dario Amodei, Daniela Amodei, and key safety researchers left in late 2020/early 2021 over commercial pace and governance concerns.',
-        codeSnippet: `const schism = {
-  departure: ["Dario Amodei", "Daniela Amodei", "Jack Clark", "Jared Kaplan"],
-  newLab: "Anthropic PBC (Claude)",
-  coreDispute: "Safety guarantees before commercial acceleration",
-  culture: "Constitutional AI & Mechanistic Interpretability"
-};`
+        cue: 'March 2023. GPT-4 arrives, it accepts images as well as text, and it starts scoring near the top of exams written for people.',
+        read: 'The bloom gains a second ring; exam score bars rise past a dotted human line.',
+        visualPrompt: 'Bloom with outer ring, benchmark bars crossing a human-median line.',
+        technicalNote: 'GPT-4 (March 2023) was multimodal on input and scored in high percentiles on a range of professional and academic exams.',
+        codeSnippet: `GPT-4, Mar 2023
+  input:  text + images
+  output: text
+  exams:  top-decile on several professional tests
+// capability stopped being the bottleneck`
       },
       {
-        id: 'oa4-4', chapterId: 'oa4', startTime: 116, endTime: 124,
-        speaker: 'Ilya',
-        cue: 'Raw pre-training was an untamed wild animal. Reinforcement learning from human feedback gave it manners, honesty, and a conversational soul: InstructGPT.',
-        read: 'A wild, roaring fire of raw token probabilities is channeled through two gentle human hands into a steady, warm lantern light.',
-        visualPrompt: 'Chaotic multicolored probability cloud being guided through human rating sliders into a clean, courteous chat response.',
-        technicalNote: 'Ouyang et al. (InstructGPT, early 2022) used RLHF with PPO to align models to human intent, making a 1.3B aligned model preferred over 175B raw GPT-3.',
-        codeSnippet: `// RLHF Pipeline:
-const pretraining = trainOnWebCorpus(Tokens);
-const rewardModel = learnHumanPreferences(Prompts, Responses);
-const alignedModel = PPO_Optimize(pretraining, rewardModel);
-// Politeness and helpfulness unlocked mainstream utility`
+        id: 'oa4-2', chapterId: 'oa4', startTime: 104, endTime: 112,
+        speaker: 'Scientist',
+        cue: 'Everybody ships. Every large lab reprioritises, every product grows a chat panel, and governments start drafting rules in a hurry.',
+        read: 'A city of panels lights up one after another; a row of officials unrolls a long scroll of rules.',
+        visualPrompt: 'Grid of competing product panels igniting, officials with a long scroll.',
+        technicalNote: 'The launch reset the competitive landscape and accelerated legislative work, including the EU AI Act negotiations.',
+        codeSnippet: `t+0   one chat box
+t+6mo every major lab has one
+t+12mo every product has one
+t+18mo three continents are drafting law`
+      },
+      {
+        id: 'oa4-3', chapterId: 'oa4', startTime: 112, endTime: 121,
+        speaker: 'Chair',
+        cue: 'Then on the seventeenth of November the board removes the chief executive, saying he had not been consistently candid with them.',
+        read: 'A boardroom; the lights drop; a chair at the head of the table is suddenly empty.',
+        visualPrompt: 'Dark boardroom, long table, one empty chair under a cold light.',
+        technicalNote: 'On 17 November 2023 the board removed Sam Altman as CEO; the CTO was appointed interim CEO and the president resigned the same day.',
+        codeSnippet: `17 Nov 2023, 12:00 PT
+  board vote: remove the CEO
+  stated reason: "not consistently candid"
+// the governance structure finally did something`
+      },
+      {
+        id: 'oa4-4', chapterId: 'oa4', startTime: 121, endTime: 130,
+        speaker: 'Narrator',
+        cue: 'Within three days, seven hundred and forty-five of about seven hundred and seventy employees sign one letter. By the twenty-second he is back.',
+        read: 'Signatures fill a single sheet until it is solid with ink; the empty chair is filled again.',
+        visualPrompt: 'Letter filling with signatures, counter racing to 745, chair refilled.',
+        technicalNote: 'By 20 November a letter signed by 745 of ~770 employees demanded the board resign; Altman returned on 22 November with a new initial board.',
+        codeSnippet: `745 / 770 signed
+  demand: reinstate, and the board resigns
+  result: both
+// the staff turned out to be the real board`
       }
     ]
   },
   {
     id: 'oa5',
     number: 5,
-    title: 'The November Spark',
-    subtitle: '2022–2023: ChatGPT explodes, one hundred million users, GPT-4, and the global frenzy',
-    startTime: 124,
-    endTime: 156,
+    title: 'Senses and Second Thoughts',
+    subtitle: '2024: voice, video, and a model that stops to think before it answers',
+    startTime: 130,
+    endTime: 162,
     duration: 32,
-    themeColor: '#EC4899',
-    accentColor: '#F472B6',
-    summary: 'A low-key research preview on November 30, 2022 detonates across culture. ChatGPT reaches 100M users faster than any product in history, followed by the multimodal marvel of GPT-4.',
+    themeColor: '#2F6FEB',
+    accentColor: '#8AB0F5',
+    summary: 'The model gains ears and eyes and a voice — and then a different axis of progress opens up: not a bigger model, but one that is allowed to think for longer.',
     shots: [
       {
-        id: 'oa5-1', chapterId: 'oa5', startTime: 124, endTime: 132,
+        id: 'oa5-1', chapterId: 'oa5', startTime: 130, endTime: 138,
+        speaker: 'Caret',
+        cue: 'May 2024. One model takes speech, images and text through the same door, and answers out loud in about the time a person would.',
+        read: 'Three streams — a waveform, a photograph, a line of letters — converge into a single glowing arch.',
+        visualPrompt: 'Waveform, image and text merging into one arch, Caret listening.',
+        technicalNote: 'GPT-4o handled audio, vision and text in a single model, cutting spoken-response latency to roughly conversational speed.',
+        codeSnippet: `before: speech->text, text->text, text->speech
+        three models, ~3 s of latency
+after:  one model, audio in, audio out
+        ~0.3 s — close to a human turn`
+      },
+      {
+        id: 'oa5-2', chapterId: 'oa5', startTime: 138, endTime: 146,
+        speaker: 'Scientist',
+        cue: 'Then September. A model trained to reason first and answer second — it spends seconds thinking, and the hard problems start falling.',
+        read: 'The bloom slows and a thinking ring orbits it; a hard problem resolves after a visible pause.',
+        visualPrompt: 'Bloom with orbiting thinking ring, timer counting, problem resolving.',
+        technicalNote: 'The o-series used reinforcement learning on long chains of reasoning, trading inference time for accuracy on maths, code and science.',
+        codeSnippet: `scaling, axis 2
+  train-time compute  ── still works
+  TEST-time compute   ── new: think longer, score higher
+// the answer improves while you wait`
+      },
+      {
+        id: 'oa5-3', chapterId: 'oa5', startTime: 146, endTime: 154,
         speaker: 'Narrator',
-        cue: 'November 30, 2022. A tweet announces a research preview: ChatGPT. No press tour, no keynote. Just a quiet link on a Wednesday afternoon.',
-        read: 'A minimalist white text box with a simple input bar. A finger taps send. A solitary ripple spreads outwards across the entire globe.',
-        visualPrompt: 'Minimalist web UI with a single prompt bar and the placeholder "Send a message...". A gentle wave ripples across world continents.',
-        technicalNote: 'Launched as a free preview on GPT-3.5 with modest internal expectations. Greg Brockman tweeted: "Try talking with ChatGPT here: chat.openai.com".',
-        codeSnippet: `// The Tweet That Changed Everything
-const launch = {
-  date: "2022-11-30T13:00:00Z",
-  product: "ChatGPT (Research Preview)",
-  model: "gpt-3.5-turbo",
-  marketingBudget: "$0",
-  internalExpectation: "Modest feedback on conversation quirks"
-};`
+        cue: 'And it learns to make video. A paragraph of description becomes a moving shot, with objects that mostly stay themselves.',
+        read: 'A written line unspools into a strip of film frames that animate as the strip slides past.',
+        visualPrompt: 'Text unspooling into a filmstrip, frames animating in sequence.',
+        technicalNote: 'Sora generated video from text, treating patches across space and time the way earlier models treated tokens.',
+        codeSnippet: `image: patches over space
+video: patches over space AND time
+// same recipe, one more dimension`
       },
       {
-        id: 'oa5-2', chapterId: 'oa5', startTime: 132, endTime: 140,
-        speaker: 'Sam',
-        cue: 'Five days to one million users. Two months to one hundred million. It was the fastest consumer adoption in human history. The servers were melting.',
-        read: 'A counter speedometer spins frantically past 1M, 10M, 100M. Around the world, schools, offices, coders, and artists illuminate their screens in the dark.',
-        visualPrompt: 'Digital odometer spinning at blinding speed; server racks glowing cherry-red as fans scream; night maps of continents lighting up.',
-        technicalNote: 'Reached 100M monthly active users by January 2023, surpassing TikTok and Instagram. Cloud infrastructure strained to keep capacity online.',
-        codeSnippet: `const growthVelocity = {
-  netflix: "3.5 years to 1M users",
-  instagram: "2.5 months to 1M users",
-  chatgpt: "5 days to 1M users (60 days to 100M MAU)",
-  loadStatus: "Capacity exhausted -> Red alert engineering"
-};`
-      },
-      {
-        id: 'oa5-3', chapterId: 'oa5', startTime: 140, endTime: 148,
-        speaker: 'Ilya',
-        cue: 'March 2023. GPT-4 arrives. It doesn\'t just write—it sees. It passes the bar exam in the ninetieth percentile, writes code from sketches, and perceives the world.',
-        read: 'A hand-drawn wireframe on a stained napkin is held up to a camera. Seconds later, a full interactive web application renders live on screen.',
-        visualPrompt: 'Napkin sketch of a website being scanned by a camera; instantly morphs into clean HTML/JS with animated buttons and functional physics.',
-        technicalNote: 'GPT-4 (March 2023) scored 90th percentile on the Uniform Bar Exam, 99th on the Biology Olympiad, and demonstrated vision capabilities.',
-        codeSnippet: `const gpt4 = {
-  architecture: "Mixture of Experts (~16x110B)",
-  multimodal: ["Text", "High-res Vision"],
-  evaluations: {
-    uniformBarExam: "90th percentile (GPT-3.5 was 10th)",
-    usaboSemifinal: "99th percentile",
-    leetCodeHard: "Solved without prompt tricks"
-  }
-};`
-      },
-      {
-        id: 'oa5-4', chapterId: 'oa5', startTime: 148, endTime: 156,
-        speaker: 'Narrator',
-        cue: 'World leaders summon Sam Altman to Capitol Hill, Downing Street, and the Elysée Palace. The debate shifts from technology to destiny: is AGI six years away, or sixty?',
-        read: 'Sam Altman sitting at a mahogany congressional hearing table. Microphones, flashing flashbulbs, and world leaders leaning forward to listen.',
-        visualPrompt: 'Congressional hearing room under harsh marble lighting; senators listening intently; TV chyrons asking "Can AI Be Controlled?".',
-        technicalNote: 'Altman testified before the US Senate in May 2023, urging lawmakers to license frontier AI models and establish independent safety oversight.',
-        codeSnippet: `// Senate Testimony (May 16, 2023)
-const testimony = {
-  witness: "Sam Altman",
-  coreQuote: "If this technology goes wrong, it can go quite wrong.",
-  proposal: "Mandatory government licensing for frontier training runs"
-};`
+        id: 'oa5-4', chapterId: 'oa5', startTime: 154, endTime: 162,
+        speaker: 'Scientist',
+        cue: 'But people leave. Several of the researchers who built the safety work depart, arguing that the race is outrunning the guardrails.',
+        read: 'Scaffolding around the bloom; a few figures set down their tools and walk out of frame.',
+        visualPrompt: 'Safety scaffolding half-built, researchers departing, bloom still growing.',
+        technicalNote: 'During 2024 several senior safety researchers left, publicly arguing that safety culture was being deprioritised against shipping.',
+        codeSnippet: `the recurring argument:
+  capability curve  ── exponential
+  assurance curve   ── linear, at best
+// the gap between them is the whole debate`
       }
     ]
   },
   {
     id: 'oa6',
     number: 6,
-    title: 'Five Days in November',
-    subtitle: 'November 2023: The board firing, 700 resignations, 90 hours of crisis, and the return',
-    startTime: 156,
-    endTime: 188,
-    duration: 32,
-    themeColor: '#EF4444',
-    accentColor: '#FCA5A5',
-    summary: 'A Friday afternoon Google Meet detonates the tech world. The non-profit board summarily fires Sam Altman. Within ninety hours, seven hundred employees rebel, forcing a complete reversal.',
+    title: 'The Furnace',
+    subtitle: '2025: half a trillion in concrete, and a nonprofit that becomes a shareholder',
+    startTime: 162,
+    endTime: 192,
+    duration: 30,
+    themeColor: '#3A3F4B',
+    accentColor: '#C7D0DA',
+    summary: 'Progress becomes a construction project. The money required to keep the line straight finally reshapes the organisation that drew it.',
     shots: [
       {
-        id: 'oa6-1', chapterId: 'oa6', startTime: 156, endTime: 164,
+        id: 'oa6-1', chapterId: 'oa6', startTime: 162, endTime: 170,
         speaker: 'Narrator',
-        cue: 'Friday, November 17, 2023. At noon, the board schedules a Google Meet. Minutes later, a press release drops: Sam Altman is fired, effective immediately.',
-        read: 'A sleek glass conference room. A computer screen with a video call cuts to black. A corporate blog post with the headline "OpenAI announces leadership transition" shocks the world.',
-        visualPrompt: 'Empty ergonomic chair facing a severed video call window; red alert notifications flooding smartphones; breaking news alerts flashing.',
-        technicalNote: 'The 4-member board (Ilya Sutskever, Adam D\'Angelo, Tasha McCauley, Helen Toner) removed Altman, stating he was "not consistently candid".',
-        codeSnippet: `const boardAction = {
-  time: "2023-11-17T12:00:00 PST",
-  action: "Remove CEO Sam Altman & strip Greg Brockman of chairmanship",
-  justification: "Failure of candor with the board",
-  advanceNoticeToMicrosoft: "1 minute"
-};`
+        cue: 'January 2025. A joint venture is announced to spend up to five hundred billion dollars building data centres in the United States.',
+        read: 'A desert plain; foundations are poured and halls of racks rise row after row to the horizon.',
+        visualPrompt: 'Desert construction, rising server halls receding to the horizon.',
+        technicalNote: 'The Stargate project was announced in January 2025 by OpenAI with SoftBank, Oracle and MGX, planning up to $500B of US AI infrastructure.',
+        codeSnippet: `Stargate, announced Jan 2025
+  target: up to $500,000,000,000
+  horizon: four years
+// the roadmap is now partly a civil works programme`
       },
       {
-        id: 'oa6-2', chapterId: 'oa6', startTime: 164, endTime: 172,
-        speaker: 'Researcher',
-        cue: 'Saturday and Sunday were a fever dream. Brockman quit in protest. Microsoft announced they would hire Sam and Greg to lead a new advanced AI unit. The company seemed dead.',
-        read: 'Two silhouetted co-founders walking out of headquarters carrying backpacks. In Redmond, Satya Nadella opens the Microsoft campus gates with an outstretched hand.',
-        visualPrompt: 'Pioneer Building in darkness with laptops open on desks; parallel scene in Seattle with glowing blue Microsoft welcome banner.',
-        technicalNote: 'Satya Nadella moved swiftly on Sunday night, offering to hire Altman, Brockman, and any OpenAI employees who wished to join with full compute parity.',
-        codeSnippet: `// Nadella\'s Checkmate (Nov 19, 2023):
-const microsoftOffer = {
-  hiring: ["Sam Altman", "Greg Brockman", "All OpenAI Staff"],
-  capital: "Full access to thousands of H100s",
-  mission: "Build OpenAI 2.0 inside Microsoft Advanced AI Lab"
-};`
+        id: 'oa6-2', chapterId: 'oa6', startTime: 170, endTime: 178,
+        speaker: 'Scientist',
+        cue: 'Because the straight line has a price. Every step along it costs more power, more silicon and more concrete than the step before.',
+        read: 'The scaling line returns, now resting on a stack of substations, racks and transformers that grows beneath it.',
+        visualPrompt: 'Scaling line supported by growing infrastructure stack, power pylons.',
+        technicalNote: 'Each order-of-magnitude of capability has required roughly an order of magnitude more compute, power and capital.',
+        codeSnippet: `to move the loss one notch:
+  compute  x10
+  power    x10
+  capital  x10
+// the physics bill arrives before the revenue`
       },
       {
-        id: 'oa6-3', chapterId: 'oa6', startTime: 172, endTime: 180,
-        speaker: 'Researcher',
-        cue: 'By 2 a.m. Monday, the impossible happened. Over seven hundred out of seven hundred and seventy employees signed a single letter: reinstate Sam, or we all walk out tonight.',
-        read: 'A white petition sheet scrolls endlessly with hundreds of signatures. Ilya Sutskever adds his own name at the top with a tweet of deep remorse.',
-        visualPrompt: 'Glowing document titled "OpenAI is nothing without its people", signed by 743 employees, including Chief Scientist Ilya Sutskever.',
-        technicalNote: '743 of 770 employees signed the letter threatening to quit. Ilya Sutskever tweeted: "I deeply regret my participation in the board\'s actions."',
-        codeSnippet: `// The Rebellion Letter (Nov 20, 2023)
-const letter = {
-  signatories: "743 / 770 employees (96.5%)",
-  demand: "Resignation of the board + reinstatement of Sam & Greg",
-  ultimatum: "Immediate resignation to join Microsoft subsidiary"
-};`
+        id: 'oa6-3', chapterId: 'oa6', startTime: 178, endTime: 185,
+        speaker: 'Chair',
+        cue: 'So in October the structure changes again. The for-profit becomes a public benefit corporation, and the nonprofit becomes its largest mission shareholder.',
+        read: 'The two-panel diagram from act two redraws itself: the cap dissolves, the nonprofit keeps the controlling thread.',
+        visualPrompt: 'Structure diagram redrawing, cap meter dissolving, control thread held.',
+        technicalNote: 'On 28 October 2025 OpenAI recapitalised: the for-profit became OpenAI Group PBC, controlled by the renamed OpenAI Foundation (~26%), with Microsoft at ~27%.',
+        codeSnippet: `28 Oct 2025
+  for-profit -> OpenAI Group PBC
+  nonprofit  -> OpenAI Foundation, ~26%, in control
+  Microsoft  -> ~27%
+  profit cap -> removed`
       },
       {
-        id: 'oa6-4', chapterId: 'oa6', startTime: 180, endTime: 188,
-        speaker: 'Sam',
-        cue: 'Tuesday night, the board conceded. We returned to the office at 3 a.m. The governance fractured, a new board was formed, and the company was reborn.',
-        read: 'Sam Altman and Greg Brockman walking through the doors of the Pioneer Building as hundreds of cheering colleagues embrace them in the early morning light.',
-        visualPrompt: 'Early dawn light breaking through the glass windows of OpenAI headquarters; applause and hugs; a new board slate written on the main whiteboard.',
-        technicalNote: 'Altman returned as CEO on Nov 21 with a reconstituted board chaired by Bret Taylor, Larry Summers, and Adam D\'Angelo.',
-        codeSnippet: `const resolution = {
-  ceo: "Sam Altman (Reinstated)",
-  president: "Greg Brockman (Reinstated)",
-  newBoard: ["Bret Taylor (Chair)", "Larry Summers", "Adam D'Angelo"],
-  result: "Founder control consolidated; non-profit primacy challenged"
-};`
+        id: 'oa6-4', chapterId: 'oa6', startTime: 185, endTime: 192,
+        speaker: 'Narrator',
+        cue: 'The promise stays in the charter. Whether a corporation can keep it is the experiment everybody is now inside of.',
+        read: 'The 2015 letter reappears, pinned beside the new structure; the original sentence still legible.',
+        visualPrompt: 'Original letter pinned next to the new corporate diagram, same sentence.',
+        technicalNote: 'The Foundation retains control and a stake that grows at valuation milestones; the PBC form obliges the company to weigh its stated public benefit.',
+        codeSnippet: `the sentence is unchanged since 2015.
+the entity around it is unrecognisable.
+// that tension is the story, not a footnote`
       }
     ]
   },
   {
     id: 'oa7',
     number: 7,
-    title: 'The Thinking Machine & Beyond',
-    subtitle: '2024–2026+: Strawberry, test-time compute, Stargate, and the twilight of pre-training',
-    startTime: 188,
+    title: 'A Billion Conversations',
+    subtitle: '2026 → next: the scale it reached, and the question it still has not answered',
+    startTime: 192,
     endTime: 216,
-    duration: 28,
-    themeColor: '#059669',
-    accentColor: '#6EE7B7',
-    summary: 'The era of raw pre-training hits the data wall. OpenAI pivots to test-time reasoning with o1, plans hundred-billion-dollar superclusters, and prepares for the final transition to AGI.',
+    duration: 24,
+    themeColor: '#10A37F',
+    accentColor: '#7FE0C4',
+    summary: 'Eleven years from a letter: a billion people a week typing into a box, tens of billions in revenue, and the original promise still outstanding.',
     shots: [
       {
-        id: 'oa7-1', chapterId: 'oa7', startTime: 188, endTime: 195,
-        speaker: 'Ilya',
-        cue: 'September 2024. Project Strawberry: the o1 reasoning model. We discovered a second scaling law: compute during inference. The model now stops, thinks, plans, and corrects its own thoughts.',
-        read: 'A deep crimson strawberry symbol morphs into a branching decision graph. A thought trace tree dynamically explores, evaluates, backtracks, and converges on truth.',
-        visualPrompt: 'Tree of thoughts visualization: branching neural pathways in glowing rose and emerald, pruning errors and highlighting the golden path of proof.',
-        technicalNote: 'OpenAI o1 (Sep 2024) introduced test-time compute scaling via reinforcement learning, spending inference time generating hidden chain-of-thought tokens.',
-        codeSnippet: `// The Second Scaling Law: Inference-Time Compute
-// In o1, performance on math, coding, and science scales logarithmically
-// with the number of internal reasoning tokens spent before answering:
-Accuracy(Task) ~ log(InferenceComputeTokens);`
+        id: 'oa7-1', chapterId: 'oa7', startTime: 192, endTime: 199,
+        speaker: 'Caret',
+        cue: 'By 2026 about a billion people a week are typing into it, and millions of businesses are building on top of it.',
+        read: 'The frame fills with thousands of tiny cursors blinking in a vast grid, each one a conversation.',
+        visualPrompt: 'Field of thousands of blinking carets forming a living grid.',
+        technicalNote: 'Weekly active users were reported passing 800M in late 2025 and around 1B during 2026, with business customers in the millions.',
+        codeSnippet: `weekly users
+  2023   ~100,000,000
+  2025   ~800,000,000
+  2026  ~1,000,000,000
+// one text box`
       },
       {
-        id: 'oa7-2', chapterId: 'oa7', startTime: 195, endTime: 202,
+        id: 'oa7-2', chapterId: 'oa7', startTime: 199, endTime: 206,
         speaker: 'Narrator',
-        cue: 'From Sora\'s painted video worlds to Voice Mode\'s breath and nuance, the synthetic boundary evaporated. But the data wall loomed: the internet had run out of human tokens.',
-        read: 'Hyper-realistic video windows float in mid-air—golden retrievers, neon Tokyo streets, historical figures speaking—while behind them, web archives show 100% indexed.',
-        visualPrompt: 'Lush photorealistic cinematic video clips playing inside floating glass panes; background charts show the world\'s text completely consumed.',
-        technicalNote: 'Sora (Feb 2024) demonstrated physics simulation in diffusion transformers; GPT-4o introduced native end-to-end multimodal audio and vision.',
-        codeSnippet: `const tokenSupply = {
-  worldHighQualityText: "~15 Trillion tokens",
-  status: "Fully consumed by frontier training runs",
-  nextFrontier: ["Synthetic Self-Play", "Test-time compute", "Agentic world experience"]
-};`
+        cue: 'The revenue is real now, in the tens of billions a year. So are the losses, and the trillion-dollar compute commitments behind them.',
+        read: 'Two counters roll up side by side: revenue climbing, and beneath it an obligation column climbing faster.',
+        visualPrompt: 'Twin counters, revenue column and commitment column, the second taller.',
+        technicalNote: 'Annualised revenue was reported in the tens of billions during 2026, against heavy operating losses and very large multi-year compute commitments.',
+        codeSnippet: `revenue        annualised, tens of $B
+commitments    multi-year, far larger
+// the bet is that the first curve catches the second`
       },
       {
-        id: 'oa7-3', chapterId: 'oa7', startTime: 202, endTime: 209,
-        speaker: 'Sam',
-        cue: 'Now we build Project Stargate: five gigawatts of power, millions of chips, a hundred billion dollars. We are turning the power grid of nations into thought.',
-        read: 'A vast nuclear and geothermal compute park under a starry desert sky. Power cables converge into a central glowing monolithic reactor of pure intelligence.',
-        visualPrompt: 'Desert supercluster spanning miles with cooling towers, electrical substations, and fiber cables converging into a shining computing cathedral.',
-        technicalNote: 'Project Stargate, a planned $100B+ AI supercomputing cluster partnership with Microsoft and energy providers, requiring multi-gigawatt power scale.',
-        codeSnippet: `const stargate = {
-  powerRequirement: "5 Gigawatts (equivalent to a major city)",
-  gpuCount: "Hundreds of thousands of next-gen accelerators",
-  budget: "$100,000,000,000+",
-  objective: "The engine for Superintelligence"
-};`
+        id: 'oa7-3', chapterId: 'oa7', startTime: 206, endTime: 211,
+        speaker: 'Scientist',
+        cue: 'And the original question is still open. Nobody has shown that the thing in the box understands anything at all.',
+        read: 'The bloom turns slowly, fully lit; beside it the 2015 sentence waits, still unticked.',
+        visualPrompt: 'Fully lit bloom rotating, mission sentence with an empty checkbox.',
+        technicalNote: 'Capability has advanced far faster than consensus on evaluation, interpretability or what the systems internally represent.',
+        codeSnippet: `measured:   benchmarks, users, revenue
+unmeasured: understanding, intent, alignment
+// we shipped the first list and kept arguing about the second`
       },
       {
-        id: 'oa7-4', chapterId: 'oa7', startTime: 209, endTime: 216,
-        speaker: 'Narrator',
-        cue: 'Ten years from a hotel dinner in Menlo Park, the question is no longer whether machines will think. The question is who we will become when they do.',
-        read: 'The emerald Bloom emblem rises gently into the night sky, blooming outward into a warm constellation that encircles the entire living planet.',
-        visualPrompt: 'The OpenAI Bloom glyph expanding into a golden-green lattice around Earth, illuminating oceans and cities with tranquil starlight.',
-        technicalNote: 'From non-profit charity to public benefit corporation, OpenAI stands at the center of the transition to artificial general intelligence.',
-        codeSnippet: `// 2015 -> 2026 and Beyond:
-const humanity = {
-  curiosity: "Infinite",
-  machines: "Awakened",
-  future: "Unwritten"
-};`
+        id: 'oa7-4', chapterId: 'oa7', startTime: 211, endTime: 216,
+        speaker: 'Caret',
+        cue: 'It began as a letter about everyone. It became a box that waits for you to type. The cursor is still blinking.',
+        read: 'Camera pulls back: the whole story was a stage. Curtains fall and Caret, alone in the light, blinks once and bows.',
+        visualPrompt: 'Stage pullback, velvet curtains, footlights, Caret bowing under a single spot.',
+        technicalNote: 'A closing rhyme with the other films: the same theatre, the same bow, a question deliberately left open.',
+        codeSnippet: `2015: "benefits all of humanity"
+2026: a blinking cursor, a billion times a week
+// still waiting for input`
       }
     ]
   }

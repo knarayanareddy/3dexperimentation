@@ -48,7 +48,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ song, onLoaded, nudge, o
             </div>
             <div className="text-[11px] text-slate-400 font-mono truncate">
               {loading
-                ? `loading ${song.title} …`
+                ? 'loading JEV.mp3 …'
                 : ready
                   ? `${trackEngine.duration.toFixed(1)}s · ${song.bpm} BPM · synced`
                   : 'track not loaded'}

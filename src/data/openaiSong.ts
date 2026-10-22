@@ -1,142 +1,141 @@
 /**
- * openaiSong.ts — Suno AI generation recipe for "Sparks in the Machine".
+ * openaiSong.ts — the Suno recipe for the OpenAI film, "Still Waiting For Input".
  *
- * Designed for Suno v3.5 / v4 Custom Mode:
- *   - Style Prompt: Driving cinematic electro-pop / synthwave rock, 112 BPM.
- *   - Full lyrical narrative matching the 7 acts (from Rosewood 2015 to o1 and Stargate).
- *   - Verbatim section plan and visual anchors so the audio can be measured
- *     and force-aligned with Whisper when the MP3 is generated.
+ * Generate in Suno, then send me the MP3 (or a raw URL). I'll run the same
+ * measurement pipeline as the other three films: ffmpeg decode → Whisper
+ * word timestamps → global force-alignment against this exact lyric sheet →
+ * every line pinned to the shot that illustrates it.
  */
 
-export const OA_SUNO_TITLE = 'Sparks in the Machine';
+export const OA_SUNO_TITLE = 'Still Waiting For Input';
 
 export const OA_SUNO_STYLE_PROMPT =
-  'cinematic electro-pop, driving synthwave with indie-rock emotion, 112 BPM, D minor, 4/4; ' +
-  'starts sparse with warm analog synthesizer pads, delicate piano chords and an intimate male lead vocal; ' +
-  'verse two brings in a crisp 80s drum groove, pulsing bassline, and subtle electric guitar arpeggios; ' +
-  'pre-chorus builds tension with rising white-noise risers and layered vocal harmonies; ' +
-  'chorus explodes wide and anthemic with soaring vocals, massive four-on-the-floor kick, lush supersaw leads, and stacked gang harmonies; ' +
-  'the "November coup" bridge drops to dramatic half-time with clock ticks, distorted bass, and desperate vocal whispers; ' +
-  'then a colossal crescendo build with pounding tom fills and rising synth sweeps into a transcendent final double chorus; ' +
-  'outro fades on quiet piano, soft synth pad and a single reflective whisper; ' +
-  'polished modern production, emotional, propulsive, epic, bittersweet';
+  'cinematic electronic art-pop that grows from intimate to vast, 108 BPM, C minor, 4/4; ' +
+  'opens almost silent with a single felt piano, close-mic breathy male lead vocal and the ' +
+  'faint tick of a typing cursor as percussion; verse two adds warm analog pads, soft sub ' +
+  'bass and brushed electronic drums; pre-chorus lifts with an arpeggiated glass-synth figure ' +
+  'and rising strings; choruses are huge, bright and hopeful with stacked male and female ' +
+  'gang harmonies, four-on-the-floor kick, handclaps and a soaring sawtooth hook; the ' +
+  'boardroom bridge drops to half time, almost a cappella, cold room reverb, lone piano and ' +
+  'a single sustained cello; then a long patient build with tremolo strings into the biggest ' +
+  'final chorus; ends intimate again on solo piano and one voice with the cursor tick ' +
+  'returning; awed, hopeful, slightly uneasy, documentary-score feeling; pristine modern ' +
+  'mix with analog warmth and wide stereo pads';
 
 export const OA_SUNO_EXCLUDE =
-  'country, acoustic banjo, heavy metal growl, screamo, trap stutter hi-hats, autotune mumble, polka, lo-fi hiss';
+  'rap, trap hi-hats, heavy metal, screamo, banjo, chiptune, lo-fi hiss, mumbled vocals, dubstep drop';
 
 /** Paste verbatim into Suno's Custom Mode lyrics box. */
-export const OA_SUNO_LYRICS = `[Intro - warm synth pads, sparse piano chords, 8 bars]
+export const OA_SUNO_LYRICS = `[Intro - felt piano and a cursor tick, 8 bars]
 
-[Verse 1 - intimate, quiet vocal]
-A quiet room in Menlo Park, December in the rain
-A promise made in candlelight to never play the game
-No shareholders, no market greed, just paper on the plate
-To build the mind before the rest, and give it to the state
-We carried tables to the loft, the Mission in the cold
-Equations on a whiteboard where the future would unfold
+[Verse 1 - close, almost whispered]
+In a room in the winter they wrote down a line
+Build the brightest thing and then give it away
+A billion in pledges and a promise too big
+For anybody standing there that day
 
-[Verse 2 - drums enter, steady pulse]
-A robot hand that twists a cube through simulated sky
-Five neural nets in battle lines that never wonder why
-And Ilya watching tokens fall like snow upon the screen
-Saying if you guess the very next, you grasp the whole machine
+[Verse 2 - drums enter]
+It learned by playing itself ten million times
+It turned a cube in the dark with a borrowed hand
+Then a quiet little paper nobody read
+Said predict the next word and you'll understand
 
-[Pre-Chorus - rising synth arp, tension builds]
-And the money goes fast when the models grow
-And the charity ceiling is cracking below
-Do we stay in the dark where the saints remain?
-Or buy the fire and bear the chain?
+[Pre-Chorus - lift]
+And the line on the paper didn't bend
+It just kept going, it just kept going
 
-[Chorus - wide, anthemic, neon explosion]
-Catch the spark inside the machine
-Brightest fire the world has seen
-Feed the wire, let the numbers climb
-We are breaking the wall of time
-Hold the charter, guard the door
-Nothing will be like it was before
-Catch the spark, let the lightning run
-To benefit everyone!
+[Chorus - huge, bright]
+So we built a box and we left it open
+Still waiting for input, still waiting for you
+Type anything, the cursor's blinking
+Oh, the strangest thing we ever grew
+Still waiting, still waiting for input
 
-[Verse 3 - driving motorik groove]
-A billion from the northern cloud, the server racks ignited
-A hundred billion weights of stone, the human tongue rewritten
-No semicolons, no syntax rules, just tell it what you feel
-The poets and the engineers are kneeling at the wheel
+[Verse 3 - driving]
+They held one back 'cause they didn't know what it'd do
+Then they capped the upside just to pay for the lights
+A hundred and seventy-five billion weights
+And it learned a new language overnight
 
-[Verse 4 - darker, bass pulse]
-Then eleven walked out into the night to build a safer cage
-And the quiet preview on a Wednesday blew across the stage
-A hundred million knocking on the door in sixty days
-The servers melting in the racks, the world caught in a blaze
+[Verse 4]
+It wrote the code from a comment and a name
+It painted an otter that was never alive
+But the thing that changed it wasn't any of that
+It was learning which answer we'd prefer
 
-[Bridge - half-time, dramatic, clock ticking, stripped back]
-Then a Google Meet at noon
-And the room went cold and bare
-A sentence dropped like winter stone:
-"You're not the leader there."
-The laptops shut, the hallway froze
-The Friday turned to ash
-They thought the board had won the day
-Without a single clash
-Until seven hundred names went down
-"Bring him back or we walk out now."
-The midnight clock, the early sun
-You cannot kill what we've begun!
+[Bridge - half time, cold, nearly a cappella]
+Then a Friday in November took the chair away
+And the room went quiet as a stone
+Seven hundred and forty-five names on a page
+Said we're not doing this alone
+(we're not doing this alone)
+By the Wednesday he was back in the chair
+And nobody could say who was in charge
+Nobody could say who was in charge
 
-[Build - rising drums, arpeggios soaring]
-Now the strawberry blooms in the crimson light
-It doesn't just guess, it thinks through the night
-Five gigawatts under a desert sky
-We turned the earth to a thinking mind!
+[Build - strings, slow rise]
+Then it listened, and it looked, and it spoke out loud
+Then it stopped and thought before it answered me
+Half a trillion poured in concrete in the sand
+And the nonprofit became a shareholder
 
-[Final Chorus - colossal, stacked harmonies, maximum energy]
-Catch the spark inside the machine!
-Brightest fire the world has seen!
-Feed the wire, let the numbers climb
-We are breaking the wall of time!
-Hold the charter, guard the door
-Nothing will be like it was before!
-Catch the spark, let the lightning run
-To benefit everyone!
+[Final Chorus - biggest, stacked]
+So we built a box and we left it open
+Still waiting for input, still waiting for you
+A billion a week with a question ready
+Oh, the strangest thing we ever grew
+Still waiting, still waiting for input
 
-[Outro - gentle piano, soft pads, reflective fade]
-Ten years from a dinner in the snow
-Where does the thinking go?
-It was never about the math we made
-It was only about the soul we gave
-Catch the spark...
-Catch the spark...
-[fade out on soft unresolved chord]`;
+[Outro - solo piano, one voice, cursor tick]
+It started as a letter about everyone
+It ended as a cursor on a screen
+We measured all the things that we could measure
+And we never measured what it means
+still waiting
+still waiting for input`;
 
-export const OA_SECTION_PLAN = [
-  { label: 'Intro', act: 1 },
-  { label: 'Verse 1', act: 1 },
-  { label: 'Verse 2', act: 2 },
-  { label: 'Pre-Chorus', act: 3 },
-  { label: 'Chorus 1', act: 3 },
-  { label: 'Verse 3', act: 4 },
-  { label: 'Verse 4', act: 5 },
-  { label: 'Bridge (The Firing)', act: 6 },
-  { label: 'Build (Strawberry & Stargate)', act: 7 },
-  { label: 'Final Chorus', act: 7 },
-  { label: 'Outro', act: 7 }
+export interface OaSection {
+  /** relative position in the finished track, 0..1 — replaced by measured seconds */
+  at: number;
+  label: string;
+  act: number;
+  /** nominal film seconds this section should sweep */
+  film: [number, number];
+  note: string;
+}
+
+/** The intended song → film mapping, act by act. */
+export const OA_SECTION_PLAN: OaSection[] = [
+  { at: 0.00, label: 'Intro', act: 1, film: [0, 4], note: 'the lit room before the letter opens' },
+  { at: 0.06, label: 'Verse 1', act: 1, film: [0, 16], note: '2015 letter, the pledge, the wager' },
+  { at: 0.15, label: 'Verse 2', act: 1, film: [16, 32], note: 'self-play, the cube, GPT-1' },
+  { at: 0.24, label: 'Pre-Chorus', act: 2, film: [48, 56], note: 'the scaling line refusing to bend' },
+  { at: 0.30, label: 'Chorus 1', act: 3, film: [88, 96], note: 'the chat box and the crowd' },
+  { at: 0.41, label: 'Verse 3', act: 2, film: [32, 64], note: 'GPT-2 held back, the cap, GPT-3' },
+  { at: 0.50, label: 'Verse 4', act: 3, film: [64, 88], note: 'Codex, DALL·E, RLHF' },
+  { at: 0.58, label: 'Bridge', act: 4, film: [112, 130], note: 'the board, the letter, the return' },
+  { at: 0.70, label: 'Build', act: 5, film: [130, 192], note: 'GPT-4o, o1, Stargate, the recapitalisation' },
+  { at: 0.82, label: 'Final Chorus', act: 7, film: [192, 206], note: 'a billion weekly users' },
+  { at: 0.92, label: 'Outro', act: 7, film: [206, 216], note: 'the open question and the curtain call' }
 ];
 
-export const OA_ANCHORS = [
-  { lyric: 'A quiet room in Menlo Park, December in the rain', shot: 'oa1-1' },
-  { lyric: 'We carried tables to the loft, the Mission in the cold', shot: 'oa1-2' },
-  { lyric: 'A robot hand that twists a cube through simulated sky', shot: 'oa2-2' },
-  { lyric: 'Five neural nets in battle lines that never wonder why', shot: 'oa2-1' },
-  { lyric: 'Saying if you guess the very next, you grasp the whole machine', shot: 'oa2-3' },
-  { lyric: 'And the charity ceiling is cracking below', shot: 'oa3-1' },
-  { lyric: 'A billion from the northern cloud, the server racks ignited', shot: 'oa3-4' },
-  { lyric: 'A hundred billion weights of stone, the human tongue rewritten', shot: 'oa4-1' },
-  { lyric: 'Then eleven walked out into the night to build a safer cage', shot: 'oa4-3' },
-  { lyric: 'And the quiet preview on a Wednesday blew across the stage', shot: 'oa5-1' },
-  { lyric: 'A hundred million knocking on the door in sixty days', shot: 'oa5-2' },
-  { lyric: 'Then a Google Meet at noon and the room went cold and bare', shot: 'oa6-1' },
-  { lyric: 'Until seven hundred names went down: bring him back or we walk out now', shot: 'oa6-3' },
-  { lyric: 'Now the strawberry blooms in the crimson light', shot: 'oa7-1' },
-  { lyric: 'Five gigawatts under a desert sky', shot: 'oa7-3' },
-  { lyric: 'Ten years from a dinner in the snow, where does the thinking go?', shot: 'oa7-4' }
+/** Key lines that must land on specific shots — the anchors I'll align to. */
+export const OA_ANCHORS: Array<{ lyric: string; film: number; shot: string }> = [
+  { lyric: 'In a room in the winter they wrote down a line', film: 3, shot: 'oa1-1 · the letter unfolding' },
+  { lyric: 'It learned by playing itself ten million times', film: 18, shot: 'oa1-3 · the self-play arena' },
+  { lyric: "predict the next word and you'll understand", film: 27, shot: 'oa1-4 · GPT-1 and the first caret' },
+  { lyric: "the line on the paper didn't bend", film: 50, shot: 'oa2-3 · the scaling plot' },
+  { lyric: 'we built a box and we left it open', film: 90, shot: 'oa3-4 · the chat box launch' },
+  { lyric: "They held one back", film: 34, shot: 'oa2-1 · GPT-2 behind glass' },
+  { lyric: 'A hundred and seventy-five billion weights', film: 58, shot: 'oa2-4 · GPT-3' },
+  { lyric: 'It painted an otter that was never alive', film: 74, shot: 'oa3-2 · DALL·E resolving' },
+  { lyric: "learning which answer we'd prefer", film: 83, shot: 'oa3-3 · RLHF preference pick' },
+  { lyric: 'a Friday in November took the chair away', film: 114, shot: 'oa4-3 · the empty chair' },
+  { lyric: 'Seven hundred and forty-five names on a page', film: 123, shot: 'oa4-4 · the signatures' },
+  { lyric: 'it stopped and thought before it answered me', film: 140, shot: 'oa5-2 · the thinking ring' },
+  { lyric: 'Half a trillion poured in concrete', film: 164, shot: 'oa6-1 · Stargate' },
+  { lyric: 'the nonprofit became a shareholder', film: 180, shot: 'oa6-3 · the PBC recapitalisation' },
+  { lyric: 'A billion a week with a question ready', film: 194, shot: 'oa7-1 · the field of carets' },
+  { lyric: 'we never measured what it means', film: 208, shot: 'oa7-3 · the unticked box' },
+  { lyric: 'still waiting for input', film: 214, shot: 'oa7-4 · the curtain call' }
 ];

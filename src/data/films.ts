@@ -3,12 +3,10 @@ import { CHAPTERS as JEV_CHAPTERS, TOTAL_DURATION as JEV_DURATION } from './chap
 import { EVOLUTION_CHAPTERS, EVOLUTION_DURATION } from './evolution';
 import { UBER_CHAPTERS, UBER_DURATION } from './uber';
 import { OPENAI_CHAPTERS, OPENAI_DURATION } from './openai';
-import { OPENAI_SHORT_CHAPTERS, OPENAI_SHORT_DURATION } from './openaiShort';
 import { renderJev } from '../engine/chapters/jevIndex';
 import { renderEvolution } from '../engine/chapters/evolution';
 import { renderUber } from '../engine/chapters/uber';
 import { renderOpenAI } from '../engine/chapters/openai';
-import { renderOpenAIShort } from '../engine/chapters/openaiShort';
 import {
   TRACK_URL as JEV_TRACK_URL,
   TRACK_DURATION as JEV_TRACK_DURATION,
@@ -46,21 +44,11 @@ import {
   OA_TRACK_BPM,
   OA_SYNC_CUES,
   filmTimeForOpenAISong,
-  openaiSongTimeForFilm,
-  openaiSectionAt
+  openAISongTimeForFilm,
+  openAISectionAt
 } from './openaiSync';
-import {
-  OAS_TRACK_URL,
-  OAS_TRACK_TITLE,
-  OAS_TRACK_DURATION,
-  OAS_TRACK_BPM,
-  OAS_SYNC_CUES,
-  filmTimeForOpenAIShort,
-  openaiShortTimeForFilm,
-  openaiShortSectionAt
-} from './openaiShortSync';
 
-export type FilmId = 'openai' | 'openaiShort' | 'uber' | 'evolution' | 'jev';
+export type FilmId = 'jev' | 'evolution' | 'uber' | 'openai';
 
 export interface SongSyncCue {
   at: number;
@@ -155,45 +143,18 @@ const openaiSong: SongConfig = {
   bpm: OA_TRACK_BPM,
   cues: OA_SYNC_CUES,
   filmTimeForSong: filmTimeForOpenAISong,
-  songTimeForFilm: openaiSongTimeForFilm,
-  sectionAt: openaiSectionAt
-};
-
-const openaiShortSong: SongConfig = {
-  title: OAS_TRACK_TITLE,
-  url: OAS_TRACK_URL,
-  duration: OAS_TRACK_DURATION,
-  bpm: OAS_TRACK_BPM,
-  cues: OAS_SYNC_CUES,
-  filmTimeForSong: filmTimeForOpenAIShort,
-  songTimeForFilm: openaiShortTimeForFilm,
-  sectionAt: openaiShortSectionAt
+  songTimeForFilm: openAISongTimeForFilm,
+  sectionAt: openAISectionAt
 };
 
 export const FILMS: Record<FilmId, Film> = {
-  openai: build(
-    'openai',
-    'Sparks in the Machine',
-    'The Story of OpenAI, 2015 to Now & Beyond',
-    'From a dinner at the Rosewood to the 5 days in November, o1 reasoning, and Project Stargate.',
-    '#10A37F',
-    OPENAI_CHAPTERS, OPENAI_DURATION, renderOpenAI, openaiSong
-  ),
-  openaiShort: build(
-    'openaiShort',
-    'Sparks in 75s (OpenAI Speedrun)',
-    'The 10-Year Story of OpenAI in 75 Seconds (Shorts / Reels / TikTok Edition)',
-    'High-velocity speedrun: From the $0 non-profit dinner to ChatGPT, the 5-day coup, Strawberry o1, and Stargate 5GW.',
-    '#EC4899',
-    OPENAI_SHORT_CHAPTERS, OPENAI_SHORT_DURATION, renderOpenAIShort, openaiShortSong
-  ),
-  uber: build(
-    'uber',
-    'Press The Button',
-    'Uber, from a Snowy Night in Paris to 40 Million Trips a Day',
-    'A cease-and-desist, a flywheel, a reckoning, and the first profit after fourteen years.',
-    '#1F2024',
-    UBER_CHAPTERS, UBER_DURATION, renderUber, uberSong
+  jev: build(
+    'jev',
+    'Seventy Milliseconds',
+    'What Jev Is and How It Works',
+    'TypeSafe\'s System One model: Jevons paradox, Kahneman\'s fast mind, and a single forward pass.',
+    '#3A9C98',
+    JEV_CHAPTERS, JEV_DURATION, renderJev, jevSong
   ),
   evolution: build(
     'evolution',
@@ -203,17 +164,25 @@ export const FILMS: Record<FilmId, Film> = {
     '#E8AA38',
     EVOLUTION_CHAPTERS, EVOLUTION_DURATION, renderEvolution, evolutionSong
   ),
-  jev: build(
-    'jev',
-    'Seventy Milliseconds',
-    'What Jev Is and How It Works',
-    'TypeSafe\'s System One model: Jevons paradox, Kahneman\'s fast mind, and a single forward pass.',
-    '#3A9C98',
-    JEV_CHAPTERS, JEV_DURATION, renderJev, jevSong
+  uber: build(
+    'uber',
+    'Press The Button',
+    'Uber, from a Snowy Night in Paris to 40 Million Trips a Day',
+    'A cease-and-desist, a flywheel, a reckoning, and the first profit after fourteen years.',
+    '#1F2024',
+    UBER_CHAPTERS, UBER_DURATION, renderUber, uberSong
+  ),
+  openai: build(
+    'openai',
+    'The Text Box',
+    'OpenAI, from a Nonprofit Letter to a Billion Conversations',
+    'A promise written in 2015, a straight line on a log plot, five days in November, and a question still open.',
+    '#10A37F',
+    OPENAI_CHAPTERS, OPENAI_DURATION, renderOpenAI, openaiSong
   )
 };
 
-export const FILM_LIST: Film[] = [FILMS.openai, FILMS.openaiShort, FILMS.uber, FILMS.evolution, FILMS.jev];
+export const FILM_LIST: Film[] = [FILMS.jev, FILMS.evolution, FILMS.uber, FILMS.openai];
 
 export const shotDur = (s: Shot) => Math.max(0.5, s.endTime - s.startTime);
 

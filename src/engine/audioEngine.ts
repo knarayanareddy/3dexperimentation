@@ -77,33 +77,26 @@ class AudioEngine {
       ],
       pitch: 0.91, rateMul: 0.94
     },
-    Sam: {
-      prefs: [
-        'Microsoft Eric Online (Natural)', 'Microsoft Christopher Online (Natural)',
-        'Alex', 'Google US English', 'Microsoft David Desktop'
-      ],
-      pitch: 1.04, rateMul: 1.05
-    },
-    Ilya: {
-      prefs: [
-        'Microsoft Ryan Online (Natural)', 'Microsoft Brian Online (Natural)',
-        'Daniel', 'Arthur', 'Google UK English Male'
-      ],
-      pitch: 0.92, rateMul: 0.95
-    },
-    Researcher: {
+    Scientist: {
       prefs: [
         'Microsoft Aria Online (Natural)', 'Microsoft Jenny Online (Natural)',
         'Samantha', 'Google UK English Female', 'Google US English'
       ],
-      pitch: 1.02, rateMul: 1.02
+      pitch: 1.06, rateMul: 1.03
     },
-    Board: {
+    Caret: {
       prefs: [
-        'Microsoft Guy Online (Natural)', 'Daniel', 'Microsoft David Desktop',
-        'Google UK English Male'
+        'Microsoft Ana Online (Natural)', 'Microsoft Aria Online (Natural)',
+        'Karen', 'Tessa', 'Google UK English Female'
       ],
-      pitch: 0.88, rateMul: 0.92
+      pitch: 1.2, rateMul: 1.05
+    },
+    Chair: {
+      prefs: [
+        'Microsoft Brian Online (Natural)', 'Microsoft Ryan Online (Natural)',
+        'Daniel', 'Alex', 'Google UK English Male'
+      ],
+      pitch: 0.88, rateMul: 0.93
     }
   };
 

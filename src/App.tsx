@@ -28,22 +28,8 @@ import {
   OA_SUNO_TITLE, OA_SUNO_STYLE_PROMPT, OA_SUNO_EXCLUDE, OA_SUNO_LYRICS,
   OA_SECTION_PLAN, OA_ANCHORS
 } from './data/openaiSong';
-import {
-  OA_SHORT_TITLE, OA_SHORT_STYLE_PROMPT, OA_SHORT_EXCLUDE, OA_SHORT_LYRICS,
-  OA_SHORT_SECTION_PLAN, OA_SHORT_ANCHORS
-} from './data/openaiShortSong';
 
 const RECIPES: Record<string, RecipeData> = {
-  openai: {
-    title: OA_SUNO_TITLE, style: OA_SUNO_STYLE_PROMPT, exclude: OA_SUNO_EXCLUDE,
-    lyrics: OA_SUNO_LYRICS, sections: OA_SECTION_PLAN, anchors: OA_ANCHORS,
-    synced: 'The supplied 5:14 Suno master is measured and force-aligned across all 63 lyric cues.'
-  },
-  openaiShort: {
-    title: OA_SHORT_TITLE, style: OA_SHORT_STYLE_PROMPT, exclude: OA_SHORT_EXCLUDE,
-    lyrics: OA_SHORT_LYRICS, sections: OA_SHORT_SECTION_PLAN, anchors: OA_SHORT_ANCHORS,
-    synced: 'Engineered specifically for YouTube Shorts, TikTok & Reels (75s speedrun at 130 BPM).'
-  },
   evolution: {
     title: EV_SUNO_TITLE, style: EV_SUNO_STYLE_PROMPT, exclude: EV_SUNO_EXCLUDE,
     lyrics: EV_SUNO_LYRICS, sections: EV_SECTION_PLAN, anchors: EV_ANCHORS,
@@ -53,12 +39,17 @@ const RECIPES: Record<string, RecipeData> = {
     title: UB_SUNO_TITLE, style: UB_SUNO_STYLE_PROMPT, exclude: UB_SUNO_EXCLUDE,
     lyrics: UB_SUNO_LYRICS, sections: UB_SECTION_PLAN, anchors: UB_ANCHORS,
     synced: 'The supplied 4:09 render is force-aligned across all 53 lyric lines.'
+  },
+  openai: {
+    title: OA_SUNO_TITLE, style: OA_SUNO_STYLE_PROMPT, exclude: OA_SUNO_EXCLUDE,
+    lyrics: OA_SUNO_LYRICS, sections: OA_SECTION_PLAN, anchors: OA_ANCHORS,
+    synced: 'The supplied 4:24 render is force-aligned to its measured vocal arrangement.'
   }
 };
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'video' | 'playground' | 'storyboard' | 'architecture'>('video');
-  const [filmId, setFilmId] = useState<FilmId>('openai');
+  const [filmId, setFilmId] = useState<FilmId>('jev');
   const film = FILMS[filmId];
   const [syncedTime, setSyncedTime] = useState<number>(0);
 
@@ -76,8 +67,8 @@ export function App() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-cyan-400 p-0.5 shadow-lg shadow-cyan-500/10">
               <div className="w-full h-full bg-[#0b0f19] rounded-[10px] flex items-center justify-center">
-                <span className="font-mono font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">
-                  {filmId === 'openaiShort' ? '75s' : filmId === 'openai' ? 'OA' : filmId === 'evolution' ? 'AI' : filmId === 'uber' ? 'PIN' : 'JEV'}
+                <span className="font-mono font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-cyan-300">
+                  {filmId === 'evolution' ? 'AI' : filmId === 'uber' ? 'PIN' : filmId === 'openai' ? '|' : 'JEV'}
                 </span>
               </div>
             </div>
@@ -85,9 +76,9 @@ export function App() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                  {filmId === 'openaiShort' ? 'Sparks in 75s (Speedrun)' : filmId === 'openai' ? 'Sparks in the Machine' : filmId === 'evolution' ? 'The Long Thaw' : filmId === 'uber' ? 'Press The Button' : 'Jev Explained'}
+                  {filmId === 'evolution' ? 'The Long Thaw' : filmId === 'uber' ? 'Press The Button' : filmId === 'openai' ? 'The Text Box' : 'Jev Explained'}
                   <span className="text-xs font-mono font-medium text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                    {filmId === 'openaiShort' ? 'Shorts / TikTok' : filmId === 'openai' ? '2015 → Beyond' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '2008 → Now' : 'System One'}
+                    {filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '2008 → Now' : filmId === 'openai' ? '2015 → Now' : 'System One'}
                   </span>
                 </h1>
               </div>
@@ -174,7 +165,7 @@ export function App() {
               </strong>{' '}
               <span className="text-slate-300">
                 {filmId === 'openai' ? (
-                  <>In <strong>Narrated Film</strong>, speech drives the picture word by word from the Rosewood dinner to the 5 days in November, o1 reasoning, and Stargate. <strong>Song Mode</strong> is ready for your Suno render of <em>Sparks in the Machine</em> (112 BPM).</>
+                  <>In <strong>Narrated Film</strong>, speech drives the picture word by word. <strong>Song Mode</strong> now plays the supplied 4:24 <em>Still Waiting For Input</em> master. Its real vocal structure — including omitted metadata repeats, repeated chorus lines and the long outro tail — drives CARET, BLOOM and the historical scenes.</>
                 ) : filmId === 'uber' ? (
                   <>In <strong>Narrated Film</strong>, speech drives the picture word by word. The cast is bespoke — <strong>PIN</strong>, riders, drivers, cars and regulators. <strong>Song Mode</strong> plays the measured 4:09 Suno render, including its instrumental turn, repeated final line and sustained outro.</>
                 ) : filmId === 'evolution' ? (
@@ -191,7 +182,7 @@ export function App() {
               60 FPS Canvas Engine
             </span>
             <span className="text-[11px] font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-              {filmId === 'openai' ? '2015 → 2026+' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '40M trips / day' : '70ms Decision Latency'}
+              {filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '40M trips / day' : filmId === 'openai' ? '~1B weekly users' : '70ms Decision Latency'}
             </span>
           </div>
         </div>
@@ -348,7 +339,7 @@ export function App() {
             <div>
               <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <Layers className="w-5 h-5 text-cyan-400" />
-                {filmId === 'openai' ? 'Sparks in the Machine — Production Map' : filmId === 'evolution' ? 'The Long Thaw — Production Map' : filmId === 'uber' ? 'Press The Button — Production Map' : 'The PDoomVideo x TypeSafe Jev Architecture Matrix'}
+                {filmId === 'evolution' ? 'The Long Thaw — Production Map' : filmId === 'uber' ? 'Press The Button — Production Map' : filmId === 'openai' ? 'The Text Box — Production Map' : 'The PDoomVideo x TypeSafe Jev Architecture Matrix'}
               </h2>
               <p className="text-xs text-slate-400">
                 How this implementation faithfully adopts the Claude Opus 5.5 PDoomVideo generative pipeline
@@ -361,10 +352,10 @@ export function App() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-amber-400 font-bold block mb-1">{filmId === 'openai' ? 'Living Bloom Glyph' : filmId === 'uber' ? 'Custom PIN Cast' : 'Clawd Character'}</span>
+              <span className="text-amber-400 font-bold block mb-1">{filmId === 'uber' ? 'Custom PIN Cast' : filmId === 'openai' ? 'Caret & Bloom' : 'Clawd Character'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
                 {filmId === 'openai'
-                  ? 'The iconic OpenAI spiral knot breathes, blinks, solves Rubik cubes with a Shadow hand, and anchors the narrative.'
+                  ? 'A blinking text cursor leads, beside a six-petal knot whose petals light as the model scales.'
                   : filmId === 'uber'
                   ? 'No Clawd: a map Pin leads riders, drivers, painted cars, live phone screens, city grids and regulators.'
                   : filmId === 'evolution'
@@ -374,10 +365,10 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-cyan-400 font-bold block mb-1">{filmId === 'openai' ? 'Test-Time Reasoning' : filmId === 'uber' || filmId === 'evolution' ? 'Measured Song Clock' : 'Single-Pass Scoring'}</span>
+              <span className="text-cyan-400 font-bold block mb-1">{filmId === 'openai' ? 'Polish Layer' : filmId === 'uber' || filmId === 'evolution' ? 'Measured Song Clock' : 'Single-Pass Scoring'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
                 {filmId === 'openai'
-                  ? 'From 180 years of Dota per day to Strawberry o1 search trees, showing the second scaling law of test-time compute.'
+                  ? 'Layered bloom glows, three-plane depth skylines, light shafts and drop-shadowed panels on every card.'
                   : filmId === 'uber'
                   ? 'All 53 lyric lines are force-aligned to Whisper word timestamps from the real 4:09 master.'
                   : filmId === 'evolution'
@@ -387,10 +378,10 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-rose-400 font-bold block mb-1">{filmId === 'openai' ? 'The Mission vs Scale' : filmId === 'uber' ? 'The Marketplace Flywheel' : filmId === 'evolution' ? 'Seven Historical Eras' : 'Jevons Paradox (1865)'}</span>
+              <span className="text-rose-400 font-bold block mb-1">{filmId === 'openai' ? 'Eleven Years' : filmId === 'uber' ? 'The Marketplace Flywheel' : filmId === 'evolution' ? 'Seven Historical Eras' : 'Jevons Paradox (1865)'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
                 {filmId === 'openai'
-                  ? 'Non-profit 501(c)(3) roots, capped-profit LP structure, $1B Microsoft alliance, and the 5 days in November 2023.'
+                  ? 'Charter, scaling laws, GPT-3, the text box, five days in November, reasoning models, Stargate, the PBC.'
                   : filmId === 'uber'
                   ? 'Drivers shorten waits; shorter waits create riders; riders raise utilisation; earnings attract drivers.'
                   : filmId === 'evolution'
@@ -400,10 +391,10 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-purple-400 font-bold block mb-1">{filmId === 'openai' ? 'The Dawn of AGI' : filmId === 'uber' || filmId === 'evolution' ? 'Content-Matched Visuals' : 'Dual Mind Architecture'}</span>
+              <span className="text-purple-400 font-bold block mb-1">{filmId === 'uber' || filmId === 'evolution' ? 'Content-Matched Visuals' : 'Dual Mind Architecture'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
                 {filmId === 'openai'
-                  ? 'Sora video worlds, the data wall exhaustion, multi-gigawatt Stargate clusters, and turning national grids into thought.'
+                  ? 'Every figure is from OpenAI’s own posts or contemporaneous reporting: 117M, 175B, 745 of 770, $500B, ~26/27%.'
                   : filmId === 'uber'
                   ? 'Paris, cease-and-desist, China, the reckoning, Tempe, the IPO, first profit and driverless cars land on their lyrics.'
                   : filmId === 'evolution'
@@ -437,9 +428,9 @@ export function App() {
           <div className="flex items-center gap-4 font-mono text-[11px]">
             {filmId === 'openai' ? (
               <>
-                <span>Menlo Park (2015)</span><span>•</span>
-                <span>The November Mutiny</span><span>•</span>
-                <span>Project Stargate & o1 (216s)</span>
+                <span>Founded December 2015</span><span>•</span>
+                <span>Charter to PBC</span><span>•</span>
+                <span>Still Waiting For Input</span>
               </>
             ) : filmId === 'uber' ? (
               <>

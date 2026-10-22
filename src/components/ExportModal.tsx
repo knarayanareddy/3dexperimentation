@@ -97,7 +97,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     if (!canvasRef.current) return;
     const url = canvasRef.current.toDataURL('image/png');
     const a = document.createElement('a');
-    a.download = `${film.id}-frame-${Date.now()}.png`;
+    a.download = `jev-frame-${Date.now()}.png`;
     a.href = url;
     a.click();
     setNote('Frame snapshot saved.');
@@ -108,7 +108,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     const blob = new Blob([JSON.stringify(chapters, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.download = `${film.id}-storyboard.json`;
+    a.download = 'jev-storyboard.json';
     a.href = url;
     a.click();
     URL.revokeObjectURL(url);

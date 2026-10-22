@@ -1,889 +1,618 @@
 /**
- * openaiCast.ts — Bespoke painted actors and visual elements for the OpenAI film.
+ * openaiCast.ts — bespoke painted cast + polish layer for the OpenAI film.
  *
- * Cast:
- *   - BLOOM: The living OpenAI knot/spiral glyph, animated with expressions and morphing aura.
- *   - ROBOT HAND: Five-fingered Shadow robot hand twisting a Rubik's cube with randomized physics.
- *   - CHAT UI: The iconic ChatGPT interface, minimal prompt box, streaming tokens.
- *   - REASONING TREE: Project Strawberry / o1 tree-of-thought search graph.
- *   - SERVER RACKS: Azure high-density supercomputer clusters with liquid cooling.
- *   - BOARDROOM: Glass doors, conference screens, and the 700-signature petition sheet.
- *   - STARGATE: Vast desert compute reactors converting power grids into intelligence.
+ * Protagonists:
+ *   CARET — a blinking text cursor with a face. The interface character:
+ *           it types, waits, panics, reasons and takes the final bow.
+ *   BLOOM — a six-petal knot. The *model* itself: petals light up as it
+ *           scales, it dims when starved, pulses while it thinks.
+ *
+ * Everything is drawn in the same watercolour + boiling-ink language as the
+ * other films, but this module adds a deliberate polish pass: layered glows,
+ * three-plane depth, light shafts, and consistent stage framing.
  */
 
 import {
   PAL, TAU, clamp, paint, inkLine, rectPts, ellPts, rrPts, starPts,
-  letter, blob, mixCol, hash
+  hash, letter, mixCol, paper, ground
 } from './painter';
 
 export const OA = {
-  emerald: '#10A37F',    // OpenAI brand green
-  emeraldDk: '#0B6D54',
-  emeraldLt: '#34D399',
-  azure: '#0078D4',      // Microsoft cloud
-  azureLt: '#60A5FA',
-  purple: '#8B5CF6',     // GPT-4 / reasoning
-  strawberry: '#E11D48', // Project Strawberry / o1
-  gold: '#F59E0B',
-  slateDark: '#0D1117',
-  cream: '#F7F4EE'
+  ink: '#1A1B20',
+  slate: '#3A3F4B',
+  mist: '#C7D0DA',
+  teal: '#10A37F',      // the signal green
+  tealLt: '#5FD4B4',
+  deep: '#0E2A3A',
+  violet: '#6C5CE7',
+  amber: '#E8A33D',
+  rose: '#E2574C',
+  cream: '#FFF6E8'
 };
 
-// ---------------------------------------------------------------- BLOOM (KNOT)
-export type BloomFace = 'normal' | 'happy' | 'thinking' | 'wink' | 'shocked' | 'determined' | 'star' | 'sleeping';
+// ============================================================ POLISH LAYER
 
-export interface BloomOpts {
+/** Multi-layer soft bloom. The single biggest win for perceived polish. */
+export function glow(
+  ctx: CanvasRenderingContext2D, x: number, y: number, r: number,
+  col: string, alpha = 0.4, layers = 4, seed = 1
+) {
+  for (let i = layers; i >= 1; i--) {
+    const k = i / layers;
+    paint(ctx, ellPts(x, y, r * k, r * k * (0.9 + hash(seed + i) * 0.16), 20, r * 0.03 * k, hash(seed * 3 + i) * 2), {
+      fill: col,
+      fillOp: Math.floor(255 * alpha * (1 - k) * 0.55 + 255 * alpha * 0.1),
+      bleed: 0.25, tex: 0.35, border: 0.2, ink: null
+    });
+  }
+}
+
+/** A soft diagonal light shaft — adds atmosphere and directionality. */
+export function lightShaft(
+  ctx: CanvasRenderingContext2D, H: number,
+  fromX: number, spread = 300, col = OA.cream, alpha = 0.16, tilt = 0.32
+) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  for (let i = 0; i < 3; i++) {
+    const off = (i - 1) * spread * 0.42;
+    const w = spread * (0.5 + i * 0.22);
+    paint(ctx, [
+      [fromX + off - w * 0.18, -40],
+      [fromX + off + w * 0.18, -40],
+      [fromX + off + w * 0.6 + H * tilt, H + 40],
+      [fromX + off - w * 0.6 + H * tilt, H + 40]
+    ], { fill: col, fillOp: 70 - i * 18, bleed: 0.3, tex: 0.25, ink: null });
+  }
+  ctx.restore();
+}
+
+/** Consistent stage: paper, tint, depth planes, optional shaft + ground. */
+export interface StageOpts {
+  tint?: string;
+  night?: number;         // 0..1 how dark the upper field is
+  shaft?: { x: number; alpha?: number; col?: string } | null;
+  skylineY?: number;
+  skylineAlpha?: number;
+  groundY?: number | null;
+  groundCol?: string;
+  seed?: number;
+}
+export function stage(ctx: CanvasRenderingContext2D, W: number, H: number, t: number, o: StageOpts = {}) {
+  paper(ctx, W, H, o.tint ?? '#DCE4E6');
+  if (o.night) {
+    paint(ctx, rectPts(-40, -40, W + 80, H * 0.78, 4), {
+      fill: OA.deep, fillOp: Math.floor(235 * o.night), bleed: 0.05, tex: 0.45, ink: null
+    });
+  }
+  if (o.skylineY != null) depthSkyline(ctx, W, o.skylineY, o.seed ?? 3, o.skylineAlpha ?? 0.4);
+  if (o.shaft) lightShaft(ctx, H, o.shaft.x, 320, o.shaft.col ?? OA.cream, o.shaft.alpha ?? 0.14);
+  if (o.groundY != null) ground(ctx, W, o.groundY, o.groundCol ?? OA.slate);
+  void t;
+}
+
+/** Three-plane skyline: far haze, mid blocks, near silhouettes. */
+export function depthSkyline(ctx: CanvasRenderingContext2D, W: number, baseY: number, seed = 1, alpha = 0.4) {
+  const planes: Array<[number, number, string]> = [
+    [0.42, 0.34, mixCol(OA.mist, OA.deep, 0.25)],
+    [0.70, 0.62, mixCol(OA.slate, OA.deep, 0.35)],
+    [1.00, 1.00, mixCol(OA.ink, OA.deep, 0.45)]
+  ];
+  planes.forEach(([scale, op, col], pi) => {
+    ctx.save();
+    ctx.globalAlpha = alpha * op;
+    let x = -60;
+    let i = 0;
+    while (x < W + 60) {
+      const w = (50 + hash(seed * 7 + pi * 31 + i) * 84) * (0.7 + scale * 0.5);
+      const h = (54 + hash(seed * 3 + pi * 17 + i * 5) * 170) * scale;
+      paint(ctx, rectPts(x, baseY - h, w, h + 40, 2), { wash: col, ink: null });
+      if (pi === 2) {
+        const rows = Math.floor(h / 30);
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < 2; c++) {
+            if (hash(i * 41 + r * 9 + c + pi) > 0.62) {
+              paint(ctx, rectPts(x + 10 + c * (w - 22) / 2, baseY - h + 12 + r * 28, 7, 9, 0.4), {
+                wash: mixCol(OA.amber, OA.cream, 0.35), ink: null
+              });
+            }
+          }
+        }
+      }
+      x += w + 6 + hash(i * 13 + pi) * 16;
+      i++;
+    }
+    ctx.restore();
+  });
+}
+
+/** Painted panel with a soft drop shadow — used for every card/figure. */
+export function panel(
+  ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number,
+  col = PAL.cream, ink: string | null = PAL.ink, r = 12
+) {
+  paint(ctx, rrPts(x - w / 2 + 5, y - h / 2 + 9, w, h, r, 2), {
+    fill: PAL.ink, fillOp: 44, bleed: 0.25, tex: 0.2, ink: null
+  });
+  paint(ctx, rrPts(x - w / 2, y - h / 2, w, h, r, 1.6), { wash: col, ink, sw: 1.6 });
+}
+
+// ============================================================ CARET
+
+export type CaretFace =
+  | 'normal' | 'happy' | 'wink' | 'closed' | 'worried' | 'shocked'
+  | 'sad' | 'determined' | 'star' | 'think' | 'sleep' | 'shades';
+
+export interface CaretOpts {
   t: number;
+  dy?: number;
+  sq?: number;
   rot?: number;
-  face?: BloomFace;
+  face?: CaretFace;
   talk?: boolean;
   talkT?: number;
-  glow?: boolean;
-  glowCol?: string;
+  col?: string;
+  /** cursor blink: fades the body like a real caret when idle */
+  blink?: boolean;
+  aL?: number;
+  aR?: number;
+  emote?: '!' | '?' | '!!' | 'zzz' | 'spark' | 'heart' | 'sweat' | '…' | null;
+  emoteK?: number;
   seed?: number;
-  petals?: number;
-  complexity?: number; // 0 (simple loop) to 1 (full 6-arm spiral)
-  color?: string;
-  outlineColor?: string;
-  sw?: number;
-  alpha?: number;
+  noShadow?: boolean;
+  scale?: number;
 }
 
-/**
- * The OpenAI spiral knot character. (x, y) is its center.
- */
-export function bloom(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  r: number,
-  o: BloomOpts
-) {
+/** CARET — a text cursor with a face. (x, y) is the baseline it sits on. */
+export function caret(ctx: CanvasRenderingContext2D, x: number, y: number, u: number, o: CaretOpts) {
   const t = o.t;
-  const col = o.color || OA.emerald;
-  const outCol = o.outlineColor || PAL.ink;
-  const rot = (o.rot ?? t * 0.4);
-  const sw = o.sw ?? Math.max(1, r / 14);
-  const comp = clamp(o.complexity ?? 1);
+  const dy = (o.dy || 0) * u;
+  const sq = o.sq || 0;
+  const col = o.col || OA.ink;
+  const sw = clamp(u / 7, 0.7, 3);
+  const H = u * 6.0;          // body height
+  const Wd = u * 2.25;        // body width
+  const s = o.scale ?? 1;
+
+  if (!o.noShadow) {
+    const lift = Math.max(0, -(o.dy || 0));
+    const f = 1 - Math.min(0.5, lift * 0.09);
+    paint(ctx, ellPts(x, y + u * 0.14, u * 1.7 * f * s, u * 0.4 * f * s, 18, u * 0.04), {
+      fill: PAL.ink, fillOp: 58, bleed: 0.25, tex: 0.22, border: 0.1, ink: null
+    });
+  }
+
+  // caret blink — a real cursor fades; keep it subtle so the face stays legible
+  const blinkA = o.blink ? 0.55 + 0.45 * (Math.sin(t * 4.2) > -0.35 ? 1 : 0.18) : 1;
 
   ctx.save();
-  ctx.translate(cx, cy);
+  ctx.globalAlpha = blinkA;
+  ctx.translate(x, y + dy);
+  ctx.scale(s * (1 + sq * 0.45), s * (1 - sq));
+  if (o.rot) ctx.rotate(o.rot);
 
-  // Soft atmospheric glow
-  if (o.glow !== false) {
-    const pulse = 1 + Math.sin(t * 3.5) * 0.12;
-    blob(ctx, 0, 0, r * 1.5 * pulse, o.glowCol || col, {
-      alpha: 0.35,
-      seed: o.seed ?? 1
-    });
-  }
+  // serifs — the little top/bottom bars of an I-beam cursor
+  paint(ctx, rrPts(-Wd * 0.95, -H, Wd * 1.9, u * 0.5, u * 0.16, u * 0.03), { wash: col, ink: null });
+  paint(ctx, rrPts(-Wd * 0.95, -u * 0.5, Wd * 1.9, u * 0.5, u * 0.16, u * 0.03), { wash: col, ink: null });
 
-  ctx.rotate(rot);
+  // body
+  const body = rrPts(-Wd / 2, -H, Wd, H, u * 0.42, u * 0.04);
+  paint(ctx, body, { wash: col, washOp: 255, ink: null });
+  paint(ctx, rrPts(-Wd / 2 + u * 0.12, -H + u * 0.2, Wd * 0.42, H * 0.42, u * 0.3, u * 0.05), {
+    fill: mixCol(col, PAL.cream, 0.5), fillOp: 95, bleed: 0.2, tex: 0.7, border: 0.5, ink: null
+  });
+  paint(ctx, body, { ink: PAL.ink, sw });
 
-  // 6 interwoven spiral arms of the OpenAI knot
-  const arms = o.petals ?? 6;
-  for (let i = 0; i < arms; i++) {
-    const a0 = (i / arms) * TAU;
-    ctx.save();
-    ctx.rotate(a0);
-
-    // Inner to outer looped petal curve
-    const pts: Array<[number, number]> = [
-      [0, -r * 0.15],
-      [r * 0.35 * comp, -r * 0.4],
-      [r * 0.7 * comp, -r * 0.25],
-      [r * 0.85, 0],
-      [r * 0.75, r * 0.35],
-      [r * 0.45 * comp, r * 0.45],
-      [r * 0.18, r * 0.25]
-    ];
-
-    paint(ctx, pts, {
-      wash: mixCol(col, PAL.cream, (i % 2 === 0 ? 0.2 : 0)),
-      ink: outCol,
-      sw,
-      curv: 0.45
-    });
-
-    ctx.restore();
-  }
-
-  // Central nucleus window
-  paint(ctx, ellPts(0, 0, r * 0.32, r * 0.32, 16, r * 0.03), {
-    wash: PAL.cream,
-    ink: outCol,
-    sw: sw * 0.9
+  // face window
+  const fy = -H * 0.70;
+  paint(ctx, rrPts(-Wd * 0.40, fy - u * 0.72, Wd * 0.80, u * 1.5, u * 0.3, u * 0.02), {
+    wash: PAL.cream, washOp: 248, ink: PAL.ink, sw: sw * 0.55
   });
 
-  // Face inside center
   const f = o.face || 'normal';
-  const ex = r * 0.12, ey = -r * 0.05;
-  const blink = f === 'normal' && ((t * 0.8 + (o.seed || 0) * 1.3) % 3.6) < 0.12;
-
-  ctx.save();
-  // Eyes
-  if (f === 'sleeping' || blink || f === 'happy') {
-    inkLine(ctx, [[-ex - r * 0.07, ey], [-ex + r * 0.04, ey - (f === 'happy' ? r * 0.07 : -r * 0.03)], [-ex + r * 0.12, ey]], sw * 0.8, PAL.ink, 0.4);
-    inkLine(ctx, [[ex - r * 0.12, ey], [ex - r * 0.04, ey - (f === 'happy' ? r * 0.07 : -r * 0.03)], [ex + r * 0.07, ey]], sw * 0.8, PAL.ink, 0.4);
-  } else if (f === 'wink') {
-    inkLine(ctx, [[-ex - r * 0.07, ey], [-ex + r * 0.04, ey - r * 0.07], [-ex + r * 0.12, ey]], sw * 0.8, PAL.ink, 0.4);
-    paint(ctx, ellPts(ex, ey, r * 0.07, r * 0.08, 8, 0), { wash: PAL.ink, ink: null });
+  const nat = f === 'normal' && ((t * 0.85 + (o.seed || 0) * 1.9) % 3.6) < 0.1;
+  const ex = Wd * 0.17, ey = fy - u * 0.18;
+  if (f === 'shades') {
+    paint(ctx, rrPts(-Wd * 0.36, ey - u * 0.22, Wd * 0.72, u * 0.44, u * 0.1, 0.4), { wash: PAL.ink, ink: null });
+    inkLine(ctx, [[-Wd * 0.3, ey - u * 0.1], [-Wd * 0.14, ey - u * 0.14]], sw * 0.4, PAL.cream, 0);
+  } else if (f === 'closed' || nat || f === 'happy') {
+    for (const sx of [-ex, ex]) {
+      inkLine(ctx, [[sx - u * 0.17, ey], [sx, ey - (f === 'happy' ? u * 0.17 : -u * 0.05)], [sx + u * 0.17, ey]], sw * 0.6, PAL.ink, 0.5);
+    }
+  } else if (f === 'shocked') {
+    for (const sx of [-ex, ex]) {
+      paint(ctx, ellPts(sx, ey, u * 0.22, u * 0.25, 12, u * 0.01), { wash: PAL.cream, ink: PAL.ink, sw: sw * 0.45 });
+      paint(ctx, ellPts(sx, ey, u * 0.09, u * 0.1, 8, 0), { wash: PAL.ink, ink: null });
+    }
+  } else if (f === 'worried' || f === 'sad') {
+    for (const sx of [-ex, ex]) paint(ctx, ellPts(sx, ey + u * 0.03, u * 0.13, u * 0.15, 10, 0), { wash: PAL.ink, ink: null });
+    inkLine(ctx, [[-ex - u * 0.2, ey - u * 0.34], [-ex + u * 0.16, ey - u * 0.2]], sw * 0.5, PAL.ink, 0.2);
+    inkLine(ctx, [[ex - u * 0.16, ey - u * 0.2], [ex + u * 0.2, ey - u * 0.34]], sw * 0.5, PAL.ink, 0.2);
+  } else if (f === 'determined') {
+    for (const sx of [-ex, ex]) paint(ctx, ellPts(sx, ey + u * 0.04, u * 0.15, u * 0.11, 10, 0), { wash: PAL.ink, ink: null });
+    inkLine(ctx, [[-ex - u * 0.22, ey - u * 0.3], [-ex + u * 0.14, ey - u * 0.12]], sw * 0.55, PAL.ink, 0.1);
+    inkLine(ctx, [[ex - u * 0.14, ey - u * 0.12], [ex + u * 0.22, ey - u * 0.3]], sw * 0.55, PAL.ink, 0.1);
   } else if (f === 'star') {
-    paint(ctx, starPts(-ex, ey, r * 0.12, 0.45, 4, t * 2), { wash: OA.gold, ink: null });
-    paint(ctx, starPts(ex, ey, r * 0.12, 0.45, 4, -t * 2), { wash: OA.gold, ink: null });
-  } else if (f === 'shocked') {
-    paint(ctx, ellPts(-ex, ey, r * 0.1, r * 0.12, 10, 0), { wash: PAL.cream, ink: PAL.ink, sw: sw * 0.7 });
-    paint(ctx, ellPts(-ex, ey, r * 0.04, r * 0.05, 8, 0), { wash: PAL.ink, ink: null });
-    paint(ctx, ellPts(ex, ey, r * 0.1, r * 0.12, 10, 0), { wash: PAL.cream, ink: PAL.ink, sw: sw * 0.7 });
-    paint(ctx, ellPts(ex, ey, r * 0.04, r * 0.05, 8, 0), { wash: PAL.ink, ink: null });
-  } else if (f === 'thinking') {
-    paint(ctx, ellPts(-ex, ey - r * 0.04, r * 0.07, r * 0.08, 8, 0), { wash: PAL.ink, ink: null });
-    paint(ctx, ellPts(ex, ey - r * 0.04, r * 0.07, r * 0.08, 8, 0), { wash: PAL.ink, ink: null });
-    inkLine(ctx, [[-ex - r * 0.08, ey - r * 0.14], [-ex + r * 0.08, ey - r * 0.18]], sw * 0.8, PAL.ink, 0);
+    for (const sx of [-ex, ex]) paint(ctx, starPts(sx, ey, u * 0.24, 0.42, 4, t * 2), { wash: OA.amber, ink: null });
+  } else if (f === 'think') {
+    for (const sx of [-ex, ex]) paint(ctx, ellPts(sx, ey - u * 0.04, u * 0.12, u * 0.13, 10, 0), { wash: PAL.ink, ink: null });
+    inkLine(ctx, [[-ex - u * 0.2, ey - u * 0.3], [ex + u * 0.2, ey - u * 0.3]], sw * 0.45, PAL.ink, 0.3);
+  } else if (f === 'sleep') {
+    for (const sx of [-ex, ex]) inkLine(ctx, [[sx - u * 0.17, ey], [sx + u * 0.17, ey]], sw * 0.6, PAL.ink, 0);
+  } else if (f === 'wink') {
+    inkLine(ctx, [[-ex - u * 0.17, ey], [-ex, ey - u * 0.17], [-ex + u * 0.17, ey]], sw * 0.6, PAL.ink, 0.5);
+    paint(ctx, ellPts(ex, ey, u * 0.13, u * 0.15, 10, 0), { wash: PAL.ink, ink: null });
   } else {
-    paint(ctx, ellPts(-ex, ey, r * 0.07, r * 0.08, 8, 0), { wash: PAL.ink, ink: null });
-    paint(ctx, ellPts(ex, ey, r * 0.07, r * 0.08, 8, 0), { wash: PAL.ink, ink: null });
-    if (r > 18) {
-      paint(ctx, ellPts(-ex - r * 0.02, ey - r * 0.025, r * 0.025, r * 0.03, 6, 0), { wash: PAL.cream, ink: null });
-      paint(ctx, ellPts(ex - r * 0.02, ey - r * 0.025, r * 0.025, r * 0.03, 6, 0), { wash: PAL.cream, ink: null });
+    for (const sx of [-ex, ex]) {
+      paint(ctx, ellPts(sx, ey, u * 0.13, u * 0.15, 10, 0), { wash: PAL.ink, ink: null });
+      if (u > 10) paint(ctx, ellPts(sx - u * 0.04, ey - u * 0.05, u * 0.045, u * 0.05, 8, 0), { wash: PAL.cream, ink: null });
     }
   }
 
-  // Mouth
-  const my = ey + r * 0.16;
-  if (o.talk && Math.sin((o.talkT ?? t) * 14) > -0.1) {
-    paint(ctx, ellPts(0, my, r * 0.08, r * 0.1, 10, 0), { wash: '#38161D', ink: null });
+  // mouth
+  const my = fy + u * 0.42;
+  if (o.talk && Math.sin((o.talkT ?? t) * 13) > -0.15) {
+    paint(ctx, ellPts(0, my, u * 0.14, u * 0.18, 10, 0), { wash: '#4A1F2A', ink: null });
   } else if (f === 'happy' || f === 'star') {
-    inkLine(ctx, [[-r * 0.09, my - r * 0.02], [0, my + r * 0.06], [r * 0.09, my - r * 0.02]], sw * 0.8, PAL.ink, 0.5);
+    inkLine(ctx, [[-u * 0.2, my - u * 0.05], [0, my + u * 0.12], [u * 0.2, my - u * 0.05]], sw * 0.5, PAL.ink, 0.6);
+  } else if (f === 'sad' || f === 'worried') {
+    inkLine(ctx, [[-u * 0.18, my + u * 0.07], [0, my - u * 0.05], [u * 0.18, my + u * 0.07]], sw * 0.5, PAL.ink, 0.6);
   } else if (f === 'shocked') {
-    paint(ctx, ellPts(0, my, r * 0.06, r * 0.08, 8, 0), { wash: PAL.ink, ink: null });
+    paint(ctx, ellPts(0, my, u * 0.11, u * 0.14, 10, 0), { wash: PAL.ink, ink: null });
   } else {
-    inkLine(ctx, [[-r * 0.07, my], [r * 0.07, my]], sw * 0.8, PAL.ink, 0.2);
+    inkLine(ctx, [[-u * 0.14, my], [u * 0.14, my]], sw * 0.5, PAL.ink, 0.2);
   }
 
-  ctx.restore();
-  ctx.restore();
-}
-
-// ---------------------------------------------------------------- ROBOT HAND & RUBIK'S CUBE
-export function robotHandWithCube(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  s: number,
-  t: number,
-  scrambleK = 0
-) {
-  ctx.save();
-  ctx.translate(x, y);
-
-  // Forearm base
-  paint(ctx, rrPts(-s * 1.8, s * 2.8, s * 3.6, s * 3.2, s * 0.4, s * 0.06), {
-    wash: '#374151',
-    ink: PAL.ink,
-    sw: 1.4
-  });
-  // Metallic wrist joint
-  paint(ctx, ellPts(0, s * 2.7, s * 1.4, s * 0.5, 14, s * 0.04), {
-    wash: '#9CA3AF',
-    ink: PAL.ink,
-    sw: 1.2
-  });
-
-  // Palm
-  paint(ctx, rrPts(-s * 2.1, s * 0.5, s * 4.2, s * 2.4, s * 0.6, s * 0.06), {
-    wash: '#4B5563',
-    ink: PAL.ink,
-    sw: 1.3
-  });
-
-  // Rubik's Cube in palm
-  const cubeY = s * -0.6;
-  const cubeSize = s * 2.6;
-  ctx.save();
-  ctx.translate(0, cubeY);
-  ctx.rotate(Math.sin(t * 2) * 0.12);
-
-  // 3x3 cube face
-  const sub = cubeSize / 3;
-  const colors = [OA.strawberry, OA.azure, OA.emerald, OA.gold, PAL.cream, '#FF6B00'];
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 3; c++) {
-      const colIdx = Math.floor(hash(r * 7 + c * 13 + Math.floor(t * 1.5 + scrambleK)) * colors.length);
-      paint(ctx, rrPts(-cubeSize / 2 + c * sub, -cubeSize / 2 + r * sub, sub * 0.94, sub * 0.94, s * 0.1, s * 0.03), {
-        wash: colors[colIdx],
-        ink: PAL.ink,
-        sw: 1
-      });
-    }
-  }
-  ctx.restore();
-
-  // Articulating robotic fingers wrapping around the cube
-  const fingerAngles = [
-    -0.8 + Math.sin(t * 3.2) * 0.25,
-    -0.3 + Math.sin(t * 3.7 + 1) * 0.2,
-    0.3 + Math.sin(t * 2.9 + 2) * 0.2,
-    0.8 + Math.sin(t * 3.4 + 3) * 0.25
-  ];
-  for (let i = 0; i < 4; i++) {
-    const fx = -s * 1.5 + (i / 3) * s * 3.0;
+  // arms
+  const arm = (side: number, a: number) => {
     ctx.save();
-    ctx.translate(fx, s * 0.6);
-    ctx.rotate(fingerAngles[i]);
-    // Joint 1
-    paint(ctx, rrPts(-s * 0.35, -s * 1.2, s * 0.7, s * 1.2, s * 0.2, s * 0.04), { wash: '#9CA3AF', ink: PAL.ink, sw: 1 });
-    // Joint 2
-    ctx.translate(0, -s * 1.1);
-    ctx.rotate(-0.5);
-    paint(ctx, rrPts(-s * 0.28, -s * 1.0, s * 0.56, s * 1.0, s * 0.16, s * 0.04), { wash: '#E5E7EB', ink: PAL.ink, sw: 0.9 });
+    ctx.translate(side * Wd * 0.48, -H * 0.42);
+    ctx.rotate(side < 0 ? a : -a);
+    paint(ctx, rrPts(side < 0 ? -u * 1.25 : 0, -u * 0.17, u * 1.25, u * 0.34, u * 0.17, u * 0.02), {
+      wash: col, ink: PAL.ink, sw: sw * 0.6
+    });
     ctx.restore();
-  }
-
-  // Thumb
-  ctx.save();
-  ctx.translate(-s * 2.2, s * 1.4);
-  ctx.rotate(0.9 + Math.sin(t * 3.5) * 0.2);
-  paint(ctx, rrPts(-s * 0.35, -s * 1.4, s * 0.7, s * 1.4, s * 0.25, s * 0.04), { wash: '#9CA3AF', ink: PAL.ink, sw: 1 });
-  ctx.restore();
-
-  // Domain Randomization coordinate grid HUD
-  ctx.save();
-  ctx.strokeStyle = OA.emerald;
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4, 4]);
-  ctx.strokeRect(-s * 3, -s * 3.2, s * 6, s * 6);
-  ctx.setLineDash([]);
-  letter(ctx, 'ADR · Sim2Real σ=1.4', 0, -s * 3.6, s * 0.65, OA.emerald, { mono: true, ink: false });
-  ctx.restore();
+  };
+  if (o.aL != null) arm(-1, o.aL);
+  if (o.aR != null) arm(1, o.aR);
 
   ctx.restore();
-}
 
-// ---------------------------------------------------------------- CHATGPT INTERFACE
-export interface ChatUIProps {
-  t: number;
-  prompt: string;
-  response: string;
-  streaming?: boolean;
-  modelName?: string;
-}
-
-export function chatInterface(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  opts: ChatUIProps
-) {
-  ctx.save();
-  ctx.translate(x, y);
-
-  // Outer browser window container
-  paint(ctx, rrPts(0, 0, w, h, 14, 1.2), {
-    wash: '#0F172A',
-    ink: PAL.ink,
-    sw: 1.6
-  });
-
-  // Browser top bar
-  paint(ctx, rrPts(0, 0, w, 38, 14, 0), {
-    wash: '#1E293B',
-    ink: PAL.ink,
-    sw: 1
-  });
-  // Window dots
-  for (let i = 0; i < 3; i++) {
-    const dotColors = ['#EF4444', '#F59E0B', '#10B981'];
-    paint(ctx, ellPts(20 + i * 16, 19, 5, 5, 8, 0), {
-      wash: dotColors[i],
-      ink: null
-    });
-  }
-  // Model selector pill
-  paint(ctx, rrPts(w / 2 - 60, 8, 120, 22, 11, 0), {
-    wash: '#334155',
-    ink: null
-  });
-  letter(ctx, opts.modelName || 'ChatGPT · GPT-4o', w / 2, 19, 11, OA.emeraldLt, { mono: true, ink: false });
-
-  // User message bubble (right-aligned)
-  const userBubbleY = 60;
-  paint(ctx, rrPts(w * 0.25, userBubbleY, w * 0.7, 44, 12, 1), {
-    wash: '#1E293B',
-    ink: '#334155',
-    sw: 1
-  });
-  letter(ctx, opts.prompt, w * 0.28, userBubbleY + 22, 12, '#F1F5F9', { align: 'left', ink: false });
-
-  // Assistant response bubble with green icon
-  const botY = userBubbleY + 58;
-  bloom(ctx, 36, botY + 24, 14, { t: opts.t, glow: false, complexity: 0.8 });
-
-  paint(ctx, rrPts(60, botY, w * 0.85, h - botY - 60, 12, 1), {
-    wash: '#162032',
-    ink: '#1E293B',
-    sw: 1
-  });
-
-  // Multiline response text rendering
-  const lines = opts.response.split('\n');
-  lines.forEach((line, idx) => {
-    letter(ctx, line, 78, botY + 26 + idx * 22, 12, '#E2E8F0', { align: 'left', mono: true, ink: false });
-  });
-
-  // Blinking green cursor
-  if (opts.streaming !== false) {
-    const cursorBlink = Math.floor(opts.t * 3) % 2 === 0;
-    if (cursorBlink) {
-      const lastLineIdx = Math.max(0, lines.length - 1);
-      const cursorX = 78 + lines[lastLineIdx].length * 7.2;
-      paint(ctx, rectPts(cursorX, botY + 16 + lastLineIdx * 22, 7, 16, 0), {
-        wash: OA.emerald,
-        ink: null
-      });
-    }
-  }
-
-  // Bottom prompt input bar
-  const barY = h - 46;
-  paint(ctx, rrPts(24, barY, w - 48, 34, 17, 0.8), {
-    wash: '#1E293B',
-    ink: '#334155',
-    sw: 1.2
-  });
-  letter(ctx, 'Message ChatGPT...', 44, barY + 17, 11, '#64748B', { align: 'left', ink: false });
-  // Up arrow send button
-  paint(ctx, ellPts(w - 44, barY + 17, 11, 11, 10, 0), {
-    wash: OA.emerald,
-    ink: null
-  });
-  letter(ctx, '↑', w - 44, barY + 17, 13, '#0F172A', { ink: false });
-
-  ctx.restore();
-}
-
-// ---------------------------------------------------------------- STRAWBERRY / o1 TREE-OF-THOUGHT
-export function reasoningTree(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  _h: number,
-  t: number,
-  progress = 1
-) {
-  ctx.save();
-  ctx.translate(x, y);
-
-  // Title badge
-  letter(ctx, 'PROJECT STRAWBERRY · o1 TEST-TIME COMPUTE', w / 2, 20, 16, OA.strawberry, { mono: true, stroke: true });
-  letter(ctx, 'Reinforcement Learning Scaling over Chain-of-Thought Search Paths', w / 2, 42, 11, PAL.clayLt, { mono: true });
-
-  const rootX = w / 2, rootY = 75;
-  const k = clamp(progress);
-
-  // Root query node
-  paint(ctx, rrPts(rootX - 70, rootY - 14, 140, 28, 8, 0.5), {
-    wash: OA.strawberry,
-    ink: PAL.ink,
-    sw: 1.3
-  });
-  letter(ctx, 'Question: Math Olympiad', rootX, rootY, 10, PAL.cream, { mono: true, ink: false });
-
-  // Level 1 Branches (3 hypotheses)
-  const l1Nodes = [
-    { x: w * 0.25, y: 140, label: 'Path A: Algebraic', valid: false },
-    { x: w * 0.5, y: 140, label: 'Path B: Geometric', valid: true },
-    { x: w * 0.75, y: 140, label: 'Path C: Combinatoric', valid: false }
-  ];
-
-  if (k > 0.2) {
-    l1Nodes.forEach((node, i) => {
-      const active = k > 0.25 + i * 0.1;
-      if (!active) return;
-      inkLine(ctx, [[rootX, rootY + 14], [node.x, node.y - 14]], 1.8, node.valid ? OA.emerald : OA.strawberry, 0.2);
-
-      paint(ctx, rrPts(node.x - 60, node.y - 12, 120, 24, 6, 0.4), {
-        wash: node.valid ? OA.emeraldDk : '#7F1D1D',
-        ink: PAL.ink,
-        sw: 1.1
-      });
-      letter(ctx, node.label, node.x, node.y, 9.5, PAL.cream, { mono: true, ink: false });
-    });
-  }
-
-  // Level 2 Sub-branches (Deep verification & backtracking)
-  if (k > 0.55) {
-    const l2Nodes = [
-      { x: w * 0.4, y: 215, label: 'B.1 Lemma 4 (Fail ✕)', valid: false },
-      { x: w * 0.6, y: 215, label: 'B.2 Inversion (Pass ✓)', valid: true }
-    ];
-
-    l2Nodes.forEach((node) => {
-      inkLine(ctx, [[w * 0.5, 152], [node.x, node.y - 14]], 2, node.valid ? OA.emeraldLt : '#991B1B', 0.2);
-      paint(ctx, rrPts(node.x - 62, node.y - 12, 124, 24, 6, 0.4), {
-        wash: node.valid ? OA.emerald : '#5A1A1A',
-        ink: PAL.ink,
-        sw: 1.2
-      });
-      letter(ctx, node.label, node.x, node.y, 9.5, PAL.cream, { mono: true, ink: false });
-    });
-  }
-
-  // Final Convergence on Ground Truth
-  if (k > 0.85) {
-    const finalX = w * 0.6, finalY = 285;
-    inkLine(ctx, [[w * 0.6, 227], [finalX, finalY - 16]], 2.4, OA.emeraldLt, 0);
-
-    paint(ctx, rrPts(finalX - 85, finalY - 16, 170, 32, 10, 0.8), {
-      wash: OA.emerald,
-      ink: PAL.ink,
-      sw: 1.8
-    });
-    letter(ctx, 'Q.E.D. VERIFIED ANSWER', finalX, finalY, 11, '#0B291E', { mono: true, stroke: true });
-
-    // Little strawberry badge
-    paint(ctx, starPts(finalX + 98, finalY, 12, 0.5, 4, t * 2), { wash: OA.strawberry, ink: null });
-  }
-
-  ctx.restore();
-}
-
-// ---------------------------------------------------------------- DATACENTER SERVER RACKS
-export function serverRacks(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  t: number,
-  activeCol = OA.emerald
-) {
-  ctx.save();
-  ctx.translate(x, y);
-
-  const numRacks = Math.floor(w / 70);
-  const rackW = w / numRacks - 8;
-
-  for (let i = 0; i < numRacks; i++) {
-    const rx = i * (rackW + 8);
-    // Outer black rack
-    paint(ctx, rrPts(rx, 0, rackW, h, 6, 0.8), {
-      wash: '#0A0F1D',
-      ink: PAL.ink,
-      sw: 1.2
-    });
-
-    // Server units inside rack
-    const units = Math.floor(h / 18);
-    for (let u = 0; u < units; u++) {
-      const uy = 8 + u * 17;
-      paint(ctx, rectPts(rx + 4, uy, rackW - 8, 13, 0.2), {
-        wash: '#1E293B',
-        ink: null
-      });
-
-      // Blinking LEDs
-      const ledOn = hash(i * 19 + u * 7 + Math.floor(t * 8)) > 0.35;
-      if (ledOn) {
-        paint(ctx, ellPts(rx + 8, uy + 6, 2, 2, 6, 0), {
-          wash: activeCol,
-          ink: null
+  if (o.emote) {
+    const k = clamp(o.emoteK ?? 1, 0, 1.4);
+    const exx = x + u * 1.9 * s, eyy = y + dy - u * 6.4 * s;
+    if (k > 0.02) {
+      if (o.emote === 'zzz') {
+        letter(ctx, 'z', exx, eyy, u * 1.0, PAL.ink, { pop: k, alpha: 0.8 });
+        letter(ctx, 'z', exx + u * 0.6, eyy - u * 0.8, u * 1.4, PAL.ink, { pop: k * 0.8, alpha: 0.5 });
+      } else if (o.emote === 'spark') {
+        paint(ctx, starPts(exx, eyy, u * 0.8 * k, 0.42, 4), { wash: OA.amber, ink: PAL.ink, sw: 0.9 });
+      } else if (o.emote === 'heart') {
+        paint(ctx, starPts(exx, eyy, u * 0.72 * k, 0.55, 2, -Math.PI / 2), { wash: PAL.rose, ink: PAL.ink, sw: 0.9 });
+      } else if (o.emote === 'sweat') {
+        paint(ctx, [[exx, eyy - u * 0.6], [exx + u * 0.34, eyy], [exx, eyy + u * 0.5], [exx - u * 0.34, eyy]], {
+          fill: OA.mist, fillOp: 225, bleed: 0.2, ink: PAL.ink, sw: 0.8, curv: 0.5
         });
-        paint(ctx, ellPts(rx + 14, uy + 6, 2, 2, 6, 0), {
-          wash: (u % 3 === 0 ? OA.azureLt : activeCol),
-          ink: null
-        });
+      } else if (o.emote === '…') {
+        for (let i = 0; i < 3; i++) {
+          const on = (Math.floor(t * 3) % 3) >= i;
+          paint(ctx, ellPts(exx - u * 0.6 + i * u * 0.6, eyy, u * 0.16, u * 0.16, 8, 0), {
+            wash: on ? OA.teal : mixCol(OA.mist, PAL.cream, 0.4), ink: null
+          });
+        }
+      } else {
+        letter(ctx, o.emote, exx, eyy, u * 1.6, o.emote === '?' ? OA.violet : OA.rose, { pop: k, stroke: true });
       }
     }
   }
-
-  // Overhead fiber optics cable tray
-  inkLine(ctx, [[0, -10], [w, -10]], 3, OA.azure, 0);
-  for (let i = 0; i < numRacks; i++) {
-    const rx = i * (rackW + 8) + rackW / 2;
-    inkLine(ctx, [[rx, -10], [rx, 0]], 2, OA.azure, 0);
-  }
-
-  ctx.restore();
 }
 
-// ---------------------------------------------------------------- STARGATE MULTI-GIGAWATT REACTOR
-export function stargateComplex(
-  ctx: CanvasRenderingContext2D,
-  W: number,
-  H: number,
-  t: number
-) {
-  ctx.save();
+// ============================================================ BLOOM
 
-  // Desert horizon line
-  const horizY = H * 0.62;
-  paint(ctx, rectPts(-20, horizY, W + 40, H - horizY + 20, 2), {
-    fill: '#2A1B14',
-    fillOp: 220,
-    ink: PAL.ink,
-    sw: 1.5
-  });
-
-  // Mountain silhouettes in background
-  const mtn: Array<[number, number]> = [[-20, horizY]];
-  for (let x = 0; x <= W + 40; x += 80) {
-    mtn.push([x, horizY - 60 - hash(x) * 90]);
-  }
-  mtn.push([W + 40, horizY]);
-  paint(ctx, mtn, { wash: '#1B1425', ink: null, curv: 0.3 });
-
-  // Central Stargate Computing Monolith
-  const cx = W / 2, cy = horizY - 80;
-  const monoW = 220, monoH = 180;
-
-  // Vast radiating power conduits across the desert floor
-  for (let i = -6; i <= 6; i++) {
-    const startX = cx + i * 28;
-    const endX = cx + i * (W * 0.12);
-    inkLine(ctx, [[startX, horizY], [endX, H + 10]], 3.5, mixCol(OA.emerald, OA.azure, Math.abs(i) / 6), 0.1);
-  }
-
-  // Giant monolithic computing cathedral
-  paint(ctx, rrPts(cx - monoW / 2, cy - monoH / 2, monoW, monoH, 14, 1.2), {
-    wash: '#0A0D14',
-    ink: PAL.ink,
-    sw: 2
-  });
-
-  // Glowing core reactor
-  const pulse = 1 + Math.sin(t * 4) * 0.1;
-  blob(ctx, cx, cy, 75 * pulse, OA.emerald, { alpha: 0.55, seed: 42 });
-  bloom(ctx, cx, cy, 42, { t, glowCol: OA.emeraldLt, complexity: 1 });
-
-  // Hyper-power badge
-  letter(ctx, 'PROJECT STARGATE', cx, cy - monoH / 2 - 36, 26, PAL.cream, { stroke: true });
-  letter(ctx, '5.0 GIGAWATTS · $100B+ CLUSTER', cx, cy - monoH / 2 - 12, 14, OA.emeraldLt, { mono: true });
-
-  ctx.restore();
-}
-
-// ================================================================
-// STORY-RELATABLE HUMAN CAST & METAPHORS (WATERCOLOR & INK)
-// ================================================================
-
-export interface HumanOpts {
+export interface BloomOpts {
   t: number;
-  flip?: boolean;
-  mood?: 'normal' | 'focused' | 'shocked' | 'happy' | 'victorious' | 'determined';
-  talk?: boolean;
-  talkT?: number;
-  gesture?: 'pen' | 'typing' | 'badge' | 'handshake' | 'whiteboard' | 'coffee' | 'phone' | 'arms_open';
-  dy?: number;
+  /** 0..6 — how many petals are lit (the model's scale) */
+  lit?: number;
+  /** 0..1 — glow strength / health */
+  energy?: number;
+  /** spin speed multiplier */
+  spin?: number;
+  col?: string;
+  litCol?: string;
+  /** 0..1 — pulsing "thinking" ring */
+  thinking?: number;
   seed?: number;
 }
 
-/**
- * Sam Altman: Wavy curly hair, Patagonia puffer vest over dark t-shirt,
- * expressive hands, dynamic poses (signing charter, typing, shocked on Meet, holding 3 AM badge).
- */
-export function samAltman(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  s: number,
-  o: HumanOpts
-) {
-  ctx.save();
-  ctx.translate(x, y + (o.dy || 0) * s);
-  ctx.scale(o.flip ? -1 : 1, 1);
-
+/** BLOOM — the six-petal knot that stands for the model itself. */
+export function bloom(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, o: BloomOpts) {
   const t = o.t;
-  const skin = '#F6C8A6';
-  const vest = '#374151'; // Charcoal puffer vest
-  const shirt = '#111827'; // Dark under-shirt
-  const pants = '#1E293B'; // Dark denim
-  const hairCol = '#261C14'; // Dark curly brown
+  const lit = clamp(o.lit ?? 6, 0, 6);
+  const energy = clamp(o.energy ?? 1);
+  const col = o.col || mixCol(OA.slate, OA.mist, 0.35);
+  const litCol = o.litCol || OA.teal;
+  const spin = t * 0.22 * (o.spin ?? 1);
 
-  // Drop shadow
-  paint(ctx, ellPts(0, s * 0.1, 4.2 * s, 0.9 * s, 16, s * 0.08), {
-    fill: PAL.ink, fillOp: 55, bleed: 0.25, tex: 0.2, ink: null
-  });
+  if (energy > 0.02) glow(ctx, x, y, r * 2.0, litCol, 0.32 * energy, 4, o.seed ?? 5);
 
-  // Legs & Sneakers
-  paint(ctx, rectPts(-1.5 * s, -3.2 * s, 1.1 * s, 3.2 * s, s * 0.04), { wash: pants, ink: PAL.ink, sw: 0.9 });
-  paint(ctx, rectPts(0.5 * s, -3.2 * s, 1.1 * s, 3.2 * s, s * 0.04), { wash: pants, ink: PAL.ink, sw: 0.9 });
-  // White sneakers
-  paint(ctx, rrPts(-1.8 * s, -0.6 * s, 1.7 * s, 0.6 * s, s * 0.1, s * 0.03), { wash: PAL.cream, ink: PAL.ink, sw: 0.8 });
-  paint(ctx, rrPts(0.4 * s, -0.6 * s, 1.7 * s, 0.6 * s, s * 0.1, s * 0.03), { wash: PAL.cream, ink: PAL.ink, sw: 0.8 });
-
-  // Torso: Puffer vest with horizontal quilted seams
-  paint(ctx, rrPts(-2.4 * s, -8.6 * s, 4.8 * s, 5.6 * s, s * 0.7, s * 0.06), { wash: vest, ink: PAL.ink, sw: 1.1 });
-  // Quilted seams on vest
-  inkLine(ctx, [[-2.2 * s, -7.0 * s], [2.2 * s, -7.0 * s]], 0.7, '#1F2937', 0);
-  inkLine(ctx, [[-2.2 * s, -5.6 * s], [2.2 * s, -5.6 * s]], 0.7, '#1F2937', 0);
-  inkLine(ctx, [[-2.2 * s, -4.2 * s], [2.2 * s, -4.2 * s]], 0.7, '#1F2937', 0);
-  // Dark crewneck collar
-  paint(ctx, ellPts(0, -8.6 * s, 1.0 * s, 0.5 * s, 10, 0), { wash: shirt, ink: PAL.ink, sw: 0.8 });
-
-  // Left Arm
-  ctx.save();
-  ctx.translate(-2.4 * s, -8.0 * s);
-  let lArmAngle = 0.2;
-  if (o.gesture === 'pen') lArmAngle = 0.9;
-  else if (o.gesture === 'badge') lArmAngle = 1.3;
-  else if (o.gesture === 'arms_open') lArmAngle = 1.4;
-  else if (o.gesture === 'typing') lArmAngle = 0.8;
-  ctx.rotate(lArmAngle);
-  paint(ctx, rrPts(-2.5 * s, -0.4 * s, 2.5 * s, 0.8 * s, s * 0.35, s * 0.04), { wash: shirt, ink: PAL.ink, sw: 0.8 });
-  paint(ctx, ellPts(-2.6 * s, 0, 0.45 * s, 0.45 * s, 10, s * 0.04), { wash: skin, ink: PAL.ink, sw: 0.7 });
-
-  // Gesture Props in Left Hand
-  if (o.gesture === 'pen') {
-    // Fountain pen
-    inkLine(ctx, [[-2.6 * s, -0.2 * s], [-3.4 * s, -0.8 * s]], 1.8, '#D97706', 0);
-    paint(ctx, ellPts(-3.5 * s, -0.9 * s, 0.15 * s, 0.15 * s, 6, 0), { wash: OA.gold, ink: null });
-  } else if (o.gesture === 'badge') {
-    // Visitor Guest Pass Badge!
-    paint(ctx, rrPts(-3.4 * s, -0.8 * s, 1.4 * s, 1.8 * s, s * 0.15, s * 0.03), { wash: PAL.cream, ink: PAL.ink, sw: 0.8 });
-    paint(ctx, rectPts(-3.2 * s, -0.2 * s, 1.0 * s, 0.4 * s, 0), { wash: '#10B981', ink: null });
-    letter(ctx, 'GUEST', -2.7 * s, -0.5 * s, 6 * (s / 10), '#047857', { mono: true, bold: true });
-    // Lanyard
-    inkLine(ctx, [[-2.7 * s, -0.8 * s], [0, -8.6 * s]], 0.8, '#EF4444', 0);
-  }
-  ctx.restore();
-
-  // Right Arm
-  ctx.save();
-  ctx.translate(2.4 * s, -8.0 * s);
-  let rArmAngle = -0.2;
-  if (o.gesture === 'handshake') rArmAngle = -0.9;
-  else if (o.gesture === 'arms_open') rArmAngle = -1.4;
-  else if (o.gesture === 'typing') rArmAngle = -0.8;
-  else if (o.gesture === 'phone') rArmAngle = -1.2;
-  ctx.rotate(rArmAngle);
-  paint(ctx, rrPts(0, -0.4 * s, 2.5 * s, 0.8 * s, s * 0.35, s * 0.04), { wash: shirt, ink: PAL.ink, sw: 0.8 });
-  paint(ctx, ellPts(2.6 * s, 0, 0.45 * s, 0.45 * s, 10, s * 0.04), { wash: skin, ink: PAL.ink, sw: 0.7 });
-  if (o.gesture === 'phone') {
-    paint(ctx, rrPts(2.6 * s, -0.7 * s, 0.8 * s, 1.4 * s, s * 0.1, 0), { wash: '#0F172A', ink: PAL.ink, sw: 0.7 });
-    paint(ctx, rectPts(2.7 * s, -0.6 * s, 0.6 * s, 1.2 * s, 0), { wash: '#38BDF8', ink: null });
-  }
-  ctx.restore();
-
-  // Head
-  const hy = -9.8 * s;
-  paint(ctx, ellPts(0, hy, 1.4 * s, 1.55 * s, 18, s * 0.06), { wash: skin, ink: PAL.ink, sw: 0.9 });
-
-  // Signature Curly Wavy Hair
-  paint(ctx, [
-    [-1.6 * s, hy - 0.2 * s],
-    [-1.5 * s, hy - 1.6 * s],
-    [-0.8 * s, hy - 2.2 * s],
-    [0.2 * s, hy - 2.3 * s],
-    [1.1 * s, hy - 2.0 * s],
-    [1.6 * s, hy - 1.4 * s],
-    [1.5 * s, hy - 0.1 * s],
-    [1.0 * s, hy - 0.9 * s],
-    [0, hy - 1.2 * s],
-    [-1.0 * s, hy - 0.9 * s]
-  ], {
-    wash: hairCol, ink: PAL.ink, sw: 1.0, curv: 0.45
-  });
-
-  // Eyes & Eyebrows
-  const m = o.mood || 'normal';
-  for (const ex of [-0.5, 0.5]) {
-    if (m === 'shocked') {
-      paint(ctx, ellPts(ex * s, hy, 0.22 * s, 0.26 * s, 10, 0), { wash: PAL.cream, ink: PAL.ink, sw: 0.8 });
-      paint(ctx, ellPts(ex * s, hy, 0.08 * s, 0.09 * s, 8, 0), { wash: PAL.ink, ink: null });
-      inkLine(ctx, [[ex * s - 0.3 * s, hy - 0.45 * s], [ex * s + 0.3 * s, hy - 0.55 * s]], 1.0, PAL.ink, 0);
-    } else if (m === 'happy' || m === 'victorious') {
-      inkLine(ctx, [[ex * s - 0.25 * s, hy + 0.1 * s], [ex * s, hy - 0.12 * s], [ex * s + 0.25 * s, hy + 0.1 * s]], 1.1, PAL.ink, 0.4);
-    } else {
-      paint(ctx, ellPts(ex * s, hy, 0.14 * s, 0.16 * s, 8, 0), { wash: PAL.ink, ink: null });
-      paint(ctx, ellPts(ex * s - 0.04 * s, hy - 0.04 * s, 0.04 * s, 0.04 * s, 6, 0), { wash: PAL.cream, ink: null });
-      inkLine(ctx, [[ex * s - 0.28 * s, hy - 0.35 * s], [ex * s + 0.28 * s, hy - 0.35 * s]], 0.9, hairCol, 0);
+  // thinking ring — dashes orbiting the knot
+  if (o.thinking) {
+    const k = clamp(o.thinking);
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * TAU + t * 1.6;
+      const rr = r * 1.55;
+      const on = ((Math.floor(t * 6) + i) % 12) < 5;
+      if (!on) continue;
+      paint(ctx, ellPts(x + Math.cos(a) * rr, y + Math.sin(a) * rr, r * 0.07, r * 0.07, 8, 0), {
+        wash: litCol, ink: null, alpha: 0.35 + k * 0.5
+      });
     }
   }
 
-  // Mouth
-  const my = hy + 0.8 * s;
-  if (o.talk && Math.sin((o.talkT ?? t) * 13) > -0.1) {
-    paint(ctx, ellPts(0, my, 0.24 * s, 0.28 * s, 10, 0), { wash: '#38161D', ink: null });
-  } else if (m === 'shocked') {
-    paint(ctx, ellPts(0, my, 0.26 * s, 0.32 * s, 10, 0), { wash: '#2D1515', ink: PAL.ink, sw: 0.7 });
-  } else if (m === 'happy' || m === 'victorious') {
-    inkLine(ctx, [[-0.35 * s, my - 0.08 * s], [0, my + 0.16 * s], [0.35 * s, my - 0.08 * s]], 1.1, PAL.ink, 0.5);
-  } else {
-    inkLine(ctx, [[-0.28 * s, my], [0.28 * s, my]], 0.9, PAL.ink, 0.2);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(spin);
+
+  // six petals: each is a rounded loop reaching out from the hub
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * TAU;
+    const isLit = i < Math.floor(lit) || (i === Math.floor(lit) && lit % 1 > 0.35);
+    const pcol = isLit ? litCol : col;
+    ctx.save();
+    ctx.rotate(a);
+    const pts: Array<[number, number]> = [];
+    const N = 16;
+    for (let j = 0; j <= N; j++) {
+      const p = j / N;
+      const ang = -0.52 + p * 1.04;
+      const rad = r * (0.42 + Math.sin(p * Math.PI) * 0.62);
+      pts.push([Math.cos(ang) * rad, Math.sin(ang) * rad]);
+    }
+    for (let j = N; j >= 0; j--) {
+      const p = j / N;
+      const ang = -0.52 + p * 1.04;
+      const rad = r * (0.42 + Math.sin(p * Math.PI) * 0.62) - r * 0.20;
+      pts.push([Math.cos(ang) * rad, Math.sin(ang) * rad]);
+    }
+    paint(ctx, pts, {
+      wash: pcol, washOp: isLit ? 255 : 200,
+      ink: PAL.ink, sw: r * 0.035, curv: 0.5
+    });
+    if (isLit) {
+      paint(ctx, pts, { fill: mixCol(pcol, PAL.cream, 0.55), fillOp: 70, bleed: 0.2, tex: 0.6, ink: null, curv: 0.5 });
+    }
+    ctx.restore();
   }
 
+  // hub
+  paint(ctx, ellPts(0, 0, r * 0.3, r * 0.3, 16, r * 0.012), {
+    wash: mixCol(col, PAL.cream, 0.3), ink: PAL.ink, sw: r * 0.035
+  });
+  if (energy > 0.3) {
+    paint(ctx, ellPts(0, 0, r * 0.16 * (0.9 + Math.sin(t * 3) * 0.1), r * 0.16, 12, 0), {
+      wash: litCol, ink: null
+    });
+  }
   ctx.restore();
 }
 
-/**
- * Ilya Sutskever: Intellectual silhouette, dark crewneck, glasses,
- * holding whiteboard marker or watching tokens fall with awe.
- */
-export function ilyaSutskever(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  s: number,
-  o: HumanOpts
-) {
+// ============================================================ PEOPLE
+
+export interface ScientistOpts {
+  t: number;
+  flip?: boolean;
+  mood?: 'normal' | 'happy' | 'worried' | 'tired' | 'shout';
+  talk?: boolean;
+  talkT?: number;
+  coat?: string;
+  arm?: number;
+  dy?: number;
+  /** holds a tablet / paper */
+  prop?: 'tablet' | 'paper' | null;
+}
+
+/** A researcher: hoodie, lanyard, messy hair. s ≈ height/13. */
+export function scientist(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, o: ScientistOpts) {
   ctx.save();
   ctx.translate(x, y + (o.dy || 0) * s);
   ctx.scale(o.flip ? -1 : 1, 1);
+  const coat = o.coat || OA.slate;
+  const skin = '#F0B894';
 
-  const skin = '#ECC2A2';
-  const sweater = '#18181B'; // Black crewneck
-  const pants = '#334155'; // Dark grey trousers
-
-  // Drop shadow
-  paint(ctx, ellPts(0, s * 0.1, 4.4 * s, 0.9 * s, 16, s * 0.08), {
-    fill: PAL.ink, fillOp: 55, bleed: 0.25, tex: 0.2, ink: null
+  paint(ctx, ellPts(0, s * 0.12, 4.3 * s, 0.82 * s, 18, s * 0.1), {
+    fill: PAL.ink, fillOp: 52, bleed: 0.25, tex: 0.2, ink: null
   });
+  for (const lx of [-1.5, 0.5]) paint(ctx, rectPts(lx * s, -3.0 * s, 1.1 * s, 3.0 * s, s * 0.05), { wash: mixCol(coat, PAL.ink, 0.45), ink: PAL.ink, sw: 0.8 });
+  paint(ctx, rectPts(-1.85 * s, -0.5 * s, 1.75 * s, 0.5 * s, s * 0.04), { wash: PAL.ink, ink: null });
+  paint(ctx, rectPts(0.4 * s, -0.5 * s, 1.75 * s, 0.5 * s, s * 0.04), { wash: PAL.ink, ink: null });
 
-  // Legs & Shoes
-  paint(ctx, rectPts(-1.5 * s, -3.2 * s, 1.1 * s, 3.2 * s, s * 0.04), { wash: pants, ink: PAL.ink, sw: 0.9 });
-  paint(ctx, rectPts(0.5 * s, -3.2 * s, 1.1 * s, 3.2 * s, s * 0.04), { wash: pants, ink: PAL.ink, sw: 0.9 });
-  paint(ctx, rectPts(-1.8 * s, -0.5 * s, 1.6 * s, 0.5 * s, s * 0.05), { wash: PAL.night, ink: null });
-  paint(ctx, rectPts(0.4 * s, -0.5 * s, 1.6 * s, 0.5 * s, s * 0.05), { wash: PAL.night, ink: null });
-
-  // Torso: Minimalist black crewneck sweater
-  paint(ctx, rrPts(-2.5 * s, -8.8 * s, 5.0 * s, 5.8 * s, s * 0.6, s * 0.06), { wash: sweater, ink: PAL.ink, sw: 1.1 });
-
-  // Arms
-  const isWriting = o.gesture === 'whiteboard';
-  ctx.save();
-  ctx.translate(-2.4 * s, -8.2 * s);
-  ctx.rotate(isWriting ? 1.5 : 0.25);
-  paint(ctx, rrPts(-2.6 * s, -0.4 * s, 2.6 * s, 0.85 * s, s * 0.35, s * 0.04), { wash: sweater, ink: PAL.ink, sw: 0.8 });
-  paint(ctx, ellPts(-2.7 * s, 0, 0.45 * s, 0.45 * s, 10, s * 0.04), { wash: skin, ink: PAL.ink, sw: 0.7 });
-  if (isWriting) {
-    // Red/Blue whiteboard dry-erase marker
-    inkLine(ctx, [[-2.7 * s, -0.2 * s], [-3.6 * s, -0.9 * s]], 2.0, OA.strawberry, 0);
-  }
-  ctx.restore();
-
-  // Head
-  const hy = -10.0 * s;
-  paint(ctx, ellPts(0, hy, 1.45 * s, 1.6 * s, 18, s * 0.06), { wash: skin, ink: PAL.ink, sw: 0.9 });
-
-  // Short cropped dark hair
-  paint(ctx, [
-    [-1.5 * s, hy - 0.2 * s],
-    [-1.4 * s, hy - 1.8 * s],
-    [0, hy - 2.0 * s],
-    [1.4 * s, hy - 1.8 * s],
-    [1.5 * s, hy - 0.2 * s],
-    [0.8 * s, hy - 1.2 * s],
-    [-0.8 * s, hy - 1.2 * s]
-  ], {
-    wash: '#1C1917', ink: PAL.ink, sw: 0.9, curv: 0.3
+  // hoodie torso
+  paint(ctx, rrPts(-2.4 * s, -8.3 * s, 4.8 * s, 5.5 * s, s * 0.8, s * 0.06), { wash: coat, ink: PAL.ink, sw: 1 });
+  // hood
+  paint(ctx, [[-2.3 * s, -8.0 * s], [0, -9.1 * s], [2.3 * s, -8.0 * s], [1.5 * s, -7.3 * s], [-1.5 * s, -7.3 * s]], {
+    wash: mixCol(coat, PAL.ink, 0.25), ink: PAL.ink, sw: 0.8, curv: 0.3
   });
+  // lanyard
+  inkLine(ctx, [[-0.9 * s, -8.1 * s], [-0.2 * s, -6.2 * s]], 1.1, OA.teal, 0.3);
+  inkLine(ctx, [[0.9 * s, -8.1 * s], [0.2 * s, -6.2 * s]], 1.1, OA.teal, 0.3);
+  paint(ctx, rectPts(-0.42 * s, -6.3 * s, 0.84 * s, 0.6 * s, s * 0.03), { wash: PAL.cream, ink: PAL.ink, sw: 0.6 });
 
-  // Glasses (Signature Round Frames)
-  for (const ex of [-0.55, 0.55]) {
-    paint(ctx, ellPts(ex * s, hy, 0.42 * s, 0.38 * s, 14, 0), { wash: PAL.cream, washOp: 60, ink: PAL.ink, sw: 1.2 });
-    paint(ctx, ellPts(ex * s, hy, 0.12 * s, 0.14 * s, 8, 0), { wash: PAL.ink, ink: null });
+  const armA = o.arm ?? (o.prop ? 0.95 : 0.22);
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.translate(side * 2.4 * s, -7.7 * s);
+    ctx.rotate(side < 0 ? armA : -armA * (o.prop ? 0.3 : 1));
+    paint(ctx, rrPts(side < 0 ? -2.5 * s : 0, -0.42 * s, 2.5 * s, 0.84 * s, s * 0.4, s * 0.05), { wash: coat, ink: PAL.ink, sw: 0.8 });
+    paint(ctx, ellPts(side < 0 ? -2.6 * s : 2.6 * s, 0, 0.44 * s, 0.44 * s, 10, s * 0.04), { wash: skin, ink: PAL.ink, sw: 0.7 });
+    ctx.restore();
   }
-  inkLine(ctx, [[-0.2 * s, hy], [0.2 * s, hy]], 1.2, PAL.ink, 0); // Bridge of glasses
+  if (o.prop) {
+    ctx.save();
+    ctx.translate(-2.4 * s, -7.7 * s); ctx.rotate(armA); ctx.translate(-2.6 * s, 0);
+    if (o.prop === 'tablet') {
+      paint(ctx, rrPts(-0.7 * s, -1.0 * s, 1.4 * s, 2.0 * s, s * 0.1, s * 0.02), { wash: OA.ink, ink: PAL.ink, sw: 0.7 });
+      paint(ctx, rrPts(-0.56 * s, -0.86 * s, 1.12 * s, 1.72 * s, s * 0.06, 0), {
+        wash: mixCol(OA.teal, PAL.cream, 0.5 + Math.sin(o.t * 4) * 0.1), ink: null
+      });
+    } else {
+      paint(ctx, rectPts(-0.75 * s, -1.0 * s, 1.5 * s, 2.0 * s, s * 0.03), { wash: PAL.cream, ink: PAL.ink, sw: 0.7 });
+      for (let i = 0; i < 4; i++) inkLine(ctx, [[-0.5 * s, -0.6 * s + i * 0.42 * s], [0.5 * s - (i % 2) * 0.25 * s, -0.6 * s + i * 0.42 * s]], 0.7, mixCol(PAL.cream, PAL.ink, 0.5), 0);
+    }
+    ctx.restore();
+  }
 
-  // Thoughtful mouth
-  const my = hy + 0.85 * s;
-  if (o.talk && Math.sin((o.talkT ?? o.t) * 12) > -0.1) {
-    paint(ctx, ellPts(0, my, 0.2 * s, 0.24 * s, 10, 0), { wash: '#38161D', ink: null });
-  } else {
-    inkLine(ctx, [[-0.24 * s, my], [0.24 * s, my]], 0.9, PAL.ink, 0.2);
+  // head
+  const hy = -9.4 * s;
+  paint(ctx, ellPts(0, hy, 1.32 * s, 1.46 * s, 18, s * 0.06), { wash: skin, ink: PAL.ink, sw: 0.9 });
+  ctx.save();
+  for (let i = 0; i < 6; i++) {
+    const a = Math.PI + (i / 5) * Math.PI;
+    const hx = Math.cos(a) * 1.28 * s, hyy = hy + Math.sin(a) * 1.3 * s;
+    ctx.strokeStyle = mixCol(PAL.ink, coat, 0.2); ctx.lineWidth = 1; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(hx, hyy);
+    ctx.quadraticCurveTo(hx + (hash(i * 3.3) - 0.5) * 1.3 * s, hyy - 1.0 * s, hx + (hash(i * 7.7) - 0.3) * 1.8 * s, hyy - (hash(i * 5) * 0.6 + 0.2) * s);
+    ctx.stroke();
   }
+  ctx.restore();
+
+  const m = o.mood || 'normal';
+  for (const exx of [-0.48, 0.48]) {
+    if (m === 'happy') inkLine(ctx, [[exx * s - 0.2 * s, hy + 0.1 * s], [exx * s, hy - 0.12 * s], [exx * s + 0.2 * s, hy + 0.1 * s]], 0.9, PAL.ink, 0.4);
+    else if (m === 'tired') inkLine(ctx, [[exx * s - 0.19 * s, hy], [exx * s + 0.19 * s, hy]], 0.9, PAL.ink, 0);
+    else paint(ctx, ellPts(exx * s, hy, 0.12 * s, 0.14 * s, 8, 0), { wash: PAL.ink, ink: null });
+  }
+  const my = hy + 0.72 * s;
+  if (o.talk && Math.sin((o.talkT ?? o.t) * 12) > -0.1) paint(ctx, ellPts(0, my, 0.19 * s, 0.23 * s, 10, 0), { wash: PAL.ink, ink: null });
+  else if (m === 'happy') inkLine(ctx, [[-0.28 * s, my - 0.07 * s], [0, my + 0.13 * s], [0.28 * s, my - 0.07 * s]], 0.9, PAL.ink, 0.5);
+  else if (m === 'worried') inkLine(ctx, [[-0.26 * s, my + 0.07 * s], [0, my - 0.04 * s], [0.26 * s, my + 0.07 * s]], 0.9, PAL.ink, 0.5);
+  else if (m === 'shout') paint(ctx, ellPts(0, my, 0.22 * s, 0.28 * s, 10, 0), { wash: '#4A1F2A', ink: PAL.ink, sw: 0.6 });
+  else inkLine(ctx, [[-0.24 * s, my], [0.24 * s, my]], 0.9, PAL.ink, 0.2);
 
   ctx.restore();
 }
 
-/**
- * Satya Nadella: Round wireframe glasses, tailored dark blue blazer,
- * offering the Azure compute partnership handshake.
- */
-export function satyaNadella(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  s: number,
-  o: HumanOpts
+// ============================================================ PROPS
+
+/** The chat box — the product, in one rectangle. */
+export function chatBox(
+  ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
+  typed: string, t: number, opts: { reply?: string; glowK?: number; label?: string } = {}
 ) {
-  ctx.save();
-  ctx.translate(x, y + (o.dy || 0) * s);
-  ctx.scale(o.flip ? -1 : 1, 1);
-
-  const skin = '#C28B62';
-  const suit = '#1E3A8A'; // Microsoft Azure Deep Blue Suit
-
-  // Torso
-  paint(ctx, rrPts(-2.5 * s, -8.8 * s, 5.0 * s, 5.8 * s, s * 0.6, s * 0.06), { wash: suit, ink: PAL.ink, sw: 1.1 });
-  // White dress shirt collar
-  paint(ctx, [[-0.8 * s, -8.8 * s], [0, -7.2 * s], [0.8 * s, -8.8 * s]], { wash: PAL.cream, ink: PAL.ink, sw: 0.8 });
-
-  // Legs & Shoes
-  paint(ctx, rectPts(-1.5 * s, -3.2 * s, 1.1 * s, 3.2 * s, s * 0.04), { wash: suit, ink: PAL.ink, sw: 0.9 });
-  paint(ctx, rectPts(0.5 * s, -3.2 * s, 1.1 * s, 3.2 * s, s * 0.04), { wash: suit, ink: PAL.ink, sw: 0.9 });
-
-  // Handshake extended arm
-  ctx.save();
-  ctx.translate(-2.4 * s, -8.0 * s);
-  ctx.rotate(0.9);
-  paint(ctx, rrPts(-2.5 * s, -0.4 * s, 2.5 * s, 0.8 * s, s * 0.3, 0), { wash: suit, ink: PAL.ink, sw: 0.8 });
-  paint(ctx, ellPts(-2.6 * s, 0, 0.45 * s, 0.45 * s, 10, 0), { wash: skin, ink: PAL.ink, sw: 0.7 });
-  ctx.restore();
-
-  // Head
-  const hy = -10.0 * s;
-  paint(ctx, ellPts(0, hy, 1.35 * s, 1.5 * s, 18, s * 0.06), { wash: skin, ink: PAL.ink, sw: 0.9 });
-
-  // Signature Round Wireframe Glasses
-  for (const ex of [-0.5, 0.5]) {
-    paint(ctx, ellPts(ex * s, hy, 0.4 * s, 0.38 * s, 14, 0), { wash: PAL.cream, washOp: 50, ink: PAL.ink, sw: 1.1 });
-    paint(ctx, ellPts(ex * s, hy, 0.12 * s, 0.14 * s, 8, 0), { wash: PAL.ink, ink: null });
+  const h = w * 0.3;
+  if (opts.glowK) glow(ctx, x, y, w * 0.72, OA.teal, 0.3 * opts.glowK, 4, 12);
+  panel(ctx, x, y, w, h, PAL.cream, PAL.ink, 14);
+  paint(ctx, rrPts(x - w / 2 + w * 0.04, y - h * 0.3, w * 0.78, h * 0.52, h * 0.16, 1), {
+    wash: mixCol(PAL.cream, OA.mist, 0.35), ink: PAL.ink, sw: 1.1
+  });
+  const cur = Math.sin(t * 7) > 0 ? '|' : ' ';
+  letter(ctx, typed + cur, x - w / 2 + w * 0.08, y - h * 0.04, w * 0.045, PAL.ink, { mono: true, align: 'left', ink: false });
+  // send button
+  paint(ctx, rrPts(x + w * 0.3, y - h * 0.22, w * 0.14, h * 0.36, h * 0.1, 0.8), { wash: OA.teal, ink: PAL.ink, sw: 1 });
+  paint(ctx, [[x + w * 0.345, y - h * 0.1], [x + w * 0.395, y - h * 0.04], [x + w * 0.345, y + h * 0.02]], { wash: PAL.cream, ink: null });
+  if (opts.reply) {
+    letter(ctx, opts.reply, x, y + h * 0.3, w * 0.042, OA.teal, { mono: true, ink: false, alpha: 0.95 });
   }
-  inkLine(ctx, [[-0.18 * s, hy], [0.18 * s, hy]], 1.1, PAL.ink, 0);
-
-  // Warm smile
-  const my = hy + 0.8 * s;
-  inkLine(ctx, [[-0.28 * s, my - 0.06 * s], [0, my + 0.12 * s], [0.28 * s, my - 0.06 * s]], 1.0, PAL.ink, 0.4);
-
-  ctx.restore();
+  if (opts.label) letter(ctx, opts.label, x, y - h * 0.72, w * 0.05, PAL.ink, { ink: false, alpha: 0.85 });
 }
 
-/**
- * 738-Employee Mutiny Crowd: Walking together, holding smartphone torches,
- * signs, and standing as an unbreakable wall behind Sam.
- */
-export function employeeCrowd(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  groundY: number,
-  t: number
+/** A stream of tokens flowing along a path. */
+export function tokenStream(
+  ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number,
+  t: number, n = 9, col = OA.teal, speed = 0.4, size = 11
 ) {
-  ctx.save();
-  const crowdColors = ['#1E293B', '#334155', '#0F172A', '#1E3A8A', '#065F46'];
-
-  for (let i = -8; i <= 8; i++) {
-    const px = cx + i * 45 + Math.sin(t * 2 + i) * 6;
-    const py = groundY + Math.cos(t * 3 + i) * 4;
-    const s = 5.5 + (hash(i * 13) * 1.5);
-    const col = crowdColors[Math.abs(i) % crowdColors.length];
-
-    // Person silhouette
-    paint(ctx, rrPts(px - 1.4 * s, py - 6.5 * s, 2.8 * s, 4.5 * s, s * 0.4, 0), { wash: col, ink: PAL.ink, sw: 0.8 });
-    paint(ctx, ellPts(px, py - 7.6 * s, 0.9 * s, 1.1 * s, 10, 0), { wash: '#E5D0C0', ink: PAL.ink, sw: 0.7 });
-
-    // Raised phone flashlights creating a sea of stars
-    const lightBob = Math.sin(t * 4 + i * 1.2) * 5;
-    const lx = px + 1.2 * s;
-    const ly = py - 9.0 * s + lightBob;
-    paint(ctx, ellPts(lx, ly, 2.5, 2.5, 6, 0), { wash: PAL.cream, ink: null });
-    blob(ctx, lx, ly, 18, OA.azureLt, { alpha: 0.45 });
+  for (let i = 0; i < n; i++) {
+    const p = ((t * speed + i / n) % 1);
+    const px = x0 + (x1 - x0) * p, py = y0 + (y1 - y0) * p + Math.sin(p * Math.PI * 2 + i) * 7;
+    const a = p < 0.12 ? p / 0.12 : p > 0.88 ? (1 - p) / 0.12 : 1;
+    paint(ctx, rrPts(px - size, py - size * 0.45, size * 2, size * 0.9, size * 0.3, 0.5), {
+      wash: col, ink: null, alpha: 0.55 * a
+    });
   }
+}
 
+/** GPU / server rack with blinking lights. */
+export function rack(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, t: number, hot = 0.5) {
+  panel(ctx, x, y, w, h, OA.ink, PAL.ink, 8);
+  const rows = Math.floor(h / (w * 0.22));
+  for (let r = 0; r < rows; r++) {
+    const ry = y - h / 2 + w * 0.16 + r * (w * 0.22);
+    paint(ctx, rrPts(x - w * 0.4, ry - w * 0.07, w * 0.8, w * 0.14, w * 0.03, 0.4), {
+      wash: mixCol(OA.ink, OA.slate, 0.55), ink: null
+    });
+    for (let c = 0; c < 3; c++) {
+      const on = hash(r * 7 + c * 3 + Math.floor(t * 5)) < 0.35 + hot * 0.4;
+      paint(ctx, ellPts(x - w * 0.3 + c * w * 0.1, ry, w * 0.022, w * 0.022, 8, 0), {
+        wash: on ? (hot > 0.7 ? OA.amber : OA.teal) : mixCol(OA.slate, OA.ink, 0.5), ink: null
+      });
+    }
+  }
+  if (hot > 0.5) glow(ctx, x, y + h * 0.3, w * 0.7, OA.amber, 0.22 * hot, 3, x);
+}
+
+/** A benchmark bar chart that fills in. */
+export function benchBars(
+  ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
+  rows: Array<[string, number, string]>, k: number, maxV = 100
+) {
+  rows.forEach(([lab, v, col], i) => {
+    const by = y + i * 38;
+    letter(ctx, lab, x - w / 2 - 14, by, 15, PAL.ink, { align: 'right', ink: false, alpha: 0.9 });
+    paint(ctx, rrPts(x - w / 2, by - 11, w, 22, 6, 0.5), { wash: mixCol(PAL.cream, OA.mist, 0.55), ink: PAL.ink, sw: 0.9 });
+    const bw = w * (v / maxV) * clamp(k * 1.5 - i * 0.2);
+    if (bw > 2) paint(ctx, rrPts(x - w / 2, by - 11, bw, 22, 6, 0.5), { wash: col, ink: null });
+    if (bw > w * 0.12) letter(ctx, `${v}`, x - w / 2 + bw - 18, by, 13, PAL.cream, { ink: false });
+  });
+}
+
+/** Scaffolding / guardrail bars — the safety motif. */
+export function guardrail(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, k: number, col = OA.teal) {
+  const kk = clamp(k);
+  if (kk <= 0.01) return;
+  ctx.save();
+  ctx.globalAlpha = kk;
+  for (let i = 0; i <= 4; i++) {
+    const px = x - w / 2 + (i / 4) * w;
+    inkLine(ctx, [[px, y - h / 2], [px, y + h / 2]], 2.4, col, 0.05);
+  }
+  inkLine(ctx, [[x - w / 2, y - h / 2], [x + w / 2, y - h / 2]], 3, col, 0.05);
+  inkLine(ctx, [[x - w / 2, y + h / 2], [x + w / 2, y + h / 2]], 3, col, 0.05);
   ctx.restore();
 }
 
+/** Curtain-call theatre frame, shared closing shot language. */
+export function curtainCall(
+  ctx: CanvasRenderingContext2D, W: number, H: number, t: number, lt: number,
+  openK: number, accent = OA.teal
+) {
+  paint(ctx, rectPts(-40, 470, W + 80, H - 430, 4), { fill: PAL.clayDk, fillOp: 220, bleed: 0.1, tex: 0.6, border: 0.4, ink: null });
+  for (let px = 40; px < W; px += 150) inkLine(ctx, [[px, 474], [px - 24, H + 10]], 1.6, mixCol(PAL.clayDk, PAL.ink, 0.6), 0.1);
+  inkLine(ctx, [[0, 472], [W, 472]], 2, mixCol(PAL.clayDk, PAL.ink, 0.55), 0.2);
+  for (let fx = 90; fx < W; fx += 120) {
+    glow(ctx, fx, 540, 44, OA.amber, 0.3 + Math.sin(t + fx) * 0.05, 3, fx);
+    paint(ctx, ellPts(fx, 542, 9, 9, 12, 0.6), { wash: PAL.cream, ink: PAL.ink, sw: 1 });
+  }
+  void accent; void lt; void openK;
+}
+
+export function curtains(ctx: CanvasRenderingContext2D, W: number, H: number, closeK: number) {
+  const cw = clamp(closeK) * (W * 0.34) + 60;
+  for (const side of [-1, 1]) {
+    ctx.save(); ctx.scale(side, 1); ctx.translate(side < 0 ? -W : 0, 0);
+    paint(ctx, [[-10, -10], [cw, -10], [cw - 24, H * 0.6], [cw + 8, H + 20], [-10, H + 20]], {
+      fill: PAL.rose, fillOp: 245, bleed: 0.06, tex: 0.6, border: 0.4, ink: PAL.ink, sw: 2
+    });
+    for (let fx = 30; fx < cw - 4; fx += 46) {
+      inkLine(ctx, [[fx, -4], [fx - 16 + hash(fx) * 20, H + 4]], (26 - fx * 0.14) / 10, mixCol(PAL.rose, PAL.ink, 0.55), 0.3);
+    }
+    ctx.restore();
+  }
+  paint(ctx, [[-10, -10], [W + 10, -10], [W + 10, 96], [-10, 96]], {
+    fill: PAL.rose, fillOp: 245, bleed: 0.05, tex: 0.6, border: 0.3, ink: PAL.ink, sw: 2
+  });
+  for (let vx = 0; vx <= 10; vx++) {
+    paint(ctx, ellPts(vx * (W / 10), 96, W / 22, 26, 16, 1), {
+      fill: mixCol(PAL.rose, PAL.ink, 0.12), fillOp: 245, bleed: 0.08, tex: 0.5, ink: PAL.ink, sw: 1.2
+    });
+  }
+  inkLine(ctx, [[0, 122], [W, 122]], 3, OA.amber, 0.3);
+}

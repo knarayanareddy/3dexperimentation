@@ -1,15 +1,14 @@
 import { RenderContext } from '../../types/video';
 import {
-  PAL, paper, ground, blob, paint, inkLine, rectPts, ellPts, rrPts, starPts,
-  letter, seg, hash, arrow
+  PAL, paint, inkLine, rectPts, ellPts, rrPts, starPts,
+  letter, sfx, kf, wob, seg, frac, hash, mixCol, arrow, TAU, clamp
 } from '../painter';
 import {
-  OA, bloom, robotHandWithCube, chatInterface, reasoningTree,
-  serverRacks, stargateComplex,
-  samAltman, ilyaSutskever, satyaNadella, employeeCrowd
+  OA, glow, stage, panel, caret, bloom, scientist,
+  chatBox, tokenStream, rack, benchBars, guardrail, curtainCall, curtains
 } from '../openaiCast';
 
-const G = 590; // baseline ground line
+const G = 600;
 
 export function renderOpenAI(n: number, rc: RenderContext) {
   switch (n) {
@@ -24,778 +23,1018 @@ export function renderOpenAI(n: number, rc: RenderContext) {
   }
 }
 
-// ------------------------------------------------------------------ ACT 1: THE ROSEWOOD COVENANT
+// ---------------------------------------------------------------- ACT 1
 function act1(rc: RenderContext) {
   const { ctx, width: W, height: H, t, shot, speaking } = rc;
   const cx = W / 2, lt = t - shot.startTime;
+  const talkS = speaking && shot.speaker === 'Scientist';
+  const talkC = speaking && shot.speaker === 'Caret';
 
   if (shot.id === 'oa1-1') {
-    // Rosewood hotel dinner, rain, candle, non-profit pledge
-    paper(ctx, W, H, '#0B1320');
-    paint(ctx, rectPts(-20, -20, W + 40, H + 40, 4), { fill: '#0A0F1D', fillOp: 230, bleed: 0.1, tex: 0.4, ink: null });
+    stage(ctx, W, H, t, { tint: '#C9D2D6', night: 0.72, shaft: { x: cx - 180, alpha: 0.2 }, groundY: G + 8, groundCol: OA.deep });
+    letter(ctx, 'SAN FRANCISCO · DECEMBER 2015', cx, 88, 27, mixCol(PAL.cream, OA.mist, 0.3), { pop: seg(lt, 0.2, 1.0) });
 
-    // Rainy window background
-    for (let i = 0; i < 40; i++) {
-      const rx = (hash(i * 7) * W + t * 40) % W;
-      const ry = (hash(i * 13) * H + t * 80) % H;
-      inkLine(ctx, [[rx, ry], [rx - 8, ry + 22]], 1.2, '#1E293B', 0);
+    // the letter unfolding under a lamp
+    const open = seg(lt, 0.5, 2.2);
+    glow(ctx, cx, 330, 250 * open, OA.cream, 0.22, 4, 2);
+    ctx.save();
+    ctx.translate(cx, 330);
+    ctx.scale(1, 0.25 + open * 0.75);
+    panel(ctx, 0, 0, 520, 300, PAL.cream, PAL.ink, 6);
+    ctx.restore();
+    if (open > 0.6) {
+      const k = (open - 0.6) / 0.4;
+      for (let i = 0; i < 4; i++) {
+        inkLine(ctx, [[cx - 210, 250 + i * 22], [cx + 190 - (i % 3) * 70, 250 + i * 22]], 1.3, mixCol(PAL.cream, PAL.ink, 0.55), 0.1);
+      }
+      letter(ctx, 'ensure that artificial general', cx, 362, 23, PAL.ink, { pop: seg(lt, 2.4, 3.4) });
+      letter(ctx, 'intelligence benefits', cx, 394, 23, PAL.ink, { pop: seg(lt, 2.8, 3.8) });
+      letter(ctx, 'all of humanity', cx, 426, 23, OA.teal, { pop: seg(lt, 3.2, 4.2) });
+      void k;
     }
-
-    letter(ctx, 'MENLO PARK · DECEMBER 2015', cx, 84, 28, PAL.cream, { pop: seg(lt, 0.2, 0.9) });
-    letter(ctx, 'THE ROSEWOOD HOTEL', cx, 118, 14, OA.emeraldLt, { mono: true, pop: seg(lt, 0.6, 1.2) });
-
-    // Candle on table
-    const tableY = 480;
-    paint(ctx, rrPts(cx - 320, tableY, 640, 220, 16, 2), { wash: '#1E1B18', ink: PAL.ink, sw: 1.8 });
-    paint(ctx, rectPts(cx - 12, tableY - 70, 24, 70, 1), { wash: PAL.cream, ink: PAL.ink, sw: 1 });
-    // Candle flame with glow
-    const flameFlicker = Math.sin(t * 12) * 2;
-    blob(ctx, cx, tableY - 82, 34, OA.gold, { alpha: 0.5 });
-    paint(ctx, ellPts(cx + flameFlicker * 0.4, tableY - 82, 7, 14, 10, 0), { wash: OA.gold, ink: null });
-
-    // The Charter document on the table
-    paint(ctx, rrPts(cx - 180, tableY + 25, 360, 130, 8, 1.2), { wash: PAL.cream, ink: PAL.ink, sw: 1.4 });
-    letter(ctx, 'OPENAI CHARTER', cx, tableY + 52, 14, PAL.ink, { mono: true, ink: false });
-    letter(ctx, 'A public endowment for safe general intelligence', cx, tableY + 76, 11, '#475569', { ink: false });
-    letter(ctx, '“To benefit all of humanity — free from commercial capture”', cx, tableY + 102, 11.5, OA.emeraldDk, { ink: false });
-
-    // The founders at the table: Sam Altman leaning forward with his pen, Ilya across
-    samAltman(ctx, cx - 210, tableY + 70, 8.5, {
-      t,
-      mood: 'focused',
-      gesture: 'pen',
-      talk: speaking && shot.speaker === 'Sam',
-      talkT: t
-    });
-
-    ilyaSutskever(ctx, cx + 210, tableY + 70, 8.5, {
-      t,
-      flip: true,
-      mood: 'focused',
-      talk: speaking && shot.speaker === 'Ilya',
-      talkT: t
-    });
-
-    // $1B Pledge stamp
-    if (lt > 2.8) {
-      paint(ctx, rrPts(cx + 80, tableY + 45, 90, 36, 6, 0.5), { wash: OA.emerald, ink: PAL.ink, sw: 1.2 });
-      letter(ctx, '$1 BILLION', cx + 125, tableY + 63, 11, PAL.cream, { mono: true, pop: seg(lt, 2.8, 3.4), stroke: true });
-    }
+    panel(ctx, cx + 400, 250, 210, 92, PAL.cream);
+    letter(ctx, 'PLEDGED', cx + 400, 226, 14, PAL.ink, { ink: false, alpha: 0.8 });
+    letter(ctx, '$1,000,000,000', cx + 400, 258, 19, OA.teal, { mono: true, ink: false, pop: seg(lt, 4.2, 5.2) });
+    letter(ctx, 'structure: nonprofit', cx + 400, 288, 13, PAL.ink, { ink: false, alpha: 0.75 });
+    scientist(ctx, cx - 420, G, 9.6, { t, mood: 'normal', coat: OA.slate, prop: 'paper' });
   }
 
   else if (shot.id === 'oa1-2') {
-    // Pioneer building loft, whiteboards, waking bloom
-    paper(ctx, W, H, '#DCE7E1');
-    ground(ctx, W, G, '#334155');
+    stage(ctx, W, H, t, { tint: '#D4DCDE', night: 0.2, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'THE WAGER', cx, 86, 40, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    letter(ctx, 'THE PIONEER BUILDING · SF MISSION', cx, 84, 28, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    // construction lines, then the first petal lights
+    const litK = seg(lt, 2.2, 4.4);
+    ctx.save();
+    ctx.globalAlpha = 0.25 * (1 - litK * 0.6);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * TAU;
+      inkLine(ctx, [[cx + 60, 330], [cx + 60 + Math.cos(a) * 150, 330 + Math.sin(a) * 150]], 1.2, OA.slate, 0);
+    }
+    paint(ctx, ellPts(cx + 60, 330, 150, 150, 30, 1), { ink: OA.slate, sw: 1.2 });
+    ctx.restore();
+    bloom(ctx, cx + 60, 330, 108, { t, lit: litK * 1.1, energy: litK * 0.8, spin: 0.6, seed: 9 });
 
-    // Large whiteboard
-    paint(ctx, rrPts(cx - 360, 140, 460, 280, 12, 1.5), { wash: PAL.cream, ink: PAL.ink, sw: 1.8 });
-    letter(ctx, '∇_θ E[ R(τ) ] = E[ ∇_θ log π_θ(τ) R(τ) ]', cx - 130, 210, 14, OA.emeraldDk, { mono: true, ink: false });
-    letter(ctx, 'Policy Gradients · Q-Learning · Value Networks', cx - 130, 250, 12, '#64748B', { mono: true, ink: false });
-    letter(ctx, 'Target: General Problem Solver', cx - 130, 290, 14, OA.strawberry, { mono: true, ink: false });
-
-    // Ilya at the whiteboard actively writing formulas with his marker
-    ilyaSutskever(ctx, cx - 180, G, 9.5, {
-      t,
-      gesture: 'whiteboard',
-      talk: speaking && shot.speaker === 'Ilya',
-      talkT: t
-    });
-
-    // Desk with laptop
-    paint(ctx, rectPts(cx + 140, 340, 180, 14, 0.5), { wash: '#78350F', ink: PAL.ink, sw: 1 });
-    inkLine(ctx, [[cx + 160, 354], [cx + 160, G]], 2.5, PAL.ink, 0);
-    inkLine(ctx, [[cx + 300, 354], [cx + 300, G]], 2.5, PAL.ink, 0);
-    // Laptop
-    paint(ctx, rectPts(cx + 180, 295, 80, 45, 0.5), { wash: '#0F172A', ink: PAL.ink, sw: 1 });
-    paint(ctx, rectPts(cx + 170, 340, 100, 6, 0.5), { wash: '#CBD5E1', ink: PAL.ink, sw: 1 });
-
-    // Sam Altman sitting at his desk coding with his laptop
-    samAltman(ctx, cx + 230, G, 9.5, {
-      t,
-      gesture: 'typing',
-      talk: speaking && shot.speaker === 'Sam',
-      talkT: t
-    });
-
-    // The newborn Bloom waking up and stretching
-    const wakeK = seg(lt, 1.0, 3.5);
-    bloom(ctx, cx + 220, 240, 36 * (0.4 + wakeK * 0.6), {
-      t,
-      face: wakeK > 0.7 ? 'happy' : 'sleeping',
-      complexity: wakeK,
-      talk: speaking,
-      talkT: t
-    });
-
-    letter(ctx, 'no products. no revenue model. just pure research.', cx, 520, 18, OA.emeraldDk, { pop: seg(lt, 3.8, 4.8) });
+    panel(ctx, cx - 350, 300, 330, 190);
+    letter(ctx, 'TWO SCHOOLS', cx - 350, 236, 15, PAL.ink, { ink: false, alpha: 0.82 });
+    letter(ctx, 'engineer the rules', cx - 350, 274, 17, OA.rose, { ink: false, alpha: seg(lt, 0.8, 1.6) });
+    letter(ctx, 'brittle · bounded', cx - 350, 298, 13, PAL.ink, { ink: false, alpha: seg(lt, 0.8, 1.6) * 0.7 });
+    letter(ctx, 'grow the capability', cx - 350, 334, 17, OA.teal, { ink: false, alpha: seg(lt, 1.6, 2.4) });
+    letter(ctx, 'general · unproven', cx - 350, 358, 13, PAL.ink, { ink: false, alpha: seg(lt, 1.6, 2.4) * 0.7 });
+    if (lt > 2.6) inkLine(ctx, [[cx - 490, 334], [cx - 210, 334]], 2.2, OA.teal, 0.1);
+    scientist(ctx, cx - 60, G, 9.8, { t, mood: 'normal', talk: talkS, talkT: t, coat: OA.deep, prop: 'tablet' });
+    letter(ctx, 'they bet the lab on the second', cx + 60, 548, 19, OA.teal, { pop: seg(lt, 4.6, 5.8) });
   }
 
   else if (shot.id === 'oa1-3') {
-    // Gym & Universe environments, arcade tiles
-    paper(ctx, W, H, '#CAD5E2');
-    letter(ctx, 'OPENAI GYM & UNIVERSE (2016)', cx, 78, 30, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#D8DEE2', night: 0.35, shaft: { x: cx + 240, alpha: 0.12 }, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'IT LEARNED BY PLAYING ITSELF', cx, 86, 32, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.15, 0.9) });
 
-    // Grid of virtual game screens
-    const games = [
-      { name: 'Pong-v0', col: '#10B981', x: cx - 340, y: 140 },
-      { name: 'Breakout-v0', col: '#F59E0B', x: cx - 110, y: 140 },
-      { name: 'SpaceInvaders', col: '#8B5CF6', x: cx + 120, y: 140 },
-      { name: 'CartPole-v1', col: '#3B82F6', x: cx - 225, y: 310 },
-      { name: 'LunarLander', col: '#EC4899', x: cx + 5, y: 310 }
-    ];
+    // self-play arena: two mirrored agents circling
+    const ax = cx - 250, ay = 330;
+    glow(ctx, ax, ay, 190, OA.violet, 0.2, 3, 11);
+    paint(ctx, ellPts(ax, ay, 165, 110, 28, 2), { fill: OA.deep, fillOp: 200, bleed: 0.1, tex: 0.5, ink: PAL.ink, sw: 1.8 });
+    for (let i = 0; i < 2; i++) {
+      const a = t * 1.5 + i * Math.PI;
+      const px = ax + Math.cos(a) * 110, py = ay + Math.sin(a) * 68;
+      paint(ctx, ellPts(px, py, 17, 17, 14, 0.8), { wash: i ? OA.teal : OA.violet, ink: PAL.ink, sw: 1.3 });
+      paint(ctx, ellPts(px - 4, py - 4, 5, 5, 8, 0), { wash: PAL.cream, ink: null });
+    }
+    letter(ctx, 'SELF-PLAY', ax, 470, 18, OA.violet, { ink: false });
+    const ep = Math.floor(kf(lt, [[0.4, 0], [6.2, 10_000_000]], v => v));
+    letter(ctx, `${ep.toLocaleString()} episodes`, ax, 498, 14, PAL.cream, { mono: true, ink: false, alpha: 0.8 });
 
-    games.forEach((g, idx) => {
-      const active = lt > 0.5 + idx * 0.4;
-      if (!active) return;
-      paint(ctx, rrPts(g.x, g.y, 200, 140, 10, 1), { wash: '#0F172A', ink: PAL.ink, sw: 1.4 });
-      paint(ctx, rectPts(g.x + 8, g.y + 8, 184, 96, 0.4), { wash: '#1E293B', ink: null });
-      letter(ctx, g.name, g.x + 100, g.y + 122, 11, g.col, { mono: true, ink: false });
-
-      // Little arcade game animations
-      if (g.name.includes('Pong')) {
-        paint(ctx, rectPts(g.x + 14, g.y + 40 + Math.sin(t * 5) * 20, 6, 26, 0), { wash: PAL.cream, ink: null });
-        paint(ctx, rectPts(g.x + 180, g.y + 40 - Math.sin(t * 5) * 20, 6, 26, 0), { wash: PAL.cream, ink: null });
-        paint(ctx, ellPts(g.x + 100 + Math.cos(t * 5) * 60, g.y + 56, 4, 4, 6, 0), { wash: OA.emeraldLt, ink: null });
-      }
-    });
-
-    letter(ctx, '“standardise the benchmark: if it can play every game, it can learn any world”', cx, 520, 16, PAL.ink, { pop: seg(lt, 3.6, 4.8) });
+    // the robot hand and cube
+    const hx = cx + 280, hy = 330;
+    panel(ctx, hx, hy, 300, 250, mixCol(PAL.cream, OA.mist, 0.3));
+    ctx.save();
+    ctx.translate(hx, hy - 10);
+    ctx.rotate(Math.sin(t * 0.8) * 0.18);
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+      paint(ctx, rectPts(-54 + c * 36, -54 + r * 36, 32, 32, 0.8), {
+        wash: [OA.teal, OA.amber, OA.rose, PAL.cream, OA.violet][(r * 3 + c + Math.floor(t)) % 5], ink: PAL.ink, sw: 1
+      });
+    }
+    ctx.restore();
+    for (let f = 0; f < 4; f++) {
+      const fx2 = hx - 48 + f * 32;
+      inkLine(ctx, [[fx2, hy + 78], [fx2 + Math.sin(t * 2 + f) * 6, hy + 36]], 5, OA.slate, 0.2);
+    }
+    letter(ctx, 'dexterity, learned in simulation', hx, hy + 118, 15, PAL.ink, { ink: false, alpha: 0.85 });
+    letter(ctx, 'no human games required', cx, 556, 19, OA.teal, { pop: seg(lt, 5.0, 6.2) });
   }
 
   else {
-    // The compute cliff, spinning meters, thermal reality
-    paper(ctx, W, H, '#E2DCD2');
-    letter(ctx, 'THE PHYSICAL REALITY', cx, 78, 32, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#E2E7E4', night: 0.08, shaft: { x: cx, alpha: 0.16 }, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, '2018 · THE QUIET RESULT', cx, 86, 32, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Open lock turning into power meter
-    paint(ctx, rrPts(cx - 280, 160, 240, 260, 14, 1.2), { wash: '#1E293B', ink: PAL.ink, sw: 1.6 });
-    letter(ctx, 'POWER DRAW', cx - 160, 200, 14, OA.strawberry, { mono: true, stroke: true });
-
-    // Gauge needle spinning
-    const needleAng = -Math.PI * 0.7 + seg(lt, 0.5, 4.0) * Math.PI * 1.4;
-    paint(ctx, ellPts(cx - 160, 310, 60, 60, 16, 0), { wash: '#0F172A', ink: OA.strawberry, sw: 2 });
-    inkLine(ctx, [[cx - 160, 310], [cx - 160 + Math.cos(needleAng) * 45, 310 + Math.sin(needleAng) * 45]], 3, OA.gold, 0);
-
-    // Compute cost curve
-    paint(ctx, rrPts(cx + 40, 160, 260, 260, 14, 1.2), { wash: '#0F172A', ink: PAL.ink, sw: 1.6 });
-    letter(ctx, 'TRAINING FLOPS EXPONENT', cx + 170, 195, 12, OA.emeraldLt, { mono: true });
-
-    const plotK = seg(lt, 1.2, 5.0);
-    const pts: Array<[number, number]> = [];
-    for (let i = 0; i <= 30; i++) {
-      const p = (i / 30) * plotK;
-      pts.push([cx + 60 + p * 210, 380 - Math.pow(p, 2.5) * 150]);
+    // a blank page, and Caret appears on it
+    panel(ctx, cx - 90, 330, 560, 300, PAL.cream);
+    const appear = seg(lt, 0.8, 1.8);
+    const typed = 'the quick brown fox'.slice(0, Math.floor(seg(lt, 1.9, 4.6) * 19));
+    letter(ctx, typed, cx - 330, 270, 19, PAL.ink, { mono: true, align: 'left', ink: false });
+    if (appear > 0) {
+      ctx.save();
+      ctx.globalAlpha = appear;
+      caret(ctx, cx - 330 + typed.length * 11.4, 288, 9, {
+        t, blink: typed.length < 19, face: lt > 4.8 ? 'happy' : 'normal',
+        talk: talkC, talkT: t, seed: 1, noShadow: true
+      });
+      ctx.restore();
     }
-    if (pts.length > 1) inkLine(ctx, pts, 3, OA.strawberry, 0.2);
-
-    letter(ctx, 'Pledged: $1,000,000,000  ·  Delivered: ~$130M', cx, 470, 14, '#64748B', { mono: true, pop: seg(lt, 2.5, 3.5) });
-    letter(ctx, 'Compute is not free. Philanthropy was about to hit a wall.', cx, 520, 18, OA.strawberry, { pop: seg(lt, 4.0, 5.2) });
+    panel(ctx, cx + 370, 300, 250, 170);
+    letter(ctx, 'GPT-1', cx + 370, 248, 24, OA.teal, { pop: seg(lt, 2.2, 3) });
+    letter(ctx, '117,000,000', cx + 370, 284, 18, PAL.ink, { mono: true, ink: false, alpha: 0.9 });
+    letter(ctx, 'parameters', cx + 370, 306, 13, PAL.ink, { ink: false, alpha: 0.7 });
+    letter(ctx, 'pretrain, then fine-tune', cx + 370, 342, 13, OA.violet, { ink: false, alpha: seg(lt, 3.2, 4) });
+    letter(ctx, 'step one turned out to be the whole trick', cx, 556, 19, OA.teal, { pop: seg(lt, 5.2, 6.4) });
   }
 }
 
-// ------------------------------------------------------------------ ACT 2: GAMES AND METAL
+// ---------------------------------------------------------------- ACT 2
 function act2(rc: RenderContext) {
   const { ctx, width: W, height: H, t, shot, speaking } = rc;
   const cx = W / 2, lt = t - shot.startTime;
+  const talkS = speaking && shot.speaker === 'Scientist';
+  const talkC = speaking && shot.speaker === 'Caret';
 
   if (shot.id === 'oa2-1') {
-    // OpenAI Five Dota 2 arena
-    paper(ctx, W, H, '#0B1120');
-    letter(ctx, 'OPENAI FIVE · THE INTERNATIONAL (2018)', cx, 76, 28, OA.azureLt, { pop: seg(lt, 0.15, 0.8), stroke: true });
+    stage(ctx, W, H, t, { tint: '#DCD8EC', night: 0.42, shaft: { x: cx, alpha: 0.14, col: OA.violet }, groundY: G + 8, groundCol: OA.violet });
+    letter(ctx, '2019 · HELD BACK', cx, 86, 34, mixCol(PAL.cream, OA.mist, 0.25), { pop: seg(lt, 0.15, 0.9) });
 
-    // Esports arena stage
-    paint(ctx, rectPts(cx - 400, 120, 800, 340, 2), { wash: '#111827', ink: OA.azure, sw: 1.5 });
+    // bloom behind glass
+    const gx = cx - 170, gy = 330;
+    bloom(ctx, gx, gy, 118, { t, lit: 3.4, energy: 0.72, spin: 0.7, seed: 21 });
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    paint(ctx, rrPts(gx - 185, gy - 185, 370, 370, 14, 2), {
+      fill: OA.mist, fillOp: 48, bleed: 0.1, tex: 0.3, ink: PAL.cream, sw: 2
+    });
+    inkLine(ctx, [[gx - 120, gy - 170], [gx - 30, gy - 170]], 2, PAL.cream, 0.2);
+    ctx.restore();
 
-    // Five glowing AI bots in formation
-    for (let i = 0; i < 5; i++) {
-      const bx = cx - 280 + i * 140;
-      const by = 250 + Math.sin(t * 3 + i) * 12;
-      bloom(ctx, bx, by, 22, { t, color: OA.azureLt, glowCol: OA.azure, face: 'determined' });
-
-      // Health bar above bot
-      paint(ctx, rrPts(bx - 30, by - 38, 60, 8, 3, 0), { wash: '#1F2937', ink: null });
-      paint(ctx, rrPts(bx - 30, by - 38, 54, 8, 3, 0), { wash: OA.emerald, ink: null });
-      letter(ctx, `BOT ${i + 1}`, bx, by + 34, 10, '#94A3B8', { mono: true, ink: false });
-    }
-
-    // Rapid coordination pulse lines connecting all 5
-    for (let i = 0; i < 4; i++) {
-      const x1 = cx - 280 + i * 140;
-      const x2 = cx - 280 + (i + 1) * 140;
-      inkLine(ctx, [[x1, 250], [x2, 250]], 2, OA.azureLt, 0.2);
-    }
-
-    letter(ctx, '180 YEARS OF GAME EXPERIENCE ACCUMULATED EVERY 24 HOURS', cx, 490, 14, OA.emeraldLt, { mono: true, pop: seg(lt, 2.5, 3.8) });
-    letter(ctx, 'World champions defeated by alien continuous coordination', cx, 524, 16, PAL.cream, { pop: seg(lt, 4.0, 5.2) });
+    // staged release ladder
+    const rungs = ['124M', '355M', '774M', '1.5B'];
+    rungs.forEach((r, i) => {
+      const k = seg(lt, 1.0 + i * 1.05, 1.6 + i * 1.05);
+      const ry = 470 - i * 78;
+      panel(ctx, cx + 290, ry, 200, 54, k > 0.5 ? mixCol(PAL.cream, OA.teal, 0.3) : mixCol(PAL.cream, OA.mist, 0.45));
+      letter(ctx, r, cx + 290, ry, 19, k > 0.5 ? OA.deep : mixCol(PAL.ink, PAL.cream, 0.45), { mono: true, ink: false });
+      if (k > 0.5 && i < 3) arrow(ctx, cx + 290, ry - 30, cx + 290, ry - 52, OA.teal, 2);
+    });
+    letter(ctx, 'staged release', cx + 290, 520, 16, PAL.cream, { ink: false, alpha: 0.85 });
+    letter(ctx, 'the first model a lab chose not to ship at once', cx, 560, 18, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 5.2, 6.4) });
   }
 
   else if (shot.id === 'oa2-2') {
-    // Shadow robotic hand & Rubik's cube
-    paper(ctx, W, H, '#D7E2DC');
-    letter(ctx, 'AUTOMATIC DOMAIN RANDOMIZATION', cx, 74, 28, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#E0E0EE', night: 0.1, groundY: G + 8, groundCol: OA.violet });
+    letter(ctx, 'A CEILING ON THE UPSIDE', cx, 86, 34, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Render robotic hand twisting cube
-    robotHandWithCube(ctx, cx, 340, 52, t, seg(lt, 0.5, 4.0));
+    // structure: nonprofit controls capped-profit
+    panel(ctx, cx - 250, 250, 300, 110, mixCol(PAL.cream, OA.teal, 0.18));
+    letter(ctx, 'NONPROFIT', cx - 250, 236, 20, OA.deep, { ink: false });
+    letter(ctx, 'controls', cx - 250, 264, 13, PAL.ink, { ink: false, alpha: 0.75 });
+    const grow = seg(lt, 1.0, 2.2);
+    ctx.save();
+    ctx.globalAlpha = grow;
+    arrow(ctx, cx - 250, 310, cx - 250, 374, OA.teal, 2.6);
+    panel(ctx, cx - 250, 430, 300, 110, mixCol(PAL.cream, OA.violet, 0.16));
+    letter(ctx, 'CAPPED-PROFIT', cx - 250, 416, 19, OA.violet, { ink: false });
+    letter(ctx, 'raises capital', cx - 250, 444, 13, PAL.ink, { ink: false, alpha: 0.75 });
+    ctx.restore();
 
-    letter(ctx, 'No real-world training: millions of perturbed simulations transfer zero-shot into steel', cx, 520, 16, OA.emeraldDk, { pop: seg(lt, 3.5, 4.8) });
+    // the capped meter
+    const mx = cx + 290, my = 350;
+    panel(ctx, mx, my, 240, 330, PAL.cream);
+    const capY = my - 80;
+    const fillK = kf(lt, [[1.6, 0], [4.4, 1]], v => v);
+    const topY = my + 140 - fillK * 220;
+    paint(ctx, rectPts(mx - 70, Math.max(topY, capY), 140, my + 140 - Math.max(topY, capY), 1), {
+      wash: mixCol(OA.teal, PAL.cream, 0.25), ink: null
+    });
+    inkLine(ctx, [[mx - 96, capY], [mx + 96, capY]], 3.4, OA.rose, 0.05);
+    letter(ctx, 'CAP', mx + 70, capY - 16, 15, OA.rose, { ink: false });
+    paint(ctx, rrPts(mx - 70, my - 160, 140, 300, 8, 1), { ink: PAL.ink, sw: 1.6 });
+    letter(ctx, 'returns', mx, my + 170, 15, PAL.ink, { ink: false, alpha: 0.8 });
+    if (fillK > 0.95) sfx(ctx, 'everything above -> mission', mx, capY - 60, 17, OA.teal, lt - 4.4, { life: 3 });
+
+    scientist(ctx, cx - 480, G, 9.4, { t, mood: 'normal', talk: talkS, talkT: t, coat: OA.slate });
+    letter(ctx, '2019: $1B from Microsoft', cx - 250, 556, 17, PAL.ink, { pop: seg(lt, 4.8, 6), ink: false });
   }
 
   else if (shot.id === 'oa2-3') {
-    // Unsupervised pre-training & next token prediction
-    paper(ctx, W, H, '#0D1424');
-    letter(ctx, 'GPT-1 & THE PRE-TRAINING HYPOTHESIS', cx, 74, 28, OA.emeraldLt, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#DEE4EC', night: 0.14, shaft: { x: cx + 300, alpha: 0.12 }, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'THE STRAIGHT LINE', cx, 86, 38, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Stream of tokens flowing left to right
-    const tokens = ['The', 'future', 'of', 'mind', 'is', 'not', 'rules', 'but', 'PREDICTION'];
-    tokens.forEach((tok, i) => {
-      const active = lt > 0.4 + i * 0.45;
-      if (!active) return;
-      const tx = cx - 360 + i * 82;
-      const isTarget = i === tokens.length - 1;
+    panel(ctx, cx - 40, 350, 720, 360, PAL.cream);
+    const ox = cx - 340, oy = 490, w = 560, h = 270;
+    inkLine(ctx, [[ox, oy], [ox + w + 60, oy]], 2.4, PAL.ink, 0);
+    inkLine(ctx, [[ox, oy], [ox, oy - h]], 2.4, PAL.ink, 0);
+    letter(ctx, 'log compute →', ox + w / 2, oy + 30, 14, PAL.ink, { mono: true, ink: false, alpha: 0.8 });
+    ctx.save();
+    ctx.translate(ox - 34, oy - h / 2); ctx.rotate(-Math.PI / 2);
+    letter(ctx, 'log loss →', 0, 0, 14, PAL.ink, { mono: true, ink: false, alpha: 0.8 });
+    ctx.restore();
 
-      paint(ctx, rrPts(tx - 36, 210, 72, 38, 8, 0.8), {
-        wash: isTarget ? OA.emerald : '#1E293B',
-        ink: isTarget ? OA.emeraldLt : '#475569',
-        sw: isTarget ? 2 : 1
-      });
-      letter(ctx, tok, tx, 229, 12, isTarget ? '#0B291E' : '#F1F5F9', { mono: true, stroke: isTarget });
-    });
-
-    // Attention cross-weights connecting tokens
-    if (lt > 2.8) {
-      for (let i = 0; i < tokens.length - 1; i++) {
-        const x1 = cx - 360 + i * 82;
-        const x2 = cx - 360 + (tokens.length - 1) * 82;
-        inkLine(ctx, [[x1, 248], [(x1 + x2) / 2, 330], [x2, 248]], 1.5, OA.emeraldLt, 0.5);
-      }
+    const k = seg(lt, 0.6, 5.0);
+    const pts: Array<[number, number]> = [];
+    for (let i = 0; i <= 52; i++) {
+      const p = (i / 52) * k;
+      pts.push([ox + 18 + p * (w + 90), oy - 34 - p * (h - 28)]);
     }
-
-    // Ilya Sutskever in dark profile watching the token blizzard with awe
-    ilyaSutskever(ctx, cx - 180, G - 30, 10.5, {
-      t,
-      gesture: 'awe',
-      mood: 'focused',
-      talk: speaking && shot.speaker === 'Ilya',
-      talkT: t
-    });
-
-    bloom(ctx, cx + 180, 370, 32, { t, face: 'thinking', talk: speaking, talkT: t, complexity: 0.85 });
-    letter(ctx, '“If you accurately predict the next word on the internet, you must understand the world.”', cx, 500, 16, PAL.cream, { pop: seg(lt, 3.6, 5.0) });
+    if (pts.length > 1) inkLine(ctx, pts, 4, OA.violet, 0.08);
+    for (let i = 0; i < 16; i++) {
+      const kk = hash(i * 3.3);
+      if (kk > k) continue;
+      paint(ctx, ellPts(ox + 18 + kk * (w + 90) + (hash(i) - 0.5) * 14, oy - 34 - kk * (h - 28) + (hash(i * 7) - 0.5) * 18, 5, 5, 8, 0), {
+        wash: PAL.ink, ink: null, alpha: 0.75
+      });
+    }
+    if (k > 0.9) {
+      glow(ctx, ox + 18 + (w + 90), oy - 34 - (h - 28), 50, OA.violet, 0.35, 3, 31);
+      letter(ctx, 'off the page', ox + w + 20, oy - h - 6, 17, OA.violet, { pop: (k - 0.9) / 0.1 });
+    }
+    scientist(ctx, cx - 480, G, 9.4, { t, mood: 'happy', talk: talkS, talkT: t, coat: OA.deep, prop: 'paper' });
+    letter(ctx, 'if the line holds, the roadmap is just money', cx, 560, 18, OA.violet, { pop: seg(lt, 5.4, 6.6) });
   }
 
   else {
-    // GPT-2 and too dangerous to release
-    paper(ctx, W, H, '#E2DDD4');
-    letter(ctx, 'FEBRUARY 2019 · GPT-2 (1.5B)', cx, 74, 30, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#E4E2F0', night: 0.1, groundY: G + 8, groundCol: OA.violet });
+    letter(ctx, 'GPT-3 · 2020', cx, 86, 36, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Glass vault enclosing model
-    paint(ctx, rrPts(cx - 240, 130, 480, 280, 16, 1.4), { wash: '#1E293B', ink: PAL.ink, sw: 2 });
-    paint(ctx, rectPts(cx - 220, 150, 440, 240, 0.5), { wash: '#0F172A', ink: null });
+    const bk = seg(lt, 0.4, 2.6);
+    bloom(ctx, cx - 250, 330, 90 + bk * 46, { t, lit: 6 * bk, energy: bk, spin: 1, seed: 41 });
+    letter(ctx, '175,000,000,000', cx - 250, 480, 21, OA.violet, { mono: true, pop: seg(lt, 1.6, 2.6) });
+    letter(ctx, 'parameters', cx - 250, 508, 14, PAL.ink, { ink: false, alpha: 0.75 });
 
-    // Glowing unicorn story text
-    letter(ctx, '“In a shocking finding, scientist discovered a herd of unicorns...”', cx, 200, 12.5, OA.emeraldLt, { mono: true });
-    letter(ctx, 'Synthesizes multi-paragraph prose with uncanny coherence.', cx, 240, 11, '#94A3B8', { mono: true });
-
-    // Big REDACTED / TOO DANGEROUS TO RELEASE Stamp
-    if (lt > 1.8) {
-      ctx.save();
-      ctx.translate(cx, 310);
-      ctx.rotate(-0.12);
-      paint(ctx, rrPts(-180, -28, 360, 56, 10, 1), { wash: OA.strawberry, ink: PAL.ink, sw: 2 });
-      letter(ctx, 'TOO DANGEROUS TO RELEASE', 0, 0, 18, PAL.cream, { mono: true, stroke: true, pop: seg(lt, 1.8, 2.5) });
-      ctx.restore();
+    // few-shot card
+    panel(ctx, cx + 260, 330, 420, 280, PAL.cream);
+    const rows: Array<[string, string]> = [
+      ['sea otter', 'loutre de mer'],
+      ['cheese', 'fromage'],
+      ['plush giraffe', '?']
+    ];
+    rows.forEach(([a, b], i) => {
+      const k = seg(lt, 1.2 + i * 0.75, 1.8 + i * 0.75);
+      if (k <= 0) return;
+      letter(ctx, a, cx + 110, 255 + i * 58, 17, PAL.ink, { mono: true, align: 'left', ink: false, alpha: k });
+      letter(ctx, '→', cx + 250, 255 + i * 58, 17, mixCol(PAL.ink, PAL.cream, 0.5), { ink: false, alpha: k });
+      const solved = i === 2 && lt > 4.2;
+      letter(ctx, solved ? 'girafe en peluche' : b, cx + 290, 255 + i * 58, 17, solved ? OA.teal : PAL.ink, {
+        mono: true, align: 'left', ink: false, alpha: k
+      });
+    });
+    if (lt > 4.2) {
+      glow(ctx, cx + 350, 371, 90, OA.teal, 0.3, 3, 45);
+      letter(ctx, 'no training step', cx + 260, 440, 16, OA.teal, { pop: seg(lt, 4.2, 5) });
     }
-
-    letter(ctx, 'For the first time, OpenAI held back the weights. The open era had begun to close.', cx, 510, 16, OA.strawberry, { pop: seg(lt, 3.6, 5.0) });
+    caret(ctx, cx + 20, G, 13, { t, face: lt > 4.2 ? 'star' : 'think', talk: talkC, talkT: t, emote: lt > 4.2 ? 'spark' : '…', emoteK: 1, seed: 4 });
+    letter(ctx, 'the task is described in the prompt, not the weights', cx, 560, 18, OA.violet, { pop: seg(lt, 5.4, 6.6) });
   }
 }
 
-// ------------------------------------------------------------------ ACT 3: THE CAPPED-PROFIT CROSSROADS
+// ---------------------------------------------------------------- ACT 3
 function act3(rc: RenderContext) {
-  const { ctx, width: W, height: H, t, shot } = rc;
+  const { ctx, width: W, height: H, t, shot, speaking } = rc;
   const cx = W / 2, lt = t - shot.startTime;
+  const talkS = speaking && shot.speaker === 'Scientist';
+  const talkC = speaking && shot.speaker === 'Caret';
 
   if (shot.id === 'oa3-1') {
-    // The exponential compute cliff
-    paper(ctx, W, H, '#DDD7CD');
-    letter(ctx, 'THE COMPUTE GAP (2019)', cx, 74, 30, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#E6DFCE', night: 0.3, shaft: { x: cx - 120, alpha: 0.12, col: OA.amber }, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, '2021 · IT WRITES CODE', cx, 86, 34, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.15, 0.9) });
 
-    // Classical non-profit building cracking
-    const bldgW = 260, bldgH = 180;
-    paint(ctx, rectPts(cx - bldgW / 2, 260, bldgW, bldgH, 1), { wash: PAL.cream, ink: PAL.ink, sw: 1.8 });
-    // Pediment triangle
-    paint(ctx, [[cx - bldgW / 2 - 20, 260], [cx, 200], [cx + bldgW / 2 + 20, 260]], { wash: PAL.cream, ink: PAL.ink, sw: 1.8 });
-    letter(ctx, '501(c)(3)', cx, 240, 14, PAL.ink, { mono: true, ink: false });
+    panel(ctx, cx - 60, 330, 700, 330, OA.deep, PAL.ink, 10);
+    // editor chrome
+    for (const [i, c] of [OA.rose, OA.amber, OA.teal].entries()) {
+      paint(ctx, ellPts(cx - 380 + i * 24, 188, 6.5, 6.5, 10, 0), { wash: c as string, ink: null });
+    }
+    const comment = '# return the nth fibonacci number';
+    const ck = Math.floor(seg(lt, 0.5, 2.0) * comment.length);
+    letter(ctx, comment.slice(0, ck), cx - 390, 240, 17, OA.tealLt, { mono: true, align: 'left', ink: false });
 
-    // Giant compute arrow piercing through the roof
-    const arrowProg = seg(lt, 1.2, 4.0);
-    arrow(ctx, cx, 440, cx, 440 - arrowProg * 310, OA.strawberry, 4);
-    letter(ctx, 'Exponential Compute Demand (300,000x)', cx, 110, 16, OA.strawberry, { mono: true, stroke: true });
-
-    letter(ctx, 'Charitable donations could not fund the hardware frontier.', cx, 500, 18, PAL.ink, { pop: seg(lt, 3.5, 4.8) });
+    const body = ['def fib(n):', '    a, b = 0, 1', '    for _ in range(n):', '        a, b = b, a + b', '    return a'];
+    body.forEach((l, i) => {
+      const k = seg(lt, 2.4 + i * 0.42, 2.8 + i * 0.42);
+      if (k <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = k;
+      letter(ctx, l, cx - 390, 282 + i * 32, 17, mixCol(OA.mist, PAL.cream, 0.5), { mono: true, align: 'left', ink: false });
+      ctx.restore();
+    });
+    if (lt > 4.8) {
+      glow(ctx, cx - 60, 340, 220, OA.teal, 0.14, 3, 51);
+      letter(ctx, 'the comment was the only input', cx - 60, 486, 17, OA.tealLt, { pop: seg(lt, 4.8, 5.8) });
+    }
+    caret(ctx, cx + 400, G, 14, { t, face: 'happy', talk: talkC, talkT: t, seed: 6, aL: 0.9 });
+    scientist(ctx, cx - 470, G, 9.2, { t, mood: 'happy', talk: talkS, talkT: t, coat: OA.slate });
   }
 
   else if (shot.id === 'oa3-2') {
-    // Split with Musk
-    paper(ctx, W, H, '#D1D9E0');
-    letter(ctx, 'THE CROSSROADS', cx, 74, 30, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#E8DEDC', night: 0.12, groundY: G + 8, groundCol: OA.rose });
+    letter(ctx, '2022 · IT PAINTS', cx, 86, 36, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Fork in the road
-    inkLine(ctx, [[cx, 480], [cx, 340], [cx - 280, 180]], 3, PAL.ink, 0.2);
-    inkLine(ctx, [[cx, 340], [cx + 280, 180]], 3, PAL.ink, 0.2);
+    letter(ctx, '"an otter astronaut, watercolour"', cx - 300, 220, 18, PAL.ink, { pop: seg(lt, 0.4, 1.4), ink: false });
 
-    // Left sign: Elon / Tesla
-    paint(ctx, rrPts(cx - 340, 140, 160, 60, 10, 1), { wash: '#1F2937', ink: PAL.ink, sw: 1.4 });
-    letter(ctx, 'MUSK PATH', cx - 260, 160, 12, PAL.cream, { mono: true, ink: false });
-    letter(ctx, 'Fold into Tesla', cx - 260, 182, 10, '#94A3B8', { ink: false });
-
-    // Right sign: Sam / Independent LP
-    paint(ctx, rrPts(cx + 180, 140, 160, 60, 10, 1), { wash: OA.emeraldDk, ink: PAL.ink, sw: 1.4 });
-    letter(ctx, 'OPENAI PATH', cx + 260, 160, 12, PAL.cream, { mono: true, ink: false });
-    letter(ctx, 'Hybrid Capped-Profit', cx + 260, 182, 10, OA.emeraldLt, { ink: false });
-
-    bloom(ctx, cx + 260, 260, 28, { t, face: 'determined' });
-
-    letter(ctx, '“We had to choose: remain pure and irrelevant, or build a company that could win.”', cx, 510, 16, OA.emeraldDk, { pop: seg(lt, 3.6, 5.0) });
+    // noise grid resolving into an image
+    const res = seg(lt, 1.4, 5.0);
+    const gx = cx + 160, gy = 340, S = 230;
+    panel(ctx, gx, gy, S + 40, S + 40, PAL.cream);
+    const N = 13;
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      const px = gx - S / 2 + (c + 0.5) * (S / N);
+      const py = gy - S / 2 + (r + 0.5) * (S / N);
+      // target: a soft otter-ish blob silhouette
+      const dx = (c - N / 2) / N, dy = (r - N / 2.2) / N;
+      const inside = Math.hypot(dx * 1.5, dy * 1.9) < 0.34;
+      const target = inside ? mixCol(PAL.clay, PAL.cream, 0.25) : mixCol(OA.mist, PAL.cream, 0.55);
+      const noise = hash(r * 31 + c * 7 + Math.floor(t * 8)) > 0.5 ? OA.slate : OA.mist;
+      const col = res > hash(r * 13 + c * 3) ? target : noise;
+      paint(ctx, rectPts(px - S / N / 2, py - S / N / 2, S / N, S / N, 0.3), { wash: col, ink: null });
+    }
+    if (res > 0.85) {
+      const k = (res - 0.85) / 0.15;
+      paint(ctx, ellPts(gx, gy + 14, 42, 34, 18, 1), { wash: PAL.clay, ink: PAL.ink, sw: 1.2, alpha: k });
+      paint(ctx, ellPts(gx - 30, gy - 24, 15, 15, 12, 0.6), { wash: PAL.clay, ink: PAL.ink, sw: 1, alpha: k });
+      paint(ctx, ellPts(gx + 30, gy - 24, 15, 15, 12, 0.6), { wash: PAL.clay, ink: PAL.ink, sw: 1, alpha: k });
+      paint(ctx, ellPts(gx - 13, gy + 6, 4, 4, 8, 0), { wash: PAL.ink, ink: null, alpha: k });
+      paint(ctx, ellPts(gx + 13, gy + 6, 4, 4, 8, 0), { wash: PAL.ink, ink: null, alpha: k });
+    }
+    tokenStream(ctx, cx - 300, 260, gx - 150, gy - 40, t, 7, OA.rose, 0.35, 9);
+    letter(ctx, 'the model has never seen this exact thing', cx - 300, 400, 17, PAL.ink, { pop: seg(lt, 3.0, 4.2), ink: false, alpha: 0.9 });
+    letter(ctx, 'which is the entire point', cx - 300, 430, 17, OA.rose, { pop: seg(lt, 4.2, 5.4), ink: false });
+    scientist(ctx, cx - 420, G, 9.4, { t, mood: 'happy', talk: talkS, talkT: t, coat: OA.violet });
   }
 
   else if (shot.id === 'oa3-3') {
-    // OpenAI LP capped-profit balance scale
-    paper(ctx, W, H, '#E5E0D5');
-    letter(ctx, 'OPENAI LP · THE CAPPED-PROFIT HYBRID', cx, 74, 28, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#DFE6E2', night: 0.1, shaft: { x: cx, alpha: 0.14 }, groundY: G + 8, groundCol: OA.teal });
+    letter(ctx, 'THE STEP THAT MADE IT USEFUL', cx, 86, 32, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Fulcrum balance beam
-    const balY = 260;
-    inkLine(ctx, [[cx - 220, balY - 20], [cx + 220, balY + 20]], 4, PAL.ink, 0);
-    // Fulcrum triangle
-    paint(ctx, [[cx - 24, balY + 90], [cx, balY], [cx + 24, balY + 90]], { wash: '#374151', ink: PAL.ink, sw: 1.6 });
-
-    // Left pan: 100x return cap
-    paint(ctx, rrPts(cx - 280, balY + 10, 140, 80, 10, 1), { wash: OA.gold, ink: PAL.ink, sw: 1.4 });
-    letter(ctx, 'INVESTOR CAP', cx - 210, balY + 38, 12, '#372005', { mono: true, stroke: true });
-    letter(ctx, 'Up to 100x Return', cx - 210, balY + 62, 11, '#372005', { ink: false });
-
-    // Right pan: Overflow to Public Trust
-    paint(ctx, rrPts(cx + 140, balY + 45, 160, 80, 10, 1), { wash: OA.emerald, ink: PAL.ink, sw: 1.4 });
-    letter(ctx, 'HUMANITY SURPLUS', cx + 220, balY + 73, 12, PAL.cream, { mono: true, stroke: true });
-    letter(ctx, 'All excess to Mission', cx + 220, balY + 97, 11, PAL.cream, { ink: false });
-
-    letter(ctx, 'Governed not by shareholders, but by the non-profit board.', cx, 490, 16, PAL.ink, { pop: seg(lt, 3.2, 4.8) });
+    // two candidate answers, human picks one
+    const cards: Array<[number, string, string]> = [
+      [cx - 230, 'A', 'Sure — here are three options, ranked, with the trade-offs.'],
+      [cx + 230, 'B', 'As an AI I cannot possibly comment on that at all.']
+    ];
+    cards.forEach(([x, tag, body], i) => {
+      const chosen = i === 0 && lt > 2.4;
+      panel(ctx, x as number, 300, 380, 190, chosen ? mixCol(PAL.cream, OA.teal, 0.22) : PAL.cream);
+      letter(ctx, tag as string, (x as number) - 155, 232, 19, PAL.ink, { ink: false, alpha: 0.7 });
+      const words = (body as string).split(' ');
+      let line: string[] = [], ly = 282;
+      words.forEach(wd => {
+        if ((line.join(' ') + ' ' + wd).length > 26) {
+          letter(ctx, line.join(' '), x as number, ly, 15, PAL.ink, { ink: false, alpha: 0.9 });
+          ly += 24; line = [wd];
+        } else line.push(wd);
+      });
+      if (line.length) letter(ctx, line.join(' '), x as number, ly, 15, PAL.ink, { ink: false, alpha: 0.9 });
+      if (chosen) {
+        glow(ctx, x as number, 300, 210, OA.teal, 0.2, 3, 61);
+        paint(ctx, ellPts((x as number) + 150, 232, 20, 20, 14, 0.6), { wash: OA.teal, ink: PAL.ink, sw: 1.2 });
+        inkLine(ctx, [[(x as number) + 141, 232], [(x as number) + 148, 240], [(x as number) + 160, 224]], 2.6, PAL.cream, 0.1);
+      }
+    });
+    // the three-step pipeline
+    const steps = ['demonstrations', 'reward model', 'optimise policy'];
+    steps.forEach((s, i) => {
+      const k = seg(lt, 3.0 + i * 0.7, 3.6 + i * 0.7);
+      if (k <= 0) return;
+      const sx = cx - 300 + i * 300;
+      panel(ctx, sx, 470, 250, 58, mixCol(PAL.cream, OA.teal, 0.14));
+      letter(ctx, `${i + 1}. ${s}`, sx, 470, 16, PAL.ink, { ink: false });
+      if (i < 2) arrow(ctx, sx + 130, 470, sx + 170, 470, OA.teal, 2.2);
+    });
+    bloom(ctx, cx, 300, 70, { t, lit: 6, energy: 0.5 + seg(lt, 2.4, 4) * 0.5, spin: 0.8, thinking: seg(lt, 2.4, 4), seed: 63 });
+    letter(ctx, 'smaller and aligned beat bigger and raw', cx, 556, 19, OA.teal, { pop: seg(lt, 5.4, 6.6) });
   }
 
   else {
-    // Microsoft $1B handshake and Azure supercomputer
-    paper(ctx, W, H, '#0B132B');
-    letter(ctx, 'JULY 2019 · THE $1 BILLION ALLIANCE', cx, 74, 28, OA.azureLt, { pop: seg(lt, 0.15, 0.8), stroke: true });
+    stage(ctx, W, H, t, { tint: '#D6E0DE', night: 0.55, shaft: { x: cx, alpha: 0.2 }, groundY: G + 8, groundCol: OA.deep });
+    letter(ctx, '30 NOVEMBER 2022', cx, 84, 30, mixCol(PAL.cream, OA.mist, 0.25), { pop: seg(lt, 0.15, 0.8) });
 
-    // Datacenter servers powering up in the background
-    serverRacks(ctx, cx - 380, 240, 760, 150, t, OA.azureLt);
-
-    // Handshake between Sam Altman and Satya Nadella!
-    samAltman(ctx, cx - 110, G - 40, 10.0, {
-      t,
-      gesture: 'handshake',
-      mood: 'happy',
-      talk: speaking && shot.speaker === 'Sam',
-      talkT: t
+    const typed = 'explain quantum computing simply'.slice(0, Math.floor(seg(lt, 0.6, 3.0) * 32));
+    chatBox(ctx, cx, 300, 560, typed, t, {
+      glowK: seg(lt, 1.0, 3.4),
+      reply: lt > 3.6 ? 'Imagine a coin that is spinning rather than…' : undefined,
+      label: 'research preview'
     });
 
-    satyaNadella(ctx, cx + 110, G - 40, 10.0, {
-      t,
-      flip: true,
-      talk: speaking && shot.speaker === 'Researcher',
-      talkT: t
-    });
-
-    letter(ctx, '10,000 GPUs linked into a single supercomputer for OpenAI.', cx, 500, 17, OA.azureLt, { mono: true, pop: seg(lt, 3.2, 4.6) });
+    // crowds converging from every edge
+    const N = 70;
+    for (let i = 0; i < N; i++) {
+      const k = seg(lt, 1.6 + hash(i) * 2.8, 3.6 + hash(i) * 2.8);
+      if (k <= 0) continue;
+      const a = hash(i * 7) * TAU;
+      const r = 640 * (1 - k) + 230;
+      const fx = cx + Math.cos(a) * r, fy = 330 + Math.sin(a) * r * 0.58;
+      ctx.save();
+      ctx.globalAlpha = 0.35 + k * 0.5;
+      paint(ctx, ellPts(fx, fy - 11, 5.5, 5.5, 8, 0), { wash: mixCol(PAL.cream, OA.mist, 0.2), ink: null });
+      paint(ctx, rectPts(fx - 4.5, fy - 4, 9, 14, 0.4), { wash: mixCol(OA.mist, OA.deep, 0.35), ink: null });
+      ctx.restore();
+    }
+    const cnt = Math.floor(kf(lt, [[3.6, 0], [7.4, 100_000_000]], v => Math.pow(v, 2.1)));
+    letter(ctx, `${cnt.toLocaleString()} users`, cx, 500, 26, OA.tealLt, { pop: seg(lt, 3.8, 4.6) });
+    letter(ctx, 'in about two months', cx, 532, 16, mixCol(PAL.cream, OA.mist, 0.3), { ink: false, alpha: 0.9 });
+    caret(ctx, cx - 430, G, 15, { t, face: 'star', talk: talkC, talkT: t, emote: 'spark', emoteK: seg(lt, 4, 5), seed: 7 });
+    letter(ctx, 'the model was months old. the box was new.', cx, 572, 18, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 6, 7.2) });
   }
 }
 
-// ------------------------------------------------------------------ ACT 4: THE SCALING HYPOTHESIS
+// ---------------------------------------------------------------- ACT 4
 function act4(rc: RenderContext) {
-  const { ctx, width: W, height: H, t, shot } = rc;
+  const { ctx, width: W, height: H, t, shot, speaking } = rc;
   const cx = W / 2, lt = t - shot.startTime;
+  const talkCh = speaking && shot.speaker === 'Chair';
+  const talkS = speaking && shot.speaker === 'Scientist';
 
   if (shot.id === 'oa4-1') {
-    // GPT-3 monolithic crystalline scale
-    paper(ctx, W, H, '#0C0A1A');
-    letter(ctx, 'MAY 2020 · GPT-3 (175 BILLION PARAMETERS)', cx, 74, 28, OA.purple, { pop: seg(lt, 0.15, 0.8), stroke: true });
+    stage(ctx, W, H, t, { tint: '#E6DCD8', night: 0.16, shaft: { x: cx - 260, alpha: 0.12 }, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'MARCH 2023 · GPT-4', cx, 86, 34, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Towering monolith
-    paint(ctx, [
-      [cx - 90, 440], [cx - 60, 130], [cx + 60, 130], [cx + 90, 440]
-    ], { wash: '#1E1438', ink: OA.purple, sw: 2, curv: 0.1 });
-
-    // Glowing parameter rings inside monolith
-    for (let i = 0; i < 7; i++) {
-      const y = 160 + i * 38;
-      const w = 70 + i * 8;
-      paint(ctx, ellPts(cx, y, w, 8, 16, 0), { wash: OA.purple, ink: null });
+    const bk = seg(lt, 0.4, 2.4);
+    bloom(ctx, cx - 280, 330, 120, { t, lit: 6, energy: 0.9, spin: 0.9, seed: 71 });
+    // outer ring = multimodal
+    if (bk > 0.2) {
+      ctx.save();
+      ctx.globalAlpha = bk;
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * TAU + t * 0.4;
+        paint(ctx, ellPts(cx - 280 + Math.cos(a) * 185, 330 + Math.sin(a) * 185, 9, 9, 10, 0), {
+          wash: i % 2 ? OA.amber : OA.tealLt, ink: null
+        });
+      }
+      ctx.restore();
     }
+    letter(ctx, 'text + images in', cx - 280, 500, 17, PAL.ink, { pop: seg(lt, 2.0, 2.8), ink: false });
 
-    // Small human standing in awe
-    paint(ctx, ellPts(cx - 180, 420, 9, 10, 10, 0), { wash: PAL.cream, ink: PAL.ink, sw: 1 });
-    paint(ctx, rectPts(cx - 187, 430, 14, 25, 0.5), { wash: '#334155', ink: PAL.ink, sw: 1 });
-
-    letter(ctx, '“Scaling laws held: compute turned loss into emergent reasoning.”', cx, 490, 17, PAL.cream, { pop: seg(lt, 3.2, 4.8) });
+    panel(ctx, cx + 250, 330, 500, 300, PAL.cream);
+    benchBars(ctx, cx + 290, 258, 300, [
+      ['bar exam', 90, OA.teal],
+      ['biology olympiad', 99, OA.teal],
+      ['SAT reading', 93, OA.teal],
+      ['GPT-3.5 avg', 40, mixCol(OA.mist, OA.slate, 0.4)]
+    ], seg(lt, 1.0, 4.6), 100);
+    inkLine(ctx, [[cx + 110, 240], [cx + 110, 420]], 2, OA.rose, 0);
+    letter(ctx, 'human median', cx + 110, 432, 12, OA.rose, { ink: false, alpha: 0.85 });
+    letter(ctx, 'capability stopped being the bottleneck', cx, 560, 18, PAL.ink, { pop: seg(lt, 5.2, 6.4) });
   }
 
   else if (shot.id === 'oa4-2') {
-    // Prompt interface replacing compiler
-    paper(ctx, W, H, '#D9E3DC');
-    letter(ctx, 'THE PROMPT PARADIGM', cx, 74, 30, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#DCDEE8', night: 0.3, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'EVERYBODY SHIPS', cx, 86, 38, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.15, 0.9) });
 
-    // Left: Old compiler
-    paint(ctx, rrPts(cx - 360, 140, 320, 260, 12, 1), { wash: '#0F172A', ink: PAL.ink, sw: 1.6 });
-    letter(ctx, 'OLD CODE (1950 - 2020)', cx - 200, 175, 12, '#94A3B8', { mono: true });
-    letter(ctx, 'for (int i=0; i<N; i++) {', cx - 340, 215, 11, '#38BDF8', { mono: true, align: 'left', ink: false });
-    letter(ctx, '  compile_ast(tokens);', cx - 340, 240, 11, '#38BDF8', { mono: true, align: 'left', ink: false });
-    letter(ctx, '  memory_barrier();', cx - 340, 265, 11, '#38BDF8', { mono: true, align: 'left', ink: false });
-    letter(ctx, '}', cx - 340, 290, 11, '#38BDF8', { mono: true, align: 'left', ink: false });
-
-    // Right: Natural language prompt
-    paint(ctx, rrPts(cx + 40, 140, 320, 260, 12, 1), { wash: '#0B291E', ink: OA.emerald, sw: 1.8 });
-    letter(ctx, 'NEW INTERFACE: ENGLISH', cx + 200, 175, 12, OA.emeraldLt, { mono: true, stroke: true });
-    letter(ctx, '“Summarise this legal contract,”', cx + 60, 220, 12, '#E2E8F0', { align: 'left', ink: false });
-    letter(ctx, '“Write a website in React,”', cx + 60, 250, 12, '#E2E8F0', { align: 'left', ink: false });
-    letter(ctx, '“Diagnose this CT scan.”', cx + 60, 280, 12, '#E2E8F0', { align: 'left', ink: false });
-
-    letter(ctx, 'The universal programming language was suddenly human speech.', cx, 470, 18, OA.emeraldDk, { pop: seg(lt, 3.5, 4.8) });
+    // grid of competing panels lighting in sequence
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) {
+      const i = r * 6 + c;
+      const k = seg(lt, 0.5 + i * 0.14, 1.0 + i * 0.14);
+      const px = cx - 420 + c * 148, py = 250 + r * 112;
+      panel(ctx, px, py, 128, 92, k > 0.4 ? mixCol(PAL.cream, [OA.teal, OA.violet, OA.amber, OA.rose][i % 4], 0.26) : mixCol(OA.deep, OA.slate, 0.4), PAL.ink, 8);
+      if (k > 0.4) {
+        glow(ctx, px, py, 70, [OA.teal, OA.violet, OA.amber, OA.rose][i % 4], 0.14 * k, 2, i);
+        for (let l = 0; l < 3; l++) {
+          inkLine(ctx, [[px - 44, py - 18 + l * 18], [px + 44 - (l % 2) * 26, py - 18 + l * 18]], 1.5, mixCol(PAL.ink, PAL.cream, 0.45), 0.1);
+        }
+      }
+    }
+    // the regulators' scroll
+    const sk = seg(lt, 3.2, 5.4);
+    if (sk > 0) {
+      ctx.save();
+      ctx.globalAlpha = sk;
+      paint(ctx, rectPts(cx - 300, 486, 600 * sk, 64, 2), { wash: PAL.cream, ink: PAL.ink, sw: 1.6 });
+      for (let i = 0; i < 5; i++) inkLine(ctx, [[cx - 280, 502 + i * 11], [cx - 280 + 540 * sk - (i % 3) * 60, 502 + i * 11]], 1, mixCol(PAL.cream, PAL.ink, 0.55), 0);
+      paint(ctx, ellPts(cx - 300, 518, 18, 36, 14, 0.8), { wash: PAL.clayDk, ink: PAL.ink, sw: 1.4 });
+      ctx.restore();
+      letter(ctx, 'three continents start drafting law', cx, 572, 18, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 5.4, 6.6) });
+    }
+    scientist(ctx, cx + 470, G, 9.2, { t, mood: 'worried', talk: talkS, talkT: t, coat: OA.deep });
   }
 
   else if (shot.id === 'oa4-3') {
-    // Anthropic schism
-    paper(ctx, W, H, '#E2DAD0');
-    letter(ctx, 'LATE 2020 · THE SAFETY SCHISM', cx, 74, 30, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#B9BFC9', night: 0.82, shaft: { x: cx, alpha: 0.1, col: OA.mist }, groundY: null });
+    letter(ctx, '17 NOVEMBER 2023', cx, 88, 30, mixCol(PAL.cream, OA.rose, 0.25), { pop: seg(lt, 0.2, 1.0) });
 
-    // Fault line across ground
-    inkLine(ctx, [[cx, 130], [cx - 40, 260], [cx + 30, 380], [cx, 480]], 3, OA.strawberry, 0.3);
+    // cold boardroom
+    paint(ctx, rectPts(-30, 470, W + 60, H - 430, 3), { fill: OA.ink, fillOp: 220, bleed: 0.08, tex: 0.4, ink: null });
+    paint(ctx, ellPts(cx, 430, 330, 62, 30, 3), { fill: mixCol(OA.slate, OA.deep, 0.4), fillOp: 240, bleed: 0.06, tex: 0.5, ink: PAL.ink, sw: 1.8 });
+    // chairs around it, one empty and lit
+    const seats = [-250, -150, -50, 150, 250];
+    seats.forEach((sx, i) => {
+      const occupied = lt < 1.6 || i !== 2;
+      paint(ctx, rrPts(cx + sx - 32, 352, 64, 72, 10, 1.2), { wash: mixCol(OA.slate, OA.ink, 0.5), ink: PAL.ink, sw: 1.2 });
+      if (occupied && i !== 2) {
+        paint(ctx, ellPts(cx + sx, 340, 20, 22, 14, 0.8), { wash: mixCol(OA.deep, OA.mist, 0.25), ink: PAL.ink, sw: 1 });
+      }
+    });
+    // the empty chair, spotlit
+    const emptyK = seg(lt, 1.4, 2.6);
+    glow(ctx, cx + 50, 380, 150 * emptyK, OA.rose, 0.22 * emptyK, 4, 81);
+    paint(ctx, rrPts(cx + 18, 352, 64, 72, 10, 1.2), { wash: mixCol(OA.slate, OA.ink, 0.3), ink: OA.rose, sw: 2 });
+    if (emptyK > 0.4) letter(ctx, 'vacant', cx + 50, 318, 19, OA.rose, { pop: (emptyK - 0.4) / 0.6 });
 
-    // Left: OpenAI scaling forward
-    bloom(ctx, cx - 180, 260, 42, { t, face: 'determined' });
-    letter(ctx, 'OPENAI', cx - 180, 330, 14, OA.emeraldDk, { mono: true, stroke: true });
+    panel(ctx, cx - 300, 220, 420, 120, mixCol(OA.deep, PAL.cream, 0.1), PAL.ink);
+    letter(ctx, '"not consistently candid', cx - 300, 200, 17, mixCol(PAL.cream, OA.mist, 0.2), { ink: false, alpha: seg(lt, 2.6, 3.6) });
+    letter(ctx, 'in his communications"', cx - 300, 226, 17, mixCol(PAL.cream, OA.mist, 0.2), { ink: false, alpha: seg(lt, 2.9, 3.9) });
+    letter(ctx, '— the board', cx - 300, 256, 13, OA.rose, { ink: false, alpha: seg(lt, 3.4, 4.4) });
 
-    // Right: Eleven departure to Anthropic
-    paint(ctx, starPts(cx + 180, 260, 38, 0.65, 4), { wash: '#D97757', ink: PAL.ink, sw: 1.6 });
-    letter(ctx, 'ANTHROPIC', cx + 180, 330, 14, '#9C4221', { mono: true, stroke: true });
-    letter(ctx, 'Constitutional AI · Claude', cx + 180, 355, 11, '#78350F', { ink: false });
-
-    letter(ctx, 'Dario Amodei and eleven core safety researchers walk out.', cx, 490, 17, PAL.ink, { pop: seg(lt, 3.2, 4.8) });
+    scientist(ctx, cx + 420, 560, 8.6, { t, mood: 'worried', talk: talkCh, talkT: t, coat: OA.ink });
+    letter(ctx, 'the governance structure finally did something', cx, 560, 18, mixCol(PAL.cream, OA.mist, 0.25), { pop: seg(lt, 5.4, 6.8) });
   }
 
   else {
-    // RLHF & InstructGPT alignment
-    paper(ctx, W, H, '#D4E4DC');
-    letter(ctx, 'INSTRUCTGPT & RLHF (2022)', cx, 74, 30, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#D2DAD8', night: 0.4, shaft: { x: cx, alpha: 0.16, col: OA.tealLt }, groundY: null });
+    letter(ctx, 'THREE DAYS LATER', cx, 86, 32, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.15, 0.9) });
 
-    // Raw flame of tokens on left
-    const flameY = 280;
-    blob(ctx, cx - 220, flameY, 70, OA.strawberry, { alpha: 0.5 });
-    letter(ctx, 'Raw Pre-Training', cx - 220, flameY + 60, 12, OA.strawberry, { mono: true });
+    // the letter filling with signatures
+    panel(ctx, cx - 240, 330, 440, 330, PAL.cream);
+    letter(ctx, 'to the board:', cx - 420, 206, 15, PAL.ink, { mono: true, align: 'left', ink: false, alpha: 0.8 });
+    const sigs = Math.floor(seg(lt, 0.6, 5.0) * 745);
+    for (let i = 0; i < 160; i++) {
+      if (i / 160 * 745 > sigs) break;
+      const r = Math.floor(i / 10), c = i % 10;
+      const sx = cx - 420 + c * 38, sy = 240 + r * 18;
+      ctx.save();
+      ctx.globalAlpha = 0.65;
+      inkLine(ctx, [
+        [sx, sy], [sx + 9 + hash(i) * 6, sy - 5 - hash(i * 3) * 4], [sx + 20, sy + 2], [sx + 30, sy - 3]
+      ], 1.3, mixCol(PAL.ink, OA.deep, 0.3), 0.6);
+      ctx.restore();
+    }
+    glow(ctx, cx + 300, 300, 170, OA.tealLt, 0.2, 3, 91);
+    panel(ctx, cx + 300, 300, 330, 180, PAL.cream);
+    letter(ctx, `${sigs}`, cx + 300, 282, 56, OA.teal, { mono: true, ink: false });
+    letter(ctx, 'of about 770 employees', cx + 300, 334, 15, PAL.ink, { ink: false, alpha: 0.85 });
+    letter(ctx, 'reinstate him, and resign', cx + 300, 420, 17, PAL.ink, { pop: seg(lt, 4.0, 5.0), ink: false });
 
-    // Human rating thumbs / slider in center
-    paint(ctx, rrPts(cx - 60, flameY - 40, 120, 80, 12, 1), { wash: PAL.cream, ink: PAL.ink, sw: 1.4 });
-    letter(ctx, 'HUMAN FEEDBACK', cx, flameY - 15, 10, PAL.ink, { mono: true, ink: false });
-    letter(ctx, '👍  /  👎', cx, flameY + 18, 22, OA.emeraldDk, { ink: false });
-
-    // Clean warm lantern light on right
-    paint(ctx, rrPts(cx + 160, flameY - 50, 120, 100, 12, 1), { wash: OA.emerald, ink: PAL.ink, sw: 1.5 });
-    letter(ctx, 'ALIGNED AI', cx + 220, flameY - 15, 12, PAL.cream, { mono: true, stroke: true });
-    letter(ctx, 'Helpful · Honest · Harmless', cx + 220, flameY + 15, 9.5, OA.emeraldLt, { ink: false });
-
-    letter(ctx, 'A 1.3B aligned model beat 175B raw GPT-3 for human preference.', cx, 490, 17, OA.emeraldDk, { pop: seg(lt, 3.5, 4.8) });
+    // the chair refilled
+    const back = seg(lt, 5.4, 6.6);
+    if (back > 0) {
+      ctx.save();
+      ctx.globalAlpha = back;
+      paint(ctx, rrPts(cx + 268, 480, 64, 72, 10, 1.2), { wash: mixCol(OA.slate, OA.ink, 0.4), ink: PAL.ink, sw: 1.2 });
+      paint(ctx, ellPts(cx + 300, 468, 20, 22, 14, 0.8), { wash: mixCol(OA.deep, OA.mist, 0.3), ink: PAL.ink, sw: 1 });
+      ctx.restore();
+      sfx(ctx, '22 NOV: BACK', cx + 300, 560, 24, OA.teal, lt - 5.6, { life: 3 });
+    }
+    letter(ctx, 'the staff turned out to be the real board', cx - 240, 548, 18, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 6.4, 7.6) });
   }
 }
 
-// ------------------------------------------------------------------ ACT 5: THE NOVEMBER SPARK
+// ---------------------------------------------------------------- ACT 5
 function act5(rc: RenderContext) {
-  const { ctx, width: W, height: H, t, shot } = rc;
+  const { ctx, width: W, height: H, t, shot, speaking } = rc;
   const cx = W / 2, lt = t - shot.startTime;
+  const talkC = speaking && shot.speaker === 'Caret';
+  const talkS = speaking && shot.speaker === 'Scientist';
 
   if (shot.id === 'oa5-1') {
-    // November 30 research preview launch
-    paper(ctx, W, H, '#0B0F19');
-    letter(ctx, 'NOVEMBER 30, 2022 · 1:00 PM PST', cx, 68, 26, OA.emeraldLt, { mono: true, pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#D4DEEC', night: 0.24, shaft: { x: cx + 200, alpha: 0.14 }, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'MAY 2024 · ONE DOOR, EVERY SENSE', cx, 86, 30, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Minimal ChatGPT interface card
-    chatInterface(ctx, cx - 360, 110, 720, 360, {
-      t,
-      prompt: 'Write a sonnet explaining the theory of general relativity.',
-      response: 'Curved spacetime bends the path where light must flee,\nA cosmic fabric draped in starry grace;\nMass tells the void how curve and fold shall be,\nWhile space commands the matter to its place...',
-      streaming: lt > 1.8
+    const arch = cx + 190;
+    const senses: Array<[string, string, number, (x: number, y: number) => void]> = [
+      ['speech', OA.violet, 230, (x, y) => {
+        for (let i = 0; i < 11; i++) {
+          const h = 7 + Math.abs(Math.sin(i * 1.2 + t * 4)) * 26;
+          inkLine(ctx, [[x - 46 + i * 9, y - h / 2], [x - 46 + i * 9, y + h / 2]], 2.8, OA.violet, 0);
+        }
+      }],
+      ['vision', OA.amber, 335, (x, y) => {
+        paint(ctx, rectPts(x - 36, y - 25, 72, 50, 1), { wash: mixCol(OA.amber, PAL.cream, 0.4), ink: PAL.ink, sw: 1.1 });
+        paint(ctx, ellPts(x + 14, y - 9, 7, 7, 8, 0), { wash: PAL.cream, ink: null });
+        paint(ctx, [[x - 30, y + 20], [x - 8, y - 6], [x + 10, y + 20]], { wash: mixCol(PAL.sap, PAL.cream, 0.2), ink: null });
+      }],
+      ['text', OA.teal, 440, (x, y) => {
+        for (let i = 0; i < 3; i++) inkLine(ctx, [[x - 44, y - 10 + i * 10], [x + 34 - i * 10, y - 10 + i * 10]], 2.4, OA.teal, 0);
+      }]
+    ];
+    senses.forEach(([lab, col, sy, draw], i) => {
+      const k = seg(lt, 0.4 + i * 0.5, 1.0 + i * 0.5);
+      if (k <= 0) return;
+      ctx.save(); ctx.globalAlpha = k;
+      draw(cx - 330, sy);
+      letter(ctx, lab, cx - 330, sy + 48, 15, col, { ink: false });
+      ctx.restore();
+      tokenStream(ctx, cx - 270, sy, arch - 80, 340, t, 4, col, 0.33 + i * 0.05, 8);
     });
-
-    letter(ctx, 'No advertising. No press tour. Just a quiet tweet.', cx, 510, 18, PAL.cream, { pop: seg(lt, 3.6, 5.0) });
+    glow(ctx, arch, 340, 190, OA.tealLt, 0.26, 4, 101);
+    paint(ctx, [[arch - 105, 490], [arch - 105, 300], [arch, 206], [arch + 105, 300], [arch + 105, 490]], {
+      fill: OA.teal, fillOp: 95, bleed: 0.22, tex: 0.5, ink: PAL.ink, sw: 2, curv: 0.26
+    });
+    letter(ctx, 'one model', arch, 352, 21, PAL.cream, { ink: false });
+    panel(ctx, cx + 440, 520, 250, 90);
+    letter(ctx, 'spoken reply', cx + 440, 498, 14, PAL.ink, { ink: false, alpha: 0.8 });
+    letter(ctx, '~0.3 s', cx + 440, 528, 24, OA.teal, { mono: true, ink: false, pop: seg(lt, 3.4, 4.4) });
+    caret(ctx, cx - 60, G, 14, { t, face: 'happy', talk: talkC, talkT: t, seed: 11 });
   }
 
   else if (shot.id === 'oa5-2') {
-    // 100M users speedrun
-    paper(ctx, W, H, '#110E1A');
-    letter(ctx, 'THE FASTEST CONSUMER ADOPTION IN HISTORY', cx, 74, 28, OA.strawberry, { stroke: true, pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#D8DCEC', night: 0.4, shaft: { x: cx, alpha: 0.12, col: OA.violet }, groundY: G + 8, groundCol: OA.violet });
+    letter(ctx, 'SEPTEMBER 2024 · IT STOPS TO THINK', cx, 86, 30, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.15, 0.9) });
 
-    // Odometer counter spinning up
-    const odoK = seg(lt, 0.5, 4.5);
-    const usersM = Math.floor(odoK * 100);
+    const thinkK = seg(lt, 0.8, 4.4);
+    bloom(ctx, cx - 240, 330, 115, { t, lit: 6, energy: 0.85, spin: 0.35, thinking: thinkK, seed: 111 });
+    // timer
+    const secs = (seg(lt, 0.8, 5.0) * 14).toFixed(1);
+    letter(ctx, `${secs} s`, cx - 240, 500, 26, OA.violet, { mono: true, pop: seg(lt, 1.0, 1.8) });
+    letter(ctx, 'thinking', cx - 240, 530, 14, mixCol(PAL.cream, OA.mist, 0.3), { ink: false, alpha: 0.85 });
 
-    paint(ctx, rrPts(cx - 240, 160, 480, 140, 18, 1.4), { wash: '#0D0914', ink: OA.strawberry, sw: 2.2 });
-    letter(ctx, `${usersM},000,000`, cx, 235, 52, OA.strawberry, { mono: true, stroke: true });
-    letter(ctx, 'MONTHLY ACTIVE USERS IN 60 DAYS', cx, 280, 13, PAL.cream, { mono: true });
-
-    // Benchmark comparison bars below
-    const comps = [
-      { name: 'Netflix', time: '3.5 yrs', w: 260 },
-      { name: 'Instagram', time: '2.5 mos', w: 120 },
-      { name: 'ChatGPT', time: '5 days', w: 30, highlight: true }
-    ];
-    comps.forEach((c, idx) => {
-      const y = 350 + idx * 36;
-      letter(ctx, c.name, cx - 180, y + 10, 11, '#94A3B8', { mono: true, align: 'right' });
-      paint(ctx, rrPts(cx - 160, y, c.w, 18, 4, 0), { wash: c.highlight ? OA.emerald : '#334155', ink: null });
-      letter(ctx, c.time, cx - 140 + c.w, y + 10, 10, c.highlight ? OA.emeraldLt : '#94A3B8', { mono: true, align: 'left' });
+    // the problem resolving after a visible pause
+    panel(ctx, cx + 260, 320, 480, 280, PAL.cream);
+    letter(ctx, 'find all integer solutions', cx + 260, 236, 17, PAL.ink, { ink: false, alpha: 0.9 });
+    letter(ctx, 'to  x³ + y³ = z³ − 1', cx + 260, 266, 19, PAL.ink, { mono: true, ink: false });
+    const steps = ['consider parity…', 'bound |x| by…', 'check residues mod 9…'];
+    steps.forEach((s, i) => {
+      const k = seg(lt, 1.6 + i * 0.85, 2.2 + i * 0.85);
+      if (k <= 0) return;
+      letter(ctx, s, cx + 260, 310 + i * 30, 14, mixCol(PAL.ink, PAL.cream, 0.35), { mono: true, ink: false, alpha: k * 0.9 });
     });
-
-    letter(ctx, 'The servers were overheating around the world.', cx, 500, 18, PAL.cream, { pop: seg(lt, 3.8, 5.0) });
+    if (lt > 4.6) {
+      glow(ctx, cx + 260, 420, 150, OA.teal, 0.24, 3, 115);
+      letter(ctx, 'solved', cx + 260, 420, 26, OA.teal, { pop: seg(lt, 4.6, 5.4) });
+    }
+    panel(ctx, cx - 240, 190, 330, 64, mixCol(PAL.cream, OA.violet, 0.2));
+    letter(ctx, 'test-time compute', cx - 240, 190, 17, OA.violet, { ink: false });
+    scientist(ctx, cx - 470, G, 9.2, { t, mood: 'happy', talk: talkS, talkT: t, coat: OA.deep });
+    letter(ctx, 'the answer improves while you wait', cx, 562, 18, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 5.6, 6.8) });
   }
 
   else if (shot.id === 'oa5-3') {
-    // GPT-4 napkin sketch to interactive code
-    paper(ctx, W, H, '#D6E2DC');
-    letter(ctx, 'MARCH 2023 · GPT-4 MULTIMODAL', cx, 74, 30, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#E0DEE8', night: 0.18, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'AND IT LEARNS TO MAKE VIDEO', cx, 86, 32, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Left: Napkin sketch
-    paint(ctx, rrPts(cx - 360, 140, 320, 260, 14, 1.4), { wash: '#FDF6E2', ink: PAL.ink, sw: 1.6 });
-    letter(ctx, 'NAPKIN SKETCH', cx - 200, 175, 12, '#78350F', { mono: true });
-    inkLine(ctx, [[cx - 320, 220], [cx - 80, 220]], 2, PAL.ink, 0.2);
-    inkLine(ctx, [[cx - 320, 260], [cx - 200, 260]], 2, PAL.ink, 0.2);
-    paint(ctx, rrPts(cx - 320, 300, 80, 30, 6, 0.5), { wash: '#CBD5E1', ink: PAL.ink, sw: 1 });
-    letter(ctx, '[ Button ]', cx - 280, 315, 10, PAL.ink, { mono: true });
+    letter(ctx, '"a paper boat on a rainy street at night"', cx, 170, 18, PAL.ink, { pop: seg(lt, 0.3, 1.3), ink: false, alpha: 0.9 });
 
-    // Right: Working rendered app
-    const morphK = seg(lt, 1.5, 3.8);
+    // filmstrip sliding past
+    const slide = seg(lt, 1.2, 6.0);
     ctx.save();
-    ctx.globalAlpha = morphK;
-    paint(ctx, rrPts(cx + 40, 140, 320, 260, 14, 1.4), { wash: '#0F172A', ink: OA.emerald, sw: 2 });
-    letter(ctx, 'LIVE GENERATED APP', cx + 200, 175, 12, OA.emeraldLt, { mono: true, stroke: true });
-    paint(ctx, rrPts(cx + 80, 240, 240, 44, 8, 0.5), { wash: OA.emerald, ink: null });
-    letter(ctx, 'Joke Generator Active', cx + 200, 262, 13, '#0B291E', { mono: true, stroke: true });
+    ctx.translate(-slide * 220, 0);
+    paint(ctx, rectPts(cx - 560, 258, 1500, 190, 2), { wash: OA.ink, ink: PAL.ink, sw: 1.6 });
+    for (let i = 0; i < 9; i++) {
+      const fx = cx - 520 + i * 165;
+      // sprocket holes
+      for (const hy of [268, 424]) for (let s2 = 0; s2 < 3; s2++) {
+        paint(ctx, rectPts(fx + 18 + s2 * 44, hy, 16, 12, 0.3), { wash: PAL.cream, ink: null });
+      }
+      paint(ctx, rectPts(fx, 292, 148, 120, 1), { wash: mixCol(OA.deep, OA.slate, 0.3), ink: PAL.ink, sw: 1 });
+      // rain + boat, advancing per frame
+      for (let r = 0; r < 7; r++) {
+        const rx = fx + ((r * 31 + i * 17) % 140);
+        inkLine(ctx, [[rx, 296 + ((r * 23) % 100)], [rx - 4, 312 + ((r * 23) % 100)]], 1, mixCol(OA.mist, PAL.cream, 0.4), 0);
+      }
+      const bob = Math.sin(i * 0.9) * 5;
+      paint(ctx, [[fx + 56, 384 + bob], [fx + 96, 384 + bob], [fx + 86, 370 + bob], [fx + 66, 370 + bob]], {
+        wash: PAL.cream, ink: PAL.ink, sw: 0.9
+      });
+      paint(ctx, [[fx + 76, 370 + bob], [fx + 76, 350 + bob], [fx + 90, 368 + bob]], { wash: PAL.cream, ink: PAL.ink, sw: 0.8 });
+    }
     ctx.restore();
 
-    letter(ctx, '90th percentile Uniform Bar Exam  ·  99th percentile Biology Olympiad', cx, 470, 14, OA.emeraldDk, { mono: true, pop: seg(lt, 2.8, 3.8) });
-    letter(ctx, 'It doesn’t just predict words. It perceives structure.', cx, 510, 18, PAL.ink, { pop: seg(lt, 3.8, 5.0) });
+    panel(ctx, cx + 400, 520, 300, 86);
+    letter(ctx, 'patches over space AND time', cx + 400, 508, 14, PAL.ink, { ink: false, alpha: 0.85 });
+    letter(ctx, 'same recipe, one more dimension', cx + 400, 534, 13, OA.violet, { ink: false, alpha: 0.9 });
+    caret(ctx, cx - 430, G, 13, { t, face: 'star', seed: 12, emote: 'spark', emoteK: seg(lt, 3, 4) });
   }
 
   else {
-    // Congressional hearing & Capitol Hill
-    paper(ctx, W, H, '#DCD6CB');
-    letter(ctx, 'MAY 2023 · CAPITOL HILL TESTIMONY', cx, 74, 28, PAL.ink, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#D6DADE', night: 0.45, shaft: { x: cx - 300, alpha: 0.1 }, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'BUT PEOPLE LEAVE', cx, 86, 34, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.15, 0.9) });
 
-    // Senate hearing witness table
-    paint(ctx, rrPts(cx - 260, 340, 520, 120, 14, 1.5), { wash: '#451A03', ink: PAL.ink, sw: 1.8 });
-    // Witness microphones
-    for (const mx of [-80, 80]) {
-      inkLine(ctx, [[cx + mx, 340], [cx + mx, 280]], 2, PAL.ink, 0);
-      paint(ctx, ellPts(cx + mx, 276, 5, 8, 8, 0), { wash: '#1E293B', ink: null });
+    // the bloom keeps growing behind half-built scaffolding
+    const grow = 0.7 + seg(lt, 0.5, 6) * 0.3;
+    bloom(ctx, cx + 120, 330, 100 + grow * 48, { t, lit: 6, energy: grow, spin: 1.1, seed: 121 });
+    const railK = 1 - seg(lt, 2.4, 5.4) * 0.55;
+    guardrail(ctx, cx + 120, 330, 420, 360, railK, OA.teal);
+
+    // researchers setting down tools and walking out
+    for (let i = 0; i < 3; i++) {
+      const leave = seg(lt, 1.8 + i * 0.9, 5.2 + i * 0.9);
+      const sx = cx - 180 - leave * (380 + i * 40);
+      ctx.save();
+      ctx.globalAlpha = 1 - leave * 0.55;
+      scientist(ctx, sx, G, 9.2, {
+        t, flip: true, mood: leave > 0.3 ? 'worried' : 'normal',
+        coat: [OA.deep, OA.slate, OA.violet][i], arm: 0.2
+      });
+      ctx.restore();
     }
-
-    // Sam Altman sitting at the table
-    paint(ctx, ellPts(cx, 220, 18, 22, 14, 0), { wash: '#F0B894', ink: PAL.ink, sw: 1.2 });
-    paint(ctx, rrPts(cx - 30, 242, 60, 80, 10, 0.8), { wash: '#1E293B', ink: PAL.ink, sw: 1.3 });
-
-    // Quote banner
-    paint(ctx, rrPts(cx - 320, 110, 640, 60, 10, 1), { wash: '#0F172A', ink: OA.strawberry, sw: 1.6 });
-    letter(ctx, '“If this technology goes wrong, it can go quite wrong.”', cx, 140, 17, PAL.cream, { stroke: true, pop: seg(lt, 1.2, 2.5) });
-
-    letter(ctx, 'The question had moved from science to global destiny.', cx, 510, 18, PAL.ink, { pop: seg(lt, 3.6, 4.8) });
+    // the two curves
+    panel(ctx, cx + 400, 200, 300, 150);
+    const ox = cx + 290, oy = 258;
+    inkLine(ctx, [[ox, oy], [ox + 200, oy]], 1.8, PAL.ink, 0);
+    const k2 = seg(lt, 1.0, 5.0);
+    const cap: Array<[number, number]> = [], ass: Array<[number, number]> = [];
+    for (let i = 0; i <= 30; i++) {
+      const p = (i / 30) * k2;
+      cap.push([ox + p * 200, oy - Math.pow(p, 2.3) * 100]);
+      ass.push([ox + p * 200, oy - p * 34]);
+    }
+    if (cap.length > 1) inkLine(ctx, cap, 2.8, OA.rose, 0.2);
+    if (ass.length > 1) inkLine(ctx, ass, 2.8, OA.teal, 0.1);
+    letter(ctx, 'capability', cx + 400, 150, 13, OA.rose, { ink: false, alpha: 0.9 });
+    letter(ctx, 'assurance', cx + 400, 248, 13, OA.teal, { ink: false, alpha: 0.9 });
+    letter(ctx, 'the gap between them is the whole debate', cx, 562, 18, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 5.4, 6.6) });
   }
 }
 
-// ------------------------------------------------------------------ ACT 6: FIVE DAYS IN NOVEMBER
+// ---------------------------------------------------------------- ACT 6
 function act6(rc: RenderContext) {
-  const { ctx, width: W, height: H, t, shot } = rc;
+  const { ctx, width: W, height: H, t, shot, speaking } = rc;
   const cx = W / 2, lt = t - shot.startTime;
+  const talkCh = speaking && shot.speaker === 'Chair';
+  const talkS = speaking && shot.speaker === 'Scientist';
 
   if (shot.id === 'oa6-1') {
-    // Friday Google Meet firing
-    paper(ctx, W, H, '#140D12');
-    letter(ctx, 'FRIDAY · NOVEMBER 17, 2023 · 12:00 PM', cx, 74, 26, OA.strawberry, { mono: true, stroke: true, pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#E6DCC8', night: 0.12, shaft: { x: cx + 320, alpha: 0.16, col: OA.amber }, groundY: G + 8, groundCol: PAL.clayDk });
+    letter(ctx, 'JANUARY 2025 · STARGATE', cx, 86, 32, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Laptop with Google Meet screen
-    paint(ctx, rrPts(cx - 240, 140, 480, 260, 14, 1.2), { wash: '#0A0609', ink: OA.strawberry, sw: 2 });
-
-    // Sam Altman on the call looking stunned
-    samAltman(ctx, cx, 360, 9.5, {
-      t,
-      mood: 'shocked',
-      talk: speaking && shot.speaker === 'Sam',
-      talkT: t
-    });
-
-    if (lt > 2.2) {
-      paint(ctx, rrPts(cx - 160, 210, 320, 70, 8, 1), { wash: '#7F1D1D', ink: '#EF4444', sw: 1.5 });
-      letter(ctx, 'CALL TERMINATED BY BOARD', cx, 245, 16, PAL.cream, { mono: true, bold: true });
+    // desert horizon with halls receding
+    paint(ctx, rectPts(-30, 360, W + 60, 260, 3), { fill: mixCol(PAL.clayLt, PAL.cream, 0.4), fillOp: 180, bleed: 0.15, tex: 0.5, ink: null });
+    const rows = 5;
+    for (let r = rows - 1; r >= 0; r--) {
+      const k = seg(lt, 0.4 + (rows - 1 - r) * 0.7, 1.2 + (rows - 1 - r) * 0.7);
+      if (k <= 0) continue;
+      const depth = r / rows;
+      const y = 410 + Math.pow(1 - depth, 1.6) * 170;
+      const sc = 0.3 + (1 - depth) * 0.75;
+      const alpha = 0.45 + (1 - depth) * 0.55;
+      for (let c = -3; c <= 3; c++) {
+        const x = cx + c * 230 * sc;
+        ctx.save();
+        ctx.globalAlpha = alpha * k;
+        rack(ctx, x, y - 50 * sc, 96 * sc, 150 * sc, t, 0.4 + (1 - depth) * 0.45);
+        ctx.restore();
+      }
     }
-
-    // Press release notification
-    if (lt > 2.8) {
-      paint(ctx, rrPts(cx - 280, 390, 560, 50, 10, 1), { wash: '#1F1218', ink: OA.strawberry, sw: 1.4 });
-      letter(ctx, '“OpenAI announces leadership transition: Sam Altman departs.”', cx, 420, 13, PAL.cream, { stroke: true, pop: seg(lt, 2.8, 3.5) });
-    }
-
-    letter(ctx, 'The non-profit board detonated the tech world in a single afternoon.', cx, 510, 18, OA.strawberry, { pop: seg(lt, 3.5, 4.8) });
+    panel(ctx, cx - 330, 210, 390, 130);
+    letter(ctx, 'ANNOUNCED TARGET', cx - 330, 178, 14, PAL.ink, { ink: false, alpha: 0.8 });
+    const amt = Math.floor(kf(lt, [[1.2, 0], [5.0, 500]], v => v));
+    letter(ctx, `$${amt}B`, cx - 330, 216, 42, OA.amber, { ink: false });
+    letter(ctx, 'US AI infrastructure, four years', cx - 330, 252, 13, PAL.ink, { ink: false, alpha: 0.78 });
+    letter(ctx, 'the roadmap is now partly a civil works programme', cx, 568, 18, PAL.ink, { pop: seg(lt, 5.4, 6.6) });
   }
 
   else if (shot.id === 'oa6-2') {
-    // Brockman quits & Microsoft offer
-    paper(ctx, W, H, '#0B1528');
-    letter(ctx, 'THE WEEKEND · RESIGNATIONS & SANCTUARY', cx, 74, 26, OA.azureLt, { pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#DEDED8', night: 0.3, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'THE LINE HAS A PRICE', cx, 86, 36, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.15, 0.9) });
 
-    // Left: Greg Brockman resigns
-    paint(ctx, rrPts(cx - 360, 140, 320, 260, 12, 1), { wash: '#111827', ink: OA.strawberry, sw: 1.4 });
-    letter(ctx, 'GREG BROCKMAN TWEET', cx - 200, 175, 11, '#94A3B8', { mono: true });
-    letter(ctx, '“I quit. After learning today’s news,', cx - 340, 220, 12, '#F1F5F9', { align: 'left', ink: false });
-    letter(ctx, 'I am stepping down as President.”', cx - 340, 245, 12, '#F1F5F9', { align: 'left', ink: false });
-
-    // Right: Satya Nadella's Microsoft offer
-    paint(ctx, rrPts(cx + 40, 140, 320, 260, 12, 1), { wash: '#0D2137', ink: OA.azure, sw: 1.6 });
-    letter(ctx, 'MICROSOFT REDMOND', cx + 200, 175, 11, OA.azureLt, { mono: true });
-    letter(ctx, '“Sam & Greg to lead new advanced', cx + 60, 220, 12, PAL.cream, { align: 'left', ink: false });
-    letter(ctx, 'AI research team at Microsoft.”', cx + 60, 245, 12, PAL.cream, { align: 'left', ink: false });
-
-    letter(ctx, 'Within 48 hours, the company was hollowed out.', cx, 490, 18, PAL.cream, { pop: seg(lt, 3.2, 4.8) });
+    // the scaling line resting on a growing stack
+    const k = seg(lt, 0.5, 4.8);
+    const baseY = 520;
+    const layers: Array<[string, string, number]> = [
+      ['silicon', OA.slate, 0],
+      ['power', OA.amber, 1],
+      ['concrete', PAL.clayDk, 2]
+    ];
+    layers.forEach(([lab, col, i]) => {
+      const lk = clamp(k * 1.4 - i * 0.3);
+      if (lk <= 0) return;
+      const h = 54 * lk;
+      paint(ctx, rectPts(cx - 330 + i * 18, baseY - i * 58 - h, 660 - i * 36, h, 1.5), {
+        wash: mixCol(col, PAL.cream, 0.18), ink: PAL.ink, sw: 1.4
+      });
+      letter(ctx, lab, cx, baseY - i * 58 - h / 2, 15, PAL.ink, { ink: false, alpha: lk * 0.9 });
+    });
+    // pylons
+    for (const px of [cx - 420, cx + 420]) {
+      inkLine(ctx, [[px, baseY], [px, 300]], 3, OA.slate, 0);
+      inkLine(ctx, [[px - 34, 330], [px + 34, 330]], 2.4, OA.slate, 0);
+      inkLine(ctx, [[px - 26, 370], [px + 26, 370]], 2.4, OA.slate, 0);
+    }
+    const lineK = seg(lt, 1.6, 5.4);
+    const pts: Array<[number, number]> = [];
+    for (let i = 0; i <= 40; i++) {
+      const p = (i / 40) * lineK;
+      pts.push([cx - 330 + p * 660, 330 - p * 110]);
+    }
+    if (pts.length > 1) inkLine(ctx, pts, 3.6, OA.violet, 0.1);
+    panel(ctx, cx + 360, 200, 290, 130);
+    letter(ctx, 'one notch of loss', cx + 360, 168, 14, PAL.ink, { ink: false, alpha: 0.8 });
+    letter(ctx, 'compute ×10', cx + 360, 196, 15, PAL.ink, { mono: true, ink: false, alpha: seg(lt, 2.2, 3) });
+    letter(ctx, 'power ×10', cx + 360, 220, 15, PAL.ink, { mono: true, ink: false, alpha: seg(lt, 2.6, 3.4) });
+    letter(ctx, 'capital ×10', cx + 360, 244, 15, OA.rose, { mono: true, ink: false, alpha: seg(lt, 3.0, 3.8) });
+    scientist(ctx, cx - 470, G, 9.2, { t, mood: 'tired', talk: talkS, talkT: t, coat: OA.deep });
+    letter(ctx, 'the physics bill arrives before the revenue', cx, 566, 18, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 5.4, 6.6) });
   }
 
   else if (shot.id === 'oa6-3') {
-    // 700 employee signatures petition
-    paper(ctx, W, H, '#160E14');
-    letter(ctx, 'MONDAY 2:00 AM · THE MUTINY OF 700', cx, 74, 28, OA.strawberry, { stroke: true, pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#DCE4E0', night: 0.12, shaft: { x: cx, alpha: 0.14 }, groundY: G + 8, groundCol: OA.teal });
+    letter(ctx, '28 OCTOBER 2025', cx, 86, 32, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Giant scrolling petition sheet
-    paint(ctx, rrPts(cx - 280, 130, 560, 300, 14, 1.4), { wash: PAL.cream, ink: PAL.ink, sw: 1.8 });
-    letter(ctx, 'OPENAI IS NOTHING WITHOUT ITS PEOPLE', cx, 168, 16, '#991B1B', { mono: true, stroke: true });
-    letter(ctx, '“We, the undersigned, will immediately resign and join Microsoft', cx, 202, 11.5, PAL.ink, { ink: false });
-    letter(ctx, 'unless the entire board resigns and reinstates Sam Altman.”', cx, 222, 11.5, PAL.ink, { ink: false });
+    // old structure fading, new one drawing
+    const morph = seg(lt, 0.8, 3.4);
+    ctx.save();
+    ctx.globalAlpha = 1 - morph;
+    panel(ctx, cx - 300, 300, 300, 100, mixCol(PAL.cream, OA.mist, 0.4));
+    letter(ctx, 'capped-profit', cx - 300, 300, 18, mixCol(PAL.ink, PAL.cream, 0.3), { ink: false });
+    inkLine(ctx, [[cx - 430, 258], [cx - 170, 258]], 3, OA.rose, 0.05);
+    ctx.restore();
 
-    // Signatures grid
-    const sigNames = ['Ilya Sutskever', 'Mira Murati', 'Brad Lightcap', 'Jason Kwon', '743 / 770 Employees (96%)'];
-    sigNames.forEach((s, idx) => {
-      letter(ctx, `✓ ${s}`, cx - 180 + (idx % 2) * 220, 270 + Math.floor(idx / 2) * 36, 13, idx === 4 ? OA.strawberry : OA.emeraldDk, { mono: true, stroke: idx === 4 });
+    ctx.save();
+    ctx.globalAlpha = morph;
+    panel(ctx, cx - 300, 240, 340, 104, mixCol(PAL.cream, OA.teal, 0.2));
+    letter(ctx, 'OpenAI Foundation', cx - 300, 226, 18, OA.deep, { ink: false });
+    letter(ctx, 'nonprofit · ~26% · in control', cx - 300, 252, 13, PAL.ink, { ink: false, alpha: 0.8 });
+    arrow(ctx, cx - 300, 296, cx - 300, 348, OA.teal, 2.8);
+    panel(ctx, cx - 300, 410, 340, 104, mixCol(PAL.cream, OA.violet, 0.16));
+    letter(ctx, 'OpenAI Group PBC', cx - 300, 396, 18, OA.violet, { ink: false });
+    letter(ctx, 'public benefit corporation', cx - 300, 422, 13, PAL.ink, { ink: false, alpha: 0.8 });
+    ctx.restore();
+
+    // ownership ring
+    const rk = seg(lt, 2.6, 5.0);
+    const rx = cx + 280, ry = 330, R = 128;
+    const slices: Array<[number, string, string]> = [
+      [0.26, OA.teal, 'Foundation 26%'],
+      [0.27, OA.violet, 'Microsoft 27%'],
+      [0.47, mixCol(OA.mist, OA.slate, 0.3), 'employees & investors 47%']
+    ];
+    let acc = -Math.PI / 2;
+    slices.forEach(([frac2, col, lab], i) => {
+      const span = frac2 * TAU * rk;
+      const pts: Array<[number, number]> = [[rx, ry]];
+      for (let s2 = 0; s2 <= 24; s2++) {
+        const a = acc + (s2 / 24) * span;
+        pts.push([rx + Math.cos(a) * R, ry + Math.sin(a) * R]);
+      }
+      paint(ctx, pts, { wash: col as string, ink: PAL.ink, sw: 1.4 });
+      const mid = acc + span / 2;
+      if (rk > 0.8) {
+        letter(ctx, lab as string, rx + Math.cos(mid) * (R + 86), ry + Math.sin(mid) * (R + 36), 13, PAL.ink, {
+          ink: false, alpha: (rk - 0.8) / 0.2 * 0.95
+        });
+      }
+      acc += span;
+      void i;
     });
-
-    // The crowd of 738 employees holding phone lights behind Sam!
-    employeeCrowd(ctx, cx, G, t);
-
-    // Sam Altman standing in front, determined
-    samAltman(ctx, cx, G - 10, 10.0, {
-      t,
-      mood: 'determined',
-      gesture: 'arms_open',
-      talk: speaking && shot.speaker === 'Sam',
-      talkT: t
-    });
-
-    letter(ctx, 'Ilya Sutskever publicly tweeted his deep regret.', cx, 500, 17, PAL.cream, { pop: seg(lt, 3.5, 4.8) });
+    paint(ctx, ellPts(rx, ry, R * 0.42, R * 0.42, 20, 0.8), { wash: PAL.cream, ink: PAL.ink, sw: 1.4 });
+    letter(ctx, 'PBC', rx, ry, 19, OA.deep, { ink: false });
+    scientist(ctx, cx - 480, G, 9.2, { t, mood: 'normal', talk: talkCh, talkT: t, coat: OA.ink });
+    letter(ctx, 'the cap dissolves · the control thread holds', cx, 566, 18, PAL.ink, { pop: seg(lt, 5.2, 6.2) });
   }
 
   else {
-    // Tuesday night return and rebirth
-    paper(ctx, W, H, '#D4E2D8');
-    ground(ctx, W, G, '#1E293B');
+    stage(ctx, W, H, t, { tint: '#E0E4DE', night: 0.1, shaft: { x: cx - 260, alpha: 0.16 }, groundY: G + 8, groundCol: OA.teal });
+    letter(ctx, 'THE SENTENCE IS UNCHANGED', cx, 86, 32, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    letter(ctx, 'TUESDAY 3:00 AM · THE RETURN', cx, 74, 30, OA.emeraldDk, { stroke: true, pop: seg(lt, 0.15, 0.8) });
+    // the 2015 letter pinned next to the 2025 diagram
+    ctx.save();
+    ctx.translate(cx - 290, 330);
+    ctx.rotate(-0.025);
+    panel(ctx, 0, 0, 420, 290, PAL.cream);
+    letter(ctx, '2015', 0, -108, 15, PAL.ink, { ink: false, alpha: 0.7 });
+    letter(ctx, 'ensure that artificial', 0, -52, 20, PAL.ink, { ink: false });
+    letter(ctx, 'general intelligence', 0, -22, 20, PAL.ink, { ink: false });
+    letter(ctx, 'benefits all of humanity', 0, 8, 20, OA.teal, { ink: false });
+    paint(ctx, ellPts(0, -140, 9, 9, 10, 0), { wash: OA.rose, ink: PAL.ink, sw: 1 });
+    ctx.restore();
 
-    // Glass entrance of Pioneer building with cheering silhouettes
-    paint(ctx, rrPts(cx - 300, 140, 600, 340, 16, 1.6), { wash: '#0F172A', ink: PAL.ink, sw: 2 });
-    paint(ctx, rectPts(cx - 80, 240, 160, 240, 1), { wash: '#1E293B', ink: OA.emerald, sw: 1.8 });
+    const k = seg(lt, 1.2, 3.0);
+    ctx.save();
+    ctx.globalAlpha = k;
+    ctx.translate(cx + 290, 330);
+    ctx.rotate(0.02);
+    panel(ctx, 0, 0, 420, 290, PAL.cream);
+    letter(ctx, '2025', 0, -108, 15, PAL.ink, { ink: false, alpha: 0.7 });
+    letter(ctx, 'OpenAI Group PBC', 0, -56, 19, OA.violet, { ink: false });
+    letter(ctx, 'controlled by the Foundation', 0, -26, 14, PAL.ink, { ink: false, alpha: 0.85 });
+    letter(ctx, 'Microsoft ~27%', 0, 6, 14, PAL.ink, { ink: false, alpha: 0.85 });
+    letter(ctx, 'no profit cap', 0, 34, 14, OA.rose, { ink: false, alpha: 0.9 });
+    paint(ctx, ellPts(0, -140, 9, 9, 10, 0), { wash: OA.rose, ink: PAL.ink, sw: 1 });
+    ctx.restore();
 
-    // Sam Altman walking through the doors at 3 AM holding his guest pass badge!
-    samAltman(ctx, cx, G, 11.0, {
-      t,
-      mood: 'victorious',
-      gesture: 'badge',
-      talk: speaking && shot.speaker === 'Sam',
-      talkT: t
-    });
-
-    bloom(ctx, cx + 180, 280, 42, { t, face: 'happy', glowCol: OA.emeraldLt });
-
-    letter(ctx, 'Board reconstituted  ·  Founders restored  ·  Company galvanized', cx, 510, 17, OA.emeraldDk, { mono: true, pop: seg(lt, 3.2, 4.8) });
+    if (lt > 3.6) {
+      inkLine(ctx, [[cx - 80, 330], [cx + 80, 330]], 2.6, mixCol(PAL.ink, PAL.cream, 0.4), 0.3);
+      letter(ctx, 'same promise', cx, 300, 15, PAL.ink, { ink: false, alpha: seg(lt, 3.6, 4.4) * 0.9 });
+      letter(ctx, 'different machine', cx, 364, 15, PAL.ink, { ink: false, alpha: seg(lt, 4.0, 4.8) * 0.9 });
+    }
+    letter(ctx, 'that tension is the story, not a footnote', cx, 560, 18, OA.teal, { pop: seg(lt, 5.0, 6.2) });
   }
 }
 
-// ------------------------------------------------------------------ ACT 7: THE THINKING MACHINE & BEYOND
+// ---------------------------------------------------------------- ACT 7
 function act7(rc: RenderContext) {
-  const { ctx, width: W, height: H, t, shot } = rc;
+  const { ctx, width: W, height: H, t, shot, speaking } = rc;
   const cx = W / 2, lt = t - shot.startTime;
+  const talkC = speaking && shot.speaker === 'Caret';
+  const talkS = speaking && shot.speaker === 'Scientist';
 
   if (shot.id === 'oa7-1') {
-    // Project Strawberry o1 reasoning tree
-    paper(ctx, W, H, '#160D14');
-    reasoningTree(ctx, cx - 360, 70, 720, 360, t, seg(lt, 0.5, 5.0));
-    letter(ctx, 'The model no longer just predicts the next token. It verifies, plans, and thinks.', cx, 510, 17, OA.strawberry, { pop: seg(lt, 3.6, 5.0) });
+    stage(ctx, W, H, t, { tint: '#CFE0DB', night: 0.62, shaft: { x: cx, alpha: 0.12, col: OA.tealLt }, groundY: null });
+    letter(ctx, 'A BILLION CONVERSATIONS A WEEK', cx, 90, 30, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.3, 1.2) });
+
+    // a field of blinking carets
+    const cols = 26, rowsN = 11;
+    for (let r = 0; r < rowsN; r++) for (let c = 0; c < cols; c++) {
+      const i = r * cols + c;
+      const k = seg(lt, 0.4 + (i / (cols * rowsN)) * 3.2, 0.9 + (i / (cols * rowsN)) * 3.2);
+      if (k <= 0) continue;
+      const depth = r / rowsN;
+      const px = 40 + c * ((W - 80) / (cols - 1)) + Math.sin(t * 0.4 + i) * 2;
+      const py = 200 + r * 36;
+      const u = 2.6 + depth * 2.6;
+      ctx.save();
+      ctx.globalAlpha = (0.3 + depth * 0.7) * k;
+      caret(ctx, px, py, u, { t: t + hash(i) * 4, blink: true, face: 'normal', noShadow: true, seed: i });
+      ctx.restore();
+    }
+    const cnt = Math.floor(kf(lt, [[1.0, 0], [5.2, 1_000_000_000]], v => Math.pow(v, 1.7)));
+    glow(ctx, cx, 560, 230, OA.tealLt, 0.2, 3, 141);
+    letter(ctx, cnt.toLocaleString(), cx, 558, 34, OA.tealLt, { mono: true, pop: seg(lt, 1.2, 2.0) });
+    letter(ctx, 'weekly active users', cx, 592, 15, mixCol(PAL.cream, OA.mist, 0.3), { ink: false, alpha: 0.9 });
+    void talkC;
   }
 
   else if (shot.id === 'oa7-2') {
-    // Sora video worlds & the data wall
-    paper(ctx, W, H, '#0B1120');
-    letter(ctx, 'SORA & THE SYNTHETIC BOUNDARY (2024)', cx, 74, 28, OA.azureLt, { stroke: true, pop: seg(lt, 0.15, 0.8) });
+    stage(ctx, W, H, t, { tint: '#DDE3E0', night: 0.2, groundY: G + 8, groundCol: OA.slate });
+    letter(ctx, 'THE TWO CURVES', cx, 86, 36, PAL.ink, { pop: seg(lt, 0.15, 0.9) });
 
-    // Floating photorealistic video panels
-    const vids = [
-      { x: cx - 320, y: 140, w: 200, h: 140, title: 'Neon Tokyo in the Snow' },
-      { x: cx - 100, y: 140, w: 200, h: 140, title: 'Woolly Mammoth Herd' },
-      { x: cx + 120, y: 140, w: 200, h: 140, title: 'California Gold Rush 1849' }
-    ];
+    const baseY = 500, h = 300;
+    const kk = seg(lt, 0.5, 4.6);
+    // revenue
+    const rh = h * 0.52 * kk;
+    paint(ctx, rrPts(cx - 250 - 90, baseY - rh, 180, rh, 8, 1.4), { wash: OA.teal, ink: PAL.ink, sw: 1.6 });
+    letter(ctx, 'REVENUE', cx - 250, baseY + 28, 16, PAL.ink, { ink: false });
+    letter(ctx, 'tens of $B / yr', cx - 250, baseY - rh - 24, 17, OA.teal, { ink: false, alpha: kk });
+    // commitments
+    const ch = h * 0.95 * kk;
+    paint(ctx, rrPts(cx + 250 - 90, baseY - ch, 180, ch, 8, 1.4), { wash: OA.rose, ink: PAL.ink, sw: 1.6 });
+    letter(ctx, 'COMMITMENTS', cx + 250, baseY + 28, 16, PAL.ink, { ink: false });
+    letter(ctx, 'multi-year, far larger', cx + 250, baseY - ch - 24, 17, OA.rose, { ink: false, alpha: kk });
+    inkLine(ctx, [[cx - 430, baseY], [cx + 430, baseY]], 2.4, PAL.ink, 0);
 
-    vids.forEach((v) => {
-      paint(ctx, rrPts(v.x, v.y, v.w, v.h, 12, 1), { wash: '#1E293B', ink: OA.azure, sw: 1.5 });
-      letter(ctx, v.title, v.x + v.w / 2, v.y + v.h / 2, 10.5, PAL.cream, { mono: true, ink: false });
-    });
-
-    // The data wall gauge
-    paint(ctx, rrPts(cx - 240, 320, 480, 60, 10, 1), { wash: '#111827', ink: OA.strawberry, sw: 1.4 });
-    letter(ctx, 'HUMAN TEXT DATA SUPPLY: 100% EXHAUSTED', cx, 354, 13, OA.strawberry, { mono: true, stroke: true });
-
-    letter(ctx, 'Pre-training on human text had run its course. Self-play reasoning was the new frontier.', cx, 500, 17, PAL.cream, { pop: seg(lt, 3.5, 4.8) });
+    if (kk > 0.9) {
+      const gap = (kk - 0.9) / 0.1;
+      inkLine(ctx, [[cx - 250, baseY - rh - 44], [cx + 250, baseY - ch - 44]], 2.2, mixCol(PAL.ink, PAL.cream, 0.4), 0.3);
+      letter(ctx, 'the bet: the first curve catches the second', cx, 180, 18, PAL.ink, { pop: gap });
+    }
+    scientist(ctx, cx - 470, G, 9.2, { t, mood: 'normal', talk: talkS, talkT: t, coat: OA.deep, prop: 'tablet' });
+    caret(ctx, cx + 460, G, 13, { t, face: 'think', emote: '…', emoteK: 1, seed: 15 });
   }
 
   else if (shot.id === 'oa7-3') {
-    // Project Stargate desert supercluster
-    paper(ctx, W, H, '#0B0D18');
-    stargateComplex(ctx, W, H, t);
-    letter(ctx, 'Turning the energy of nations into thought.', cx, 530, 20, OA.emeraldLt, { stroke: true, pop: seg(lt, 3.0, 4.6) });
+    stage(ctx, W, H, t, { tint: '#D8E2DE', night: 0.3, shaft: { x: cx - 220, alpha: 0.14 }, groundY: G + 8, groundCol: OA.teal });
+    letter(ctx, 'THE QUESTION IS STILL OPEN', cx, 86, 32, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 0.15, 0.9) });
+
+    bloom(ctx, cx - 250, 330, 135, { t, lit: 6, energy: 1, spin: 0.5, seed: 151 });
+
+    panel(ctx, cx + 250, 330, 460, 280, PAL.cream);
+    letter(ctx, 'MEASURED', cx + 250, 248, 14, OA.teal, { ink: false });
+    ['benchmarks', 'users', 'revenue'].forEach((s, i) => {
+      const k = seg(lt, 0.6 + i * 0.4, 1.0 + i * 0.4);
+      letter(ctx, `✓ ${s}`, cx + 250, 282 + i * 26, 15, PAL.ink, { ink: false, alpha: k * 0.9 });
+    });
+    letter(ctx, 'UNMEASURED', cx + 250, 376, 14, OA.rose, { ink: false, alpha: seg(lt, 2.0, 2.6) });
+    ['understanding', 'intent', 'alignment'].forEach((s, i) => {
+      const k = seg(lt, 2.2 + i * 0.4, 2.6 + i * 0.4);
+      letter(ctx, `? ${s}`, cx + 250, 410 + i * 26, 15, PAL.ink, { ink: false, alpha: k * 0.9 });
+    });
+    // the unticked box
+    const bk = seg(lt, 3.6, 4.4);
+    if (bk > 0) {
+      ctx.save(); ctx.globalAlpha = bk;
+      paint(ctx, rrPts(cx - 390, 500, 30, 30, 5, 0.8), { ink: PAL.ink, sw: 2.2 });
+      letter(ctx, 'benefits all of humanity', cx - 230, 515, 17, PAL.ink, { ink: false, alpha: 0.95 });
+      ctx.restore();
+    }
+    letter(ctx, 'we shipped the first list and kept arguing about the second', cx, 566, 17, mixCol(PAL.cream, OA.mist, 0.2), { pop: seg(lt, 4.4, 5.4) });
   }
 
   else {
-    // The awakened dawn & human future
-    paper(ctx, W, H, '#0A131F');
+    // ---- curtain call ----
+    stage(ctx, W, H, t, { tint: '#DEC9A6', night: 0 });
+    curtainCall(ctx, W, H, t, lt, 1, OA.teal);
 
-    // Earth globe with emerald lattice constellation
-    const earthY = 460;
-    paint(ctx, ellPts(cx, earthY, 220, 220, 28, 0), { wash: '#0D2847', ink: OA.emeraldLt, sw: 2 });
-    // Continents
-    paint(ctx, ellPts(cx - 60, earthY - 40, 80, 50, 14, 2), { wash: '#1E3A5F', ink: null });
-    paint(ctx, ellPts(cx + 80, earthY + 20, 90, 60, 14, 2), { wash: '#1E3A5F', ink: null });
+    const nightK = seg(lt, 0.3, 1.2);
+    glow(ctx, cx, 260, 230 * nightK, OA.deep, 0.5, 4, 161);
+    paint(ctx, ellPts(cx, 260, 220 * nightK + 20, 165 * nightK + 16, 26, 3), {
+      fill: OA.deep, fillOp: 230, bleed: 0.1, tex: 0.5, ink: null
+    });
+    letter(ctx, '2015:  A LETTER ABOUT EVERYONE', cx, 222, 23, PAL.cream, { pop: seg(lt, 0.7, 1.5) });
+    letter(ctx, '2026:  A BOX THAT WAITS FOR YOU', cx, 266, 23, OA.tealLt, { pop: seg(lt, 1.3, 2.1) });
 
-    // The OpenAI Bloom ascending into the sky
-    const bloomY = 220 + Math.sin(t * 1.5) * 14;
-    bloom(ctx, cx, bloomY, 54, {
-      t,
-      glow: true,
-      glowCol: OA.emeraldLt,
-      complexity: 1,
-      face: 'happy'
+    // Caret alone in a single spot, bows, then blinks
+    const bowK = 0.5 + wob(t, 0.5) * 0.5;
+    const bow = lt > 2.2 ? bowK * 0.4 : 0;
+    glow(ctx, cx, 520, 150, OA.amber, 0.2, 3, 165);
+    caret(ctx, cx, 548, 20, {
+      t, face: 'happy', dy: -bow * 0.5, sq: bow * 0.35,
+      blink: lt > 3.6, talk: false, seed: 9,
+      emote: 'spark', emoteK: seg(lt, 2.6, 3.4)
     });
 
-    // Constellation lines linking Bloom to Earth
-    for (let i = -4; i <= 4; i++) {
-      const ex = cx + i * 40;
-      inkLine(ctx, [[cx, bloomY + 40], [ex, earthY - 180]], 1.5, OA.emeraldLt, 0.3);
+    for (let i = 0; i < 6; i++) {
+      const ax = 100 + i * ((W - 200) / 5);
+      const aAge = ((lt * 1.7 + i * 0.5) % 1.8);
+      if (aAge > 0.2 && lt > 1.8) {
+        paint(ctx, starPts(ax, 650 - aAge * 30, 14 * (1 - aAge / 1.8), 0.45, 3), {
+          wash: mixCol(PAL.clayLt, OA.amber, 0.4), ink: null, alpha: 1 - aAge / 1.8
+        });
+      }
     }
-
-    letter(ctx, 'TO BENEFIT ALL OF HUMANITY', cx, 84, 32, PAL.cream, { stroke: true, pop: seg(lt, 0.5, 1.8) });
-    letter(ctx, 'Ten years from a hotel dinner in the rain. The machine has awakened.', cx, 510, 18, OA.emeraldLt, { pop: seg(lt, 2.5, 4.0) });
+    curtains(ctx, W, H, kf(lt, [[0, 0], [2.6, 0], [4.8, 1]], v => v * v * (3 - 2 * v)));
+    letter(ctx, 'still waiting for input', W - 140, H - 60, 19, PAL.cream, { alpha: seg(lt, 3.4, 4.4), rot: -0.04 });
   }
+  void frac;
 }
