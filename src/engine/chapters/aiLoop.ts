@@ -696,9 +696,9 @@ function finalQuestion(rc: RenderContext) {
     paint(ctx, ellPts(75, y, 4, 4, 8, 0), { wash: C.gold, ink: null });
     paint(ctx, ellPts(645, y, 4, 4, 8, 0), { wash: C.gold, ink: null });
   }
-  // The final scene pre-rolls by three seconds; reveal each line on its sung phrase.
-  letter(ctx, 'IS IT A BUBBLE?', cx, 327, 39, C.ink, { pop: seg(lt, 3.0, 3.8) });
-  letter(ctx, 'WILL IT POP?', cx, 404, 43, C.rust, { pop: seg(lt, 4.35, 5.15) });
+  // The final question now pre-rolls by four seconds; reveal each line at the start of its phrase.
+  letter(ctx, 'IS IT A BUBBLE?', cx, 327, 39, C.ink, { pop: seg(lt, 0.15, 0.8) });
+  letter(ctx, 'WILL IT POP?', cx, 404, 43, C.rust, { pop: seg(lt, 1.35, 2.05) });
   // Whole cast shares one painted stage, each carrying a distinct thing.
   gpuPerson(ctx, cx - 225, FLOOR, 20, t, { hat: 'top', eyes: 'look', mouth: 'flat' });
   worker(ctx, cx - 71, FLOOR, 22, t, C.blue, 'point');

@@ -61,10 +61,10 @@ for (const group of groups) {
 
 /**
  * Audio cue positions remain estimates; the picture starts slightly ahead to
- * anticipate sung phrases. The final question has an additional 3-second lead,
- * calibrated from the user's report that the lyric preceded its picture.
+ * anticipate sung phrases. The final question has an additional 4-second lead,
+ * calibrated from the user's report that the lyric preceded its picture by 3–5 seconds.
  */
-const visualLeadFor = (index: number) => index === lines.length - 1 ? 3.0 : index === 0 ? 0 : 0.35;
+const visualLeadFor = (index: number) => index === lines.length - 1 ? 4.0 : index === 0 ? 0 : 0.35;
 export const AI_LOOP_SYNC_CUES: SongSyncCue[] = lines.map(({ label, section }, i) => {
   const [at, to] = lineRanges[i];
   const visualAt = Math.max(i === 0 ? 0 : AI_LOOP_FIRST_VOCAL_ESTIMATE, at - visualLeadFor(i));

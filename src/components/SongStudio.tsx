@@ -181,7 +181,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
               })}
             </div>
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed">
-              Section boundaries are estimated from the stereo mix; individual line boundaries are syllable-weighted estimates, not forced-aligned word onsets. The final-question scene pre-rolls by 3 seconds from your timing note, with the two title lines revealed on the estimated lyric cue. Song mode remains caption-free.
+              Section boundaries are estimated from the stereo mix; individual line boundaries are syllable-weighted estimates, not forced-aligned word onsets. Following your correction, the complete final-question scene—including both title reveals—now pre-rolls by 4 seconds to address the reported 3–5 second lag. Song mode remains caption-free.
             </p>
           </div>
           {(song.stylePrompt || song.lyrics) && (
