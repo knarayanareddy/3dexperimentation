@@ -17,6 +17,8 @@ class TrackEngine {
   public get ready() { return this._ready; }
   public get name() { return this._name; }
   public get duration() { return this.el?.duration && isFinite(this.el.duration) ? this.el.duration : 0; }
+  /** Current audio source for the separate export recorder (including local object URLs). */
+  public getSourceForExport() { return this.objectUrl || this.sourceKey || this.el?.src || ''; }
   public get playing() { return !!this.el && !this.el.paused && !this.el.ended; }
 
   public getOffset() { return this.offset; }

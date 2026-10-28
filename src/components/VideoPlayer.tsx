@@ -4,7 +4,7 @@ import {
   SkipBack, SkipForward, ChevronLeft, ChevronRight, Code2,
   Mic, MicOff, Music, Camera, Subtitles, Music4, MessageSquare
 } from 'lucide-react';
-import { Film, filmShotIndexAt, filmChapterAt, filmShotAt, shotDur } from '../data/films';
+import { Film, filmShotIndexAt, filmChapterAt, filmShotAt, shotDur, filmTimeForSongAt, songTimeForFilmAt } from '../data/films';
 import { renderFrame } from '../engine/animator';
 import { audioEngine } from '../engine/audioEngine';
 import { trackEngine } from '../engine/track';
@@ -31,19 +31,22 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
 
   const SHOTS = film.shots;
   const TOTAL_DURATION = film.duration;
+  const canvasWidth = film.canvasWidth ?? 1280;
+  const canvasHeight = film.canvasHeight ?? 720;
+  const isPortrait = canvasHeight > canvasWidth;
   const filmRef = useRef<Film>(film);
   useEffect(() => { filmRef.current = film; }, [film]);
   const previousFilmRef = useRef(film.id);
 
-  const [mode, setMode] = useState<Mode>('narration');
+  const [mode, setMode] = useState<Mode>(() => film.songDefault && film.hasSong ? 'song' : 'narration');
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [playbackRate, setPlaybackRate] = useState<number>(1);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(0.8);
-  const [narrationEnabled, setNarrationEnabled] = useState<boolean>(true);
-  const [musicEnabled, setMusicEnabled] = useState<boolean>(true);
-  const [captionsVisible, setCaptionsVisible] = useState<boolean>(true);
+  const [narrationEnabled, setNarrationEnabled] = useState<boolean>(film.narrationDefault ?? true);
+  const [musicEnabled, setMusicEnabled] = useState<boolean>(film.musicDefault ?? true);
+  const [captionsVisible, setCaptionsVisible] = useState<boolean>(film.captionsDefault ?? true);
   const [showCodeHUD, setShowCodeHUD] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
@@ -92,7 +95,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
   }, []);
 
   useEffect(() => { modeRef.current = (mode === 'song' && film.hasSong) ? 'song' : 'narration'; }, [mode, film]);
-  // a film with no finished song can only play narrated
+  useEffect(() => {
+    if (previousFilmRef.current !== film.id || mode !== 'song' || !film.hasSong || !film.song?.url || trackEngine.ready) return;
+    let active = true;
+    setTrackLoading(true);
+    trackEngine.ensureDefault(film.song.url)
+      .then(() => { if (active) setTrackTick(n => n + 1); })
+      .finally(() => { if (active) setTrackLoading(false); });
+    return () => { active = false; };
+  }, [mode, film]);
+  // a film with no song map can only use the silent/narration transport
   useEffect(() => {
     if (!film.hasSong && mode === 'song') setMode('narration');
   }, [film, mode]);
@@ -148,7 +160,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
     setCurrentTime(clamped);
     onTimeUpdate?.(clamped);
     if (modeRef.current === 'song' && trackEngine.ready && film.song) {
-      const st = film.song.songTimeForFilm(clamped);
+      const st = songTimeForFilmAt(film, clamped, trackEngine.duration);
       trackEngine.seekSec(st);
       setSongSec(st);
     }
@@ -163,15 +175,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
     if (previousFilmRef.current === film.id) return;
     previousFilmRef.current = film.id;
     setIsPlaying(false);
-    setMode('narration');
-    modeRef.current = 'narration';
+    const nextMode: Mode = film.songDefault && film.hasSong ? 'song' : 'narration';
+    setMode(nextMode);
+    modeRef.current = nextMode;
+    setNarrationEnabled(film.narrationDefault ?? true);
+    setMusicEnabled(film.musicDefault ?? true);
+    setCaptionsVisible(film.captionsDefault ?? true);
     audioEngine.interrupt();
     audioEngine.stopMusic();
     trackEngine.dispose();
     setSongSec(0);
     setSyncNudge(0);
     applySeek(0, true);
-  }, [film.id, applySeek]);
+  }, [film.id, film.songDefault, film.hasSong, film.narrationDefault, film.musicDefault, film.captionsDefault, applySeek]);
 
   const togglePlay = useCallback(() => {
     setIsPlaying((prev) => {
@@ -180,7 +196,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
         if (nominalTime() >= TOTAL_DURATION - 0.05) applySeek(0, true);
         if (modeRef.current === 'song') {
           if (trackEngine.ready && film.song) {
-            trackEngine.playSec(film.song.songTimeForFilm(nominalTime()));
+            trackEngine.playSec(songTimeForFilmAt(film, nominalTime(), trackEngine.duration));
           }
         } else if (musicEnabled && !isMuted) {
           audioEngine.startMusic();
@@ -210,12 +226,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
     setMode(m);
     modeRef.current = m;
     applySeek(0, true);
-    if (m === 'song' && film.song) {
-      setTrackLoading(true);
-      trackEngine.ensureDefault(film.song.url)
-        .then(() => { setTrackTick(n => n + 1); })
-        .finally(() => setTrackLoading(false));
-    }
   }, [applySeek, film]);
 
   const toggleFullscreen = () => {
@@ -274,7 +284,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
         const song = filmRef.current.song;
         if (trackEngine.ready && song) {
           const sec = trackEngine.time();            // absolute song seconds (+nudge)
-          const nominal = song.filmTimeForSong(sec); // measured cue -> film map
+          const nominal = filmTimeForSongAt(film, sec, trackEngine.duration); // measured cue -> film map
           const idx = filmShotIndexAt(film, nominal);
           shotIdxRef.current = idx;
           shotLocalRef.current = nominal - SHOTS[idx].startTime;
@@ -360,7 +370,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
       const sIdx = shotIdxRef.current;
       const renderT = SHOTS[sIdx].startTime + Math.min(shotLocalRef.current, shotDur(SHOTS[sIdx]) - 0.001);
 
-      renderFrame(filmRef.current, ctx, 1280, 720, renderT, dt, isSpeaking, boilClockRef.current);
+      renderFrame(filmRef.current, ctx, canvasWidth, canvasHeight, renderT, dt, isSpeaking, boilClockRef.current);
 
       animFrameIdRef.current = requestAnimationFrame(loop);
     };
@@ -370,7 +380,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
       mounted = false;
       if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
     };
-  }, [isPlaying, isSpeaking, onTimeUpdate, nominalTime, film]);
+  }, [isPlaying, isSpeaking, onTimeUpdate, nominalTime, film, canvasWidth, canvasHeight]);
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
 
@@ -382,11 +392,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
       className={`relative flex flex-col w-full bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden transition-all ${isFullscreen ? 'p-0 rounded-none' : ''}`}
     >
       {/* Stage — pure cinema, no overlays */}
-      <div className="relative w-full aspect-video bg-black overflow-hidden select-none group">
+      <div
+        className="relative bg-black overflow-hidden select-none group"
+        style={{
+          width: isPortrait ? `min(100%, calc(80vh * ${canvasWidth / canvasHeight}))` : '100%',
+          aspectRatio: `${canvasWidth} / ${canvasHeight}`,
+          maxHeight: isPortrait ? '80vh' : undefined,
+          marginInline: 'auto'
+        }}
+      >
         <canvas
           ref={canvasRef}
-          width={1280}
-          height={720}
+          width={canvasWidth}
+          height={canvasHeight}
           className="w-full h-full object-contain block"
           onClick={togglePlay}
         />
@@ -434,6 +452,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
       {/* Song Studio — Suno prompt + load your generated track */}
       {isSongMode && !isFullscreen && (
         <SongStudio
+          film={film}
           song={film.song!}
           onLoaded={() => { setTrackTick(n => n + 1); applySeek(0, true); }}
           nudge={syncNudge}
