@@ -59,11 +59,20 @@ for (const group of groups) {
   });
 }
 
-/** One cue per lyric line; visuals follow each phrase rather than a linear 20-way split. */
+/**
+ * Audio cue positions remain estimates; the picture starts slightly ahead to
+ * anticipate sung phrases. The final question has an additional 3-second lead,
+ * calibrated from the user's report that the lyric preceded its picture.
+ */
+const visualLeadFor = (index: number) => index === lines.length - 1 ? 3.0 : index === 0 ? 0 : 0.35;
 export const AI_LOOP_SYNC_CUES: SongSyncCue[] = lines.map(({ label, section }, i) => {
   const [at, to] = lineRanges[i];
-  const nextAt = lineRanges[i + 1]?.[0] ?? AI_LOOP_TRACK_DURATION;
-  return { at, to, film: [at, nextAt], label, section };
+  const visualAt = Math.max(i === 0 ? 0 : AI_LOOP_FIRST_VOCAL_ESTIMATE, at - visualLeadFor(i));
+  const nextAudioAt = lineRanges[i + 1]?.[0];
+  const visualTo = nextAudioAt == null
+    ? AI_LOOP_TRACK_DURATION
+    : Math.max(visualAt + 0.15, nextAudioAt - visualLeadFor(i + 1));
+  return { at, to, film: [visualAt, visualTo], label, section };
 });
 
 /** Song and film share a clock so phrase-level scene changes stay attached to the audio. */
@@ -91,7 +100,7 @@ export const AI_LOOP_SCENE_TIMES = [
         : index < 12 ? `loop3-${index - 7}`
           : index < 16 ? `loop4-${index - 11}`
             : `loop5-${index - 15}`,
-    from: cue.at,
+    from: cue.film[0],
     to: cue.film[1],
     label: cue.label
   }))

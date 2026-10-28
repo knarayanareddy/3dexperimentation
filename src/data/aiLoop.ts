@@ -153,15 +153,15 @@ export const AI_LOOP_CHAPTERS: Chapter[] = [
     '#D99145', '#2B8C82', 'A cast of chips, builders, cloud operators, researchers, and investors takes the stage.', [
       { id: 'loop0-1', chapterId: 'loop0', startTime: 0, endTime: AI_LOOP_FIRST_VOCAL_ESTIMATE, speaker: 'Narrator', cue: 'THE MONEY LOOP', read: 'The curtain rises on the AI-finance music hall.', visualPrompt: 'A moving cast, marquee, curtain and looping paper contracts; hold the title across the instrumental intro.', technicalNote: 'The title sequence intentionally occupies the instrumental opening before the estimated first sung line.' }
     ]),
-  chapter('loop1', 1, 'A Theatre of Deals', 'Different contracts pass through the same cast', 8.7, 42.8,
+  chapter('loop1', 1, 'A Theatre of Deals', 'Different contracts pass through the same cast', AI_LOOP_SCENE_TIMES[1].from, AI_LOOP_SCENE_TIMES[6].from,
     '#3A9C98', '#E8AA38', 'The first verse turns a complex financial network into a hand-to-hand vaudeville routine.', [0, 1, 2, 3, 4].map((i) => makeShot('loop1', i, i + 1))),
-  chapter('loop2', 2, 'Headlines & Hardware', 'Separate announcements; very physical build-outs', 42.8, 61.1,
+  chapter('loop2', 2, 'Headlines & Hardware', 'Separate announcements; very physical build-outs', AI_LOOP_SCENE_TIMES[6].from, AI_LOOP_SCENE_TIMES[9].from,
     '#E8AA38', '#D97757', 'A large letter of intent, later investment reporting, cloud commitments, and construction each get distinct staging.', [5, 6, 7].map((i) => makeShot('loop2', i, i + 1))),
-  chapter('loop3', 3, 'The Conditions', 'Supplier stakes, residual capacity, and fine print', 61.1, 78,
+  chapter('loop3', 3, 'The Conditions', 'Supplier stakes, residual capacity, and fine print', AI_LOOP_SCENE_TIMES[9].from, AI_LOOP_SCENE_TIMES[13].from,
     '#7B5CA8', '#E8AA38', 'The characters carry the clauses on stage so the conditions remain legible without flattening them into cards.', [8, 9, 10, 11].map((i) => makeShot('loop3', i, i + 1))),
-  chapter('loop4', 4, 'Receipts vs. Reality', 'Real infrastructure; different dates and accounts', 78, 102.2,
+  chapter('loop4', 4, 'Receipts vs. Reality', 'Real infrastructure; different dates and accounts', AI_LOOP_SCENE_TIMES[13].from, AI_LOOP_SCENE_TIMES[17].from,
     '#2F7180', '#E8AA38', 'Workers, cash drawers, contracts, ledgers, and partner relationships occupy one changing stage.', [12, 13, 14, 15].map((i) => makeShot('loop4', i, i + 1))),
-  chapter('loop5', 5, 'The Open Question', 'The bull case, bear case, and a held domino', 102.2, AI_LOOP_TRACK_DURATION,
+  chapter('loop5', 5, 'The Open Question', 'The bull case, bear case, and a held domino', AI_LOOP_SCENE_TIMES[17].from, AI_LOOP_TRACK_DURATION,
     '#CE83A3', '#E8AA38', 'A hopeful case and a cautious case are staged as equally real possibilities; the ending stays unresolved.', [16, 17, 18, 19].map((i) => makeShot('loop5', i, i + 1)))
 ];
 

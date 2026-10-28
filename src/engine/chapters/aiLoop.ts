@@ -4,6 +4,7 @@ import {
   letter, sfx, arrow, wob, kf, seg, mixCol
 } from '../painter';
 import { clawd, researcher, steamEngine, ClawdOpts } from '../characters';
+import { brandLockup } from '../brandMarks';
 
 const C = {
   ink: PAL.ink, paper: PAL.paper, cream: PAL.cream, green: '#4B9D65', greenLt: '#A5CB8B',
@@ -110,6 +111,8 @@ function gpuPerson(ctx: CanvasRenderingContext2D, x: number, y: number, u: numbe
     aL: 0.45 + wob(t, 0.55) * 0.45, aR: -0.4 + wob(t, 0.55, 0.25) * 0.5,
     ...opts
   });
+  // Clear company identifier on the recurring GPU-supplier character.
+  brandLockup(ctx, 'nvidia', x, y - 2.85 * u, Math.min(32, u * 1.05), true);
 }
 
 function cloudCharacter(ctx: CanvasRenderingContext2D, x: number, footY: number, scale: number, t: number, name = 'CLOUD', tint = C.blue) {
@@ -332,6 +335,8 @@ function loiBanner(rc: RenderContext) {
   worker(ctx, cx - 225, FLOOR, 27, t, C.blue, 'point');
   gpuPerson(ctx, cx + 214, FLOOR, 24, t, { hat: 'top', eyes: 'scared', mouth: 'O', emote: 'sweat', emoteK: 0.9 });
   auditorOwl(ctx, cx + 80, 902, 0.52, t);
+  brandLockup(ctx, 'nvidia', cx - 118, 643, 26, true);
+  brandLockup(ctx, 'openai', cx + 118, 643, 26, true);
   ticket(ctx, cx, 761, 232, 74, 'SYSTEMS PLAN', 'progressive framework', C.blue, 0.02);
   sfx(ctx, '*', cx + 292, 354, 52, C.red, lt - 1.1, { life: 3.5 });
   footer(ctx, '“UP TO” IS NOT “PAID IN FULL”');
@@ -345,6 +350,8 @@ function separateRound(rc: RenderContext) {
   paint(ctx, rectPts(cx - 3, 260, 6, 620, 0.4), { wash: C.red, ink: null });
   ticket(ctx, cx - 168, 514, 272, 182, 'UP TO $100B', '2025 · LETTER OF INTENT', C.green, -0.035);
   ticket(ctx, cx + 169, 514, 272, 182, '≈ $30B', '2026 · REPORTED ROUND', C.blue, 0.035);
+  brandLockup(ctx, 'nvidia', cx - 168, 640, 25, true);
+  brandLockup(ctx, 'openai', cx + 169, 640, 25, true);
   for (let i = 0; i < 5; i++) {
     const y = 660 + i * 40;
     inkLine(ctx, [[92, y], [cx - 45 - i * 7, y]], 1.3, mixCol(C.green, C.cream, 0.35), 0.1);
@@ -360,7 +367,8 @@ function azureReceipt(rc: RenderContext) {
   const { ctx, width: W, t } = rc, cx = W / 2;
   backdrop(rc, 'Chorus · a very long cloud receipt', '#C8D7D6', C.blue);
   headline(ctx, 'THE RECEIPT REACHES THE FLOOR.', 150, 28);
-  cloudCharacter(ctx, cx, 515 + Math.sin(t * 1.4) * 5, 0.84, t, 'AZURE', '#70ACCF');
+  cloudCharacter(ctx, cx, 515 + Math.sin(t * 1.4) * 5, 0.84, t, '', '#70ACCF');
+  brandLockup(ctx, 'microsoftAzure', cx, 445 + Math.sin(t * 1.4) * 4, 24, true);
   rackCharacter(ctx, cx + 189, FLOOR, 144, 403, t, 4, false);
   // Paper snakes down and curls around the server; the worker has to hold it back.
   paint(ctx, [[cx - 11, 568], [cx + 4, 613], [cx - 16, 658], [cx + 13, 703], [cx - 6, 748], [cx + 12, 793], [cx - 3, 841], [cx - 52, 874], [cx - 164, 882]], { fill: C.cream, fillOp: 240, bleed: 0.15, tex: 0.3, border: 0.12, ink: C.ink, sw: 1.5, curv: 0.4 });
@@ -376,6 +384,7 @@ function oracleBuild(rc: RenderContext) {
   backdrop(rc, 'Chorus · five years on the calendar', '#DCC7AA', C.orange);
   headline(ctx, 'THE PALACE TAKES PEOPLE AND POWER.', 149, 27);
   constructionSite(ctx, cx - 18, 1024, t, seg(lt, 0.3, 4.6));
+  brandLockup(ctx, 'oracle', cx - 18, 666, 27, true);
   // Two workers move on separate tasks; the date cards flip overhead.
   worker(ctx, cx - 261, FLOOR, 19, t, C.gold, 'walk');
   worker(ctx, cx + 206, FLOOR, 20, t, C.blue, 'point');
@@ -445,6 +454,7 @@ function residualOrder(rc: RenderContext) {
   // Clerk's moving tag is tethered to an empty slot.
   const y = rack.top + 265 + Math.sin(t * 2.8) * 5;
   ticket(ctx, cx - 200, 565 + Math.sin(t * 1.7) * 6, 209, 107, '$6.3B', 'initial order value', C.orange, -0.08);
+  brandLockup(ctx, 'coreweave', cx - 200, 529 + Math.sin(t * 1.7) * 6, 23, false);
   inkLine(ctx, [[cx - 96, 622], [cx - 65, 703], [cx - 36, y + 23]], 2, C.orange, 0.25);
   gpuPerson(ctx, cx + 244, FLOOR, 19, t, { hat: 'hard', eyes: 'normal', mouth: 'flat' });
   sfx(ctx, 'IF UNUSED', cx - 195, 730, 17, C.rust, lt - 0.8, { life: 4.5 });
@@ -482,6 +492,7 @@ function noGuarantee(rc: RenderContext) {
   bearInvestor(ctx, cx - 168, FLOOR, 0.8, t, 'worried');
   auditorOwl(ctx, cx + 213, FLOOR - 10, 0.78, t);
   ticket(ctx, cx, 601, 331, 164, 'CAPACITY ORDER', 'delivery · availability · terms', C.orange, Math.sin(t * 0.7) * 0.018);
+  brandLockup(ctx, 'coreweave', cx, 724, 22, true);
   // Magnifying glass bobs over the fine print without obscuring the headline.
   const lensY = 816 + Math.sin(t * 1.5) * 8;
   paint(ctx, ellPts(cx + 167, lensY, 72, 72, 30, 0.3), { fill: C.blueLt, fillOp: 90, bleed: 0.1, border: 0.3, ink: C.ink, sw: 3 });
@@ -552,6 +563,8 @@ function twoDrawers(rc: RenderContext) {
   letter(ctx, 'REVENUE', cx + 129, 506, 20, C.blue, { mono: true, ink: false });
   letter(ctx, 'investment', cx - 129, 544, 15, C.ink, { mono: true, ink: false });
   letter(ctx, 'delivered sale', cx + 129, 544, 14, C.ink, { mono: true, ink: false });
+  brandLockup(ctx, 'openai', cx - 129, 578, 16, false);
+  brandLockup(ctx, 'microsoftAzure', cx + 129, 578, 16, false);
   ticket(ctx, cx - 128, 734, 145, 48, 'STAKE', 'certificate', C.green, -0.08);
   ticket(ctx, cx + 128, 734, 145, 48, 'SALE', 'invoice', C.blue, 0.08);
   // The cashier gently turns the chip's stamp toward the right drawer.
@@ -564,6 +577,11 @@ function relationshipStage(rc: RenderContext) {
   const { ctx, width: W, t } = rc, cx = W / 2, lt = age(rc);
   backdrop(rc, 'Bridge · same names, distinct contracts', '#D0D3C7', C.plum);
   headline(ctx, 'FOLLOW THE ARROWS. READ THEIR LABELS.', 151, 26);
+  brandLockup(ctx, 'nvidia', 89, 284, 19, true);
+  brandLockup(ctx, 'openai', 224, 284, 19, true);
+  brandLockup(ctx, 'microsoftAzure', 361, 284, 18, true);
+  brandLockup(ctx, 'oracle', 497, 284, 19, true);
+  brandLockup(ctx, 'coreweave', 634, 284, 18, true);
   const pts = [
     [cx, 389], [cx - 221, 640], [cx + 221, 640], [cx, 914]
   ] as const;
@@ -671,15 +689,16 @@ function finalQuestion(rc: RenderContext) {
   const { ctx, width: W, t } = rc, cx = W / 2, lt = age(rc);
   backdrop(rc, 'Final chorus · the house lights stay open', '#D8C9AE', C.gold);
   // The curtain moves only halfway. Everyone freezes with an object mid-handoff.
-  paint(ctx, [[28, 168], [226, 168], [194, 954], [28, 1044]], { wash: '#8B4E49', ink: C.ink, sw: 1.8, curv: 0.16 });
-  paint(ctx, [[692, 168], [494, 168], [526, 954], [692, 1044]], { wash: '#8B4E49', ink: C.ink, sw: 1.8, curv: 0.16 });
+  paint(ctx, [[28, 168], [170, 168], [150, 954], [28, 1044]], { wash: '#8B4E49', ink: C.ink, sw: 1.8, curv: 0.16 });
+  paint(ctx, [[692, 168], [550, 168], [570, 954], [692, 1044]], { wash: '#8B4E49', ink: C.ink, sw: 1.8, curv: 0.16 });
   for (let i = 0; i < 6; i++) {
     const y = 240 + i * 120;
     paint(ctx, ellPts(75, y, 4, 4, 8, 0), { wash: C.gold, ink: null });
     paint(ctx, ellPts(645, y, 4, 4, 8, 0), { wash: C.gold, ink: null });
   }
-  letter(ctx, 'IS IT A BUBBLE?', cx, 327, 39, C.ink, { pop: seg(lt, 0.25, 1.1) });
-  letter(ctx, 'WILL IT POP?', cx, 404, 43, C.rust, { pop: seg(lt, 1.15, 2.1) });
+  // The final scene pre-rolls by three seconds; reveal each line on its sung phrase.
+  letter(ctx, 'IS IT A BUBBLE?', cx, 327, 39, C.ink, { pop: seg(lt, 3.0, 3.8) });
+  letter(ctx, 'WILL IT POP?', cx, 404, 43, C.rust, { pop: seg(lt, 4.35, 5.15) });
   // Whole cast shares one painted stage, each carrying a distinct thing.
   gpuPerson(ctx, cx - 225, FLOOR, 20, t, { hat: 'top', eyes: 'look', mouth: 'flat' });
   worker(ctx, cx - 71, FLOOR, 22, t, C.blue, 'point');
@@ -691,6 +710,5 @@ function finalQuestion(rc: RenderContext) {
   ctx.save(); ctx.translate(cx, 925); ctx.rotate(Math.sin(t * 1.5) * 0.018);
   paint(ctx, rrPts(-27, -119, 54, 238, 7, 0.6), { wash: C.gold, ink: C.ink, sw: 1.4 });
   letter(ctx, '?', 0, -2, 47, C.ink, { mono: true, ink: false }); ctx.restore();
-  letter(ctx, 'REAL OPPORTUNITY. REAL RISK. NO CRASH DATE.', cx, 1034, 13, C.ink, { mono: true, ink: false });
-  footer(ctx, 'FOLLOW THE CASH · CHECK THE TERMS · ASK AGAIN');
+  footer(ctx, 'REAL OPPORTUNITY · REAL RISK · NO CRASH DATE');
 }
