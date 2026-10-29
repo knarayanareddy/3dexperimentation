@@ -173,6 +173,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
   // to the opening frame so no scheduler state leaks across productions.
   useEffect(() => {
     if (previousFilmRef.current === film.id) return;
+    let active = true;
     previousFilmRef.current = film.id;
     setIsPlaying(false);
     const nextMode: Mode = film.songDefault && film.hasSong ? 'song' : 'narration';
@@ -187,7 +188,15 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
     setSongSec(0);
     setSyncNudge(0);
     applySeek(0, true);
-  }, [film.id, film.songDefault, film.hasSong, film.narrationDefault, film.musicDefault, film.captionsDefault, applySeek]);
+    if (nextMode === 'song' && film.song?.url) {
+      setTrackLoading(true);
+      trackEngine.ensureDefault(film.song.url)
+        .then(() => { if (active) setTrackTick(n => n + 1); })
+        .catch(() => {})
+        .finally(() => { if (active) setTrackLoading(false); });
+    }
+    return () => { active = false; };
+  }, [film.id, film.songDefault, film.hasSong, film.song?.url, film.narrationDefault, film.musicDefault, film.captionsDefault, applySeek]);
 
   const togglePlay = useCallback(() => {
     setIsPlaying((prev) => {
@@ -292,7 +301,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
           setSongSec(sec);
           setCurrentTime(nominal);
           onTimeUpdate?.(nominal);
-          if (!trackEngine.playing && sec >= song.duration - 0.3 && !endPlayedRef.current) {
+          const endingAt = trackEngine.duration || song.duration;
+          if (!trackEngine.playing && sec >= endingAt - 0.3 && !endPlayedRef.current) {
             endPlayedRef.current = true;
             setIsPlaying(false);
           }

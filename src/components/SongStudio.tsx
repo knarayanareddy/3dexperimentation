@@ -26,11 +26,13 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
   };
 
   const ready = trackEngine.ready;
-  const cueTime = film.id === 'ai-short' && ready && trackEngine.duration > 0
+  const cueTime = (film.id === 'ai-short' || film.id === 'anthropic') && ready && trackEngine.duration > 0
     ? filmTimeForSongAt(film, songSec, trackEngine.duration)
     : songSec;
   const activeSection = song.sectionAt(cueTime);
   const activeCueIndex = song.cues.findIndex(c => cueTime >= c.at && cueTime < c.to);
+  const mapClock = film.id === 'anthropic' ? cueTime : songSec;
+  const displayDuration = ready && trackEngine.duration > 0 ? trackEngine.duration : song.duration;
   const nextCue = song.cues.find(c => c.at > cueTime);
 
   const handleFile = async (f?: File | null) => {
@@ -93,7 +95,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
             })()}
             <span className="text-slate-400 shrink-0">
               {Math.floor(songSec / 60)}:{Math.floor(songSec % 60).toString().padStart(2, '0')}
-              <span className="text-slate-600"> / {Math.floor(song.duration / 60)}:{Math.floor(song.duration % 60).toString().padStart(2, '0')}</span>
+              <span className="text-slate-600"> / {Math.floor(displayDuration / 60)}:{Math.floor(displayDuration % 60).toString().padStart(2, '0')}</span>
             </span>
           </div>
         )}
@@ -147,7 +149,11 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
             </div>
             {err && <span className="text-[10px] text-rose-400 font-mono block mt-1">{err}</span>}
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed break-all">
-              {film.id === 'ai-short'
+              {film.id === 'anthropic'
+                ? ready
+                  ? 'The 9-second intro trim is loaded (about 1:51 total). Your noted 0:12 vocal entrance should now land near 0:03. The first lyric caption waits until 0:03; the remaining 4.5-second landmarks are provisional and need listening review.'
+                  : 'The 9-second intro-trimmed MP3 is loading. Cue positions remain provisional until the lyrics are checked against the vocal.'
+                : film.id === 'ai-short'
                 ? ready
                   ? 'The supplied 84.79s Suno master is loaded. Phrase cue starts come from word-level Whisper timestamps; check them by listening before treating them as final.'
                   : 'The bundled Suno master is 84.79s. Phrase cue starts are estimated from word-level Whisper timestamps on this track.'
@@ -160,7 +166,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
           <div className="lg:col-span-2 p-3 rounded-xl bg-slate-900 border border-slate-800">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-bold text-amber-300 font-mono">
-                {film.id === 'ai-short' ? 'PROVISIONAL LYRIC → FILM PLAN' : 'ESTIMATED LYRIC → FILM MAP'}
+                {film.id === 'anthropic' ? 'PROVISIONAL STORYBOARD TARGETS' : film.id === 'ai-short' ? 'PROVISIONAL LYRIC → FILM PLAN' : 'ESTIMATED LYRIC → FILM MAP'}
               </span>
               <span className="text-[10px] font-mono text-slate-500">
                 film now: {filmTimeForSongAt(film, songSec, trackEngine.duration).toFixed(1)}s
@@ -168,8 +174,8 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
             </div>
             <div className="max-h-48 overflow-y-auto space-y-0.5 pr-1">
               {song.cues.map((l, i) => {
-                const on = songSec >= l.at && songSec < l.to;
-                const done = songSec >= l.to;
+                const on = mapClock >= l.at && mapClock < l.to;
+                const done = mapClock >= l.to;
                 return (
                   <div
                     key={i}
@@ -178,7 +184,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
                          : done ? 'text-slate-500' : 'text-slate-400'
                     }`}
                   >
-                    <span className="w-14 shrink-0 tabular-nums">{l.at.toFixed(2)}s</span>
+                    <span className="w-16 shrink-0 tabular-nums">{film.id === 'anthropic' ? `film ${l.at.toFixed(1)}s` : `${l.at.toFixed(2)}s`}</span>
                     <span className="flex-1 truncate">{l.label}</span>
                     <span className="w-24 shrink-0 text-right tabular-nums text-cyan-400/80">
                       film {l.film[0].toFixed(1)}–{l.film[1].toFixed(1)}s
@@ -188,7 +194,9 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
               })}
             </div>
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed">
-              {film.id === 'ai-short'
+              {film.id === 'anthropic'
+                ? 'The first vocal entrance at 0:03 is set from your timing note. Later 4.5-second lyric landmarks are provisional estimates, not measured vocal starts. Listen through and tell me where they drift so I can refine the remaining cues.'
+                : film.id === 'ai-short'
                 ? 'The map is based on word-level Whisper timestamp inference from the supplied song and its embedded lyric text. It is phrase-level, not forced alignment; ASR timing can drift on sung syllables and ad-libs, so audition the cut before calling it final.'
                 : 'Section boundaries are estimated from the stereo mix; individual line boundaries are syllable-weighted estimates, not forced-aligned word onsets. Following your latest timing note, the ending visuals advance progressively (3/6/9 seconds) so the full bubble-question reveal begins 9 seconds before its estimated cue. Song mode remains caption-free.'}
             </p>
@@ -210,7 +218,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
                 <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-bold text-amber-300 font-mono">
-                      {film.id === 'ai-short' ? 'LYRICS · 1:25 SHORT · PROVISIONAL CUES' : 'LYRICS · TRACK 2:11.64'}
+                      {film.id === 'anthropic' ? 'LYRICS · 9S INTRO TRIM · CUES TO REVIEW' : film.id === 'ai-short' ? 'LYRICS · 1:25 SHORT · PROVISIONAL CUES' : 'LYRICS · TRACK 2:11.64'}
                     </span>
                     <button onClick={() => copyText('lyrics', song.lyrics)} className="flex items-center gap-1 text-[10px] font-mono text-cyan-300 hover:text-white cursor-pointer">
                       <Copy className="w-3 h-3" /> {copied === 'lyrics' ? 'Copied' : 'Copy'}

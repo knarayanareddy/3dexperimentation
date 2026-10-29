@@ -28,6 +28,10 @@ import {
   OA_SUNO_TITLE, OA_SUNO_STYLE_PROMPT, OA_SUNO_EXCLUDE, OA_SUNO_LYRICS,
   OA_SECTION_PLAN, OA_ANCHORS
 } from './data/openaiSong';
+import {
+  ANTHROPIC_TRACK_TITLE, ANTHROPIC_STYLE_PROMPT, ANTHROPIC_EXCLUDE,
+  ANTHROPIC_LYRICS, ANTHROPIC_SECTIONS, ANTHROPIC_SYNC_CUES
+} from './data/anthropicSong';
 
 const RECIPES: Record<string, RecipeData> = {
   evolution: {
@@ -44,12 +48,22 @@ const RECIPES: Record<string, RecipeData> = {
     title: OA_SUNO_TITLE, style: OA_SUNO_STYLE_PROMPT, exclude: OA_SUNO_EXCLUDE,
     lyrics: OA_SUNO_LYRICS, sections: OA_SECTION_PLAN, anchors: OA_ANCHORS,
     synced: 'The supplied 4:24 render is force-aligned to its measured vocal arrangement.'
+  },
+  anthropic: {
+    title: ANTHROPIC_TRACK_TITLE,
+    style: ANTHROPIC_STYLE_PROMPT,
+    exclude: ANTHROPIC_EXCLUDE,
+    lyrics: ANTHROPIC_LYRICS,
+    sections: ANTHROPIC_SECTIONS.map((section, index) => ({ label: section.name, act: index + 1 })),
+    anchors: ANTHROPIC_SYNC_CUES.map(cue => ({ lyric: cue.label, shot: cue.section || 'Storyboard beat' })),
+    hasMaster: true,
+    pending: 'I removed 9 seconds from the beginning of the 2:00 edit. The new MP3 measures 111.05 seconds; based on your note that vocals began at about 12 seconds, the first lyric should now enter at about 3 seconds. Later 4.5-second cue marks remain estimates—please review them against the master.'
   }
 };
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'video' | 'playground' | 'storyboard' | 'architecture'>('video');
-  const [filmId, setFilmId] = useState<FilmId>('ai-short');
+  const [filmId, setFilmId] = useState<FilmId>('anthropic');
   const film = FILMS[filmId];
   const [syncedTime, setSyncedTime] = useState<number>(0);
 
@@ -68,7 +82,7 @@ export function App() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-cyan-400 p-0.5 shadow-lg shadow-cyan-500/10">
               <div className="w-full h-full bg-[#0b0f19] rounded-[10px] flex items-center justify-center">
                 <span className="font-mono font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-cyan-300">
-                  {filmId === 'ai-short' ? 'AI!' : filmId === 'ai-loop' ? 'LOOP' : filmId === 'evolution' ? 'AI' : filmId === 'uber' ? 'PIN' : filmId === 'openai' ? '|' : 'JEV'}
+                  {filmId === 'ai-short' ? 'AI!' : filmId === 'ai-loop' ? 'LOOP' : filmId === 'evolution' ? 'AI' : filmId === 'uber' ? 'PIN' : filmId === 'openai' ? '|' : filmId === 'anthropic' ? 'ANTH' : 'JEV'}
                 </span>
               </div>
             </div>
@@ -76,9 +90,9 @@ export function App() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                  {filmId === 'ai-short' ? 'Ask, Learn, Try Again!' : filmId === 'ai-loop' ? 'The Money Loop' : filmId === 'evolution' ? 'The Long Thaw' : filmId === 'uber' ? 'Press The Button' : filmId === 'openai' ? 'The Text Box' : 'Jev Explained'}
+                  {filmId === 'ai-short' ? 'Ask, Learn, Try Again!' : filmId === 'ai-loop' ? 'The Money Loop' : filmId === 'evolution' ? 'The Long Thaw' : filmId === 'uber' ? 'Press The Button' : filmId === 'openai' ? 'The Text Box' : filmId === 'anthropic' ? 'The Anthropic Story' : 'Jev Explained'}
                   <span className="text-xs font-mono font-medium text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                    {filmId === 'ai-short' ? '1:25 · 9:16 Short' : filmId === 'ai-loop' ? 'AI finance · 2:12' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '2008 → Now' : filmId === 'openai' ? '2015 → Now' : 'System One'}
+                    {filmId === 'ai-short' ? '1:25 · 9:16 Short' : filmId === 'ai-loop' ? 'AI finance · 2:12' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '2008 → Now' : filmId === 'openai' ? '2015 → Now' : filmId === 'anthropic' ? '1:51 · 9:16 Short' : 'System One'}
                   </span>
                 </h1>
               </div>
@@ -161,10 +175,12 @@ export function App() {
             </span>
             <div>
               <strong className="text-white font-semibold">
-                Two ways to watch — Narrated Film or the Song:
+                {filmId === 'anthropic' ? '1:51 intro-trimmed edit · cue review pending:' : 'Two ways to watch — Narrated Film or the Song:'}
               </strong>{' '}
               <span className="text-slate-300">
-                {filmId === 'ai-short' ? (
+                {filmId === 'anthropic' ? (
+                  <><strong>The Anthropic Story</strong> now uses your trimmed master: I removed about 9 seconds from the 2:00 edit. Based on your note that vocals began at about 0:12, the first sung line should now arrive around 0:03. I adjusted the opening scene and delayed its lyric caption to that point. Later cue marks remain estimated; please listen through and flag any drift.</>
+                ) : filmId === 'ai-short' ? (
                   <><strong>Ask, Learn, Try Again!</strong> is a separate 84.8-second, 9:16 sing-along—not a replacement for <em>The Long Thaw</em>. Its supplied Suno master plays by default with the painted milestone scenes. Phrase cues use word-level Whisper timestamps from this render; they’re estimates, not forced-aligned or hand-audited word boundaries.</>
                 ) : filmId === 'ai-loop' ? (
                   <><strong>The Money Loop</strong> opens in Song Mode with your supplied 2:11 Suno master. The new watercolor scenes stage the deals with a varied cast, moving props, and the Jevons film’s expressive character language. Lyric cues are phrase-level estimates, not exact word alignment; narration stays off.</>
@@ -177,7 +193,7 @@ export function App() {
                 ) : (
                   <>In <strong>Narrated Film</strong>, speech drives the picture word by word. <strong>Song Mode</strong> is pure visuals + <em>JEV.mp3</em>, with every measured lyric pinned to its matching shot.</>
                 )}
-                {' '}Use <strong>Export</strong> to record a shareable video with the active song embedded.
+                {' '}{filmId === 'anthropic' ? 'The current edit is 1:51; review the later cue points and fade against the audio.' : <>Use <strong>Export</strong> to record a shareable video with the active song embedded.</>}
               </span>
             </div>
           </div>
@@ -186,13 +202,13 @@ export function App() {
               60 FPS Canvas Engine
             </span>
             <span className="text-[11px] font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-              {filmId === 'ai-short' ? 'Suno master · 1:25' : filmId === 'ai-loop' ? 'Suno master · 2:11' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '40M trips / day' : filmId === 'openai' ? '~1B weekly users' : '70ms Decision Latency'}
+              {filmId === 'anthropic' ? 'Suno master · 1:51 intro trim · sync review' : filmId === 'ai-short' ? 'Suno master · 1:25' : filmId === 'ai-loop' ? 'Suno master · 2:11' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '40M trips / day' : filmId === 'openai' ? '~1B weekly users' : '70ms Decision Latency'}
             </span>
           </div>
         </div>
 
         {/* Film selector */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-3">
           {FILM_LIST.map((f) => {
             const on = f.id === filmId;
             return (
@@ -210,7 +226,7 @@ export function App() {
                     className="text-[10px] font-mono px-1.5 py-0.5 rounded-full border"
                     style={{ color: f.accent, borderColor: `${f.accent}66`, backgroundColor: `${f.accent}18` }}
                   >
-                    {f.id === 'ai-short' ? 'film + Suno · ASR phrase cues' : f.id === 'ai-loop' ? 'film + Suno · phrase-estimated' : f.song?.url ? 'film + synced song' : f.hasSong ? 'film · audio pending' : 'film · song pending'}
+                    {f.id === 'anthropic' ? 'film + draft · master pending' : f.id === 'ai-short' ? 'film + Suno · ASR phrase cues' : f.id === 'ai-loop' ? 'film + Suno · phrase-estimated' : f.song?.url ? 'film + synced song' : f.hasSong ? 'film · audio pending' : 'film · song pending'}
                   </span>
                 </div>
                 <div className="text-[11px] text-slate-400 leading-snug">{f.subtitle}</div>
@@ -343,10 +359,12 @@ export function App() {
             <div>
               <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <Layers className="w-5 h-5 text-cyan-400" />
-                {filmId === 'ai-short' ? 'Ask, Learn, Try Again! — Production Map' : filmId === 'evolution' ? 'The Long Thaw — Production Map' : filmId === 'uber' ? 'Press The Button — Production Map' : filmId === 'openai' ? 'The Text Box — Production Map' : filmId === 'ai-loop' ? 'The Money Loop — Production Map' : 'The PDoomVideo x TypeSafe Jev Architecture Matrix'}
+                {filmId === 'anthropic' ? 'The Anthropic Story — Production Map' : filmId === 'ai-short' ? 'Ask, Learn, Try Again! — Production Map' : filmId === 'evolution' ? 'The Long Thaw — Production Map' : filmId === 'uber' ? 'Press The Button — Production Map' : filmId === 'openai' ? 'The Text Box — Production Map' : filmId === 'ai-loop' ? 'The Money Loop — Production Map' : 'The PDoomVideo x TypeSafe Jev Architecture Matrix'}
               </h2>
               <p className="text-xs text-slate-400">
-                {filmId === 'ai-short'
+                {filmId === 'anthropic'
+                  ? 'A 1:51 portrait edit: the nine-second opening instrumental was shortened, with the first lyric caption now delayed to the vocal entrance; later cue landmarks remain provisional.'
+                  : filmId === 'ai-short'
                   ? 'Portrait-first painted animation, a recurring cast, and an explicitly provisional lyric cue plan.'
                   : 'How this implementation follows the PDoomVideo-inspired generative Canvas pipeline.'}
               </p>
@@ -358,9 +376,11 @@ export function App() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-amber-400 font-bold block mb-1">{filmId === 'ai-short' ? 'Moving Ensemble' : filmId === 'uber' ? 'Custom PIN Cast' : filmId === 'openai' ? 'Caret & Bloom' : 'Clawd Character'}</span>
+              <span className="text-amber-400 font-bold block mb-1">{filmId === 'anthropic' ? 'Research Ensemble' : filmId === 'ai-short' ? 'Moving Ensemble' : filmId === 'uber' ? 'Custom PIN Cast' : filmId === 'openai' ? 'Caret & Bloom' : 'Clawd Character'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'ai-short'
+                {filmId === 'anthropic'
+                  ? 'A generic researcher-and-user ensemble carries the story; an abstract light/interface motif represents Claude without implying personhood or reproducing official portraits.'
+                  : filmId === 'ai-short'
                   ? 'A recurring researcher, learners, early machines, and a bright little robot dance, build, shiver through the winters, and celebrate each milestone.'
                   : filmId === 'openai'
                   ? 'A blinking text cursor leads, beside a six-petal knot whose petals light as the model scales.'
@@ -373,9 +393,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-cyan-400 font-bold block mb-1">{filmId === 'ai-short' ? 'ASR Phrase Cue Map' : filmId === 'openai' ? 'Polish Layer' : filmId === 'uber' || filmId === 'evolution' ? 'Measured Song Clock' : 'Single-Pass Scoring'}</span>
+              <span className="text-cyan-400 font-bold block mb-1">{filmId === 'anthropic' ? 'Provisional Music Map' : filmId === 'ai-short' ? 'ASR Phrase Cue Map' : filmId === 'openai' ? 'Polish Layer' : filmId === 'uber' || filmId === 'evolution' ? 'Measured Song Clock' : 'Single-Pass Scoring'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'ai-short'
+                {filmId === 'anthropic'
+                  ? 'The 106.7 BPM / 48-bar song is only a composition target. All 24 phrase starts are provisional storyboard landmarks; no soundtrack exists to measure yet.'
+                  : filmId === 'ai-short'
                   ? 'Phrase starts are estimated from word-level Whisper timestamps on the supplied 84.79-second master; the sung-word boundaries are not forced-aligned or hand-audited.'
                   : filmId === 'openai'
                   ? 'Layered bloom glows, three-plane depth skylines, light shafts and drop-shadowed panels on every card.'
@@ -388,9 +410,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-rose-400 font-bold block mb-1">{filmId === 'ai-short' ? 'Key AI Milestones' : filmId === 'openai' ? 'Eleven Years' : filmId === 'uber' ? 'The Marketplace Flywheel' : filmId === 'evolution' ? 'Seven Historical Eras' : 'Jevons Paradox (1865)'}</span>
+              <span className="text-rose-400 font-bold block mb-1">{filmId === 'anthropic' ? 'Anthropic Timeline' : filmId === 'ai-short' ? 'Key AI Milestones' : filmId === 'openai' ? 'Eleven Years' : filmId === 'uber' ? 'The Marketplace Flywheel' : filmId === 'evolution' ? 'Seven Historical Eras' : 'Jevons Paradox (1865)'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'ai-short'
+                {filmId === 'anthropic'
+                  ? '2021 research beginnings; 2022 Constitutional AI; Claude in 2023; vision, Artifacts, and computer use in 2024; Claude 4 and Claude Code in 2025; the Anthropic Institute in 2026.'
+                  : filmId === 'ai-short'
                   ? 'Turing and Dartmouth; AI winters and backprop; Deep Blue, ImageNet and AlexNet; Transformers, ChatGPT, multimodal systems and human oversight.'
                   : filmId === 'openai'
                   ? 'Charter, scaling laws, GPT-3, the text box, five days in November, reasoning models, Stargate, the PBC.'
@@ -403,9 +427,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-purple-400 font-bold block mb-1">{filmId === 'ai-short' || filmId === 'uber' || filmId === 'evolution' ? 'Content-Matched Visuals' : 'Dual Mind Architecture'}</span>
+              <span className="text-purple-400 font-bold block mb-1">{filmId === 'anthropic' || filmId === 'ai-short' || filmId === 'uber' || filmId === 'evolution' ? 'Content-Matched Visuals' : 'Dual Mind Architecture'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'ai-short'
+                {filmId === 'anthropic'
+                  ? 'Twenty-four lyric landmarks each have a dedicated scene: research aims, Constitutional AI, Claude, model families, computer use, code, public impacts, and an open coda.'
+                  : filmId === 'ai-short'
                   ? 'Each lyric cue gets its own illustrated beat: imitation game, 1956 workshop, winter, network, chessboard, image cards, GPU, tokens, chat and multimodal props.'
                   : filmId === 'openai'
                   ? 'Every figure is from OpenAI’s own posts or contemporaneous reporting: 117M, 175B, 745 of 770, $500B, ~26/27%.'
@@ -417,6 +443,21 @@ export function App() {
               </p>
             </div>
           </div>
+          {filmId === 'anthropic' && (
+            <div className="mt-5 p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300">
+              <div className="font-mono font-bold text-amber-300 mb-2">PRIMARY-SOURCE CHECK · EDITORIAL CAVEAT</div>
+              <p className="text-slate-400 leading-relaxed mb-3">The story sticks to dated Anthropic announcements and its Constitutional AI paper. It treats the company's safety mission as a stated aim, not a proven outcome, and avoids assigning a definitive personal dispute as the reason for its founding.</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-2 font-mono text-[10px]">
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.anthropic.com/news/anthropic-raises-series-b-to-build-safe-reliable-ai" target="_blank" rel="noreferrer">2021 founding & research aims</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback" target="_blank" rel="noreferrer">2022 Constitutional AI</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.anthropic.com/news/introducing-claude" target="_blank" rel="noreferrer">2023 Claude introduction</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.anthropic.com/news/claude-3-family" target="_blank" rel="noreferrer">2024 Claude 3 family</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.anthropic.com/news/3-5-models-and-computer-use" target="_blank" rel="noreferrer">2024 computer-use beta</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.anthropic.com/news/claude-4" target="_blank" rel="noreferrer">2025 Claude 4 / Code</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.anthropic.com/news/the-anthropic-institute" target="_blank" rel="noreferrer">2026 Anthropic Institute</a>
+              </div>
+            </div>
+          )}
         </section>
       </main>
 
@@ -440,7 +481,13 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-4 font-mono text-[11px]">
-            {filmId === 'ai-short' ? (
+            {filmId === 'anthropic' ? (
+              <>
+                <span>Founded 2021</span><span>•</span>
+                <span>Claude · 2023 → Claude 4 · 2025</span><span>•</span>
+                <span>1:51 edit · 9s intro removed</span>
+              </>
+            ) : filmId === 'ai-short' ? (
               <>
                 <span>Turing · 1950</span><span>•</span>
                 <span>Dartmouth · 1956 → multimodal AI</span><span>•</span>
