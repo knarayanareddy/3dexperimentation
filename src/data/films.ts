@@ -5,12 +5,18 @@ import { UBER_CHAPTERS, UBER_DURATION } from './uber';
 import { OPENAI_CHAPTERS, OPENAI_DURATION } from './openai';
 import { AI_LOOP_CHAPTERS, AI_LOOP_DURATION } from './aiLoop';
 import { AI_SHORT_CHAPTERS } from './aiShort';
+import { ANTHROPIC_CHAPTERS } from './anthropic';
+import { renderAnthropic } from '../engine/chapters/anthropic';
 import { renderAiLoop } from '../engine/chapters/aiLoop';
 import { renderAiShort } from '../engine/chapters/aiShort';
 import {
   AI_SHORT_TITLE, AI_SHORT_BPM, AI_SHORT_DURATION, AI_SHORT_LYRICS,
   AI_SHORT_STYLE_PROMPT, AI_SHORT_SYNC_CUES, aiShortSectionAt
 } from './aiShortSong';
+import {
+  ANTHROPIC_TRACK_TITLE, ANTHROPIC_BPM, ANTHROPIC_DURATION, ANTHROPIC_TRACK_DURATION, ANTHROPIC_LYRICS,
+  ANTHROPIC_STYLE_PROMPT, ANTHROPIC_SYNC_CUES, anthropicSectionAt
+} from './anthropicSong';
 import {
   AI_LOOP_TRACK_TITLE, AI_LOOP_TRACK_DURATION, AI_LOOP_TRACK_BPM, AI_LOOP_SYNC_CUES,
   filmTimeForAiLoopSong, aiLoopSongTimeForFilm, aiLoopSectionAt
@@ -60,7 +66,7 @@ import {
   openAISectionAt
 } from './openaiSync';
 
-export type FilmId = 'jev' | 'evolution' | 'uber' | 'openai' | 'ai-loop' | 'ai-short';
+export type FilmId = 'jev' | 'evolution' | 'uber' | 'openai' | 'ai-loop' | 'ai-short' | 'anthropic';
 
 /** Prefix bundled public assets with Vite's base so subpath hosting (GitHub Pages) works. */
 const publicAsset = (path: string) => `${__APP_BASE_PATH__}${path.replace(/^\/+/, '')}`;
@@ -210,6 +216,19 @@ const aiShortSong: SongConfig = {
   lyrics: AI_SHORT_LYRICS
 };
 
+const anthropicSong: SongConfig = {
+  title: ANTHROPIC_TRACK_TITLE,
+  url: publicAsset('audio/anthropic-story.mp3'),
+  duration: ANTHROPIC_TRACK_DURATION,
+  bpm: ANTHROPIC_BPM,
+  cues: ANTHROPIC_SYNC_CUES,
+  filmTimeForSong: songSec => Math.max(0, Math.min(ANTHROPIC_DURATION, songSec)),
+  songTimeForFilm: filmSec => Math.max(0, Math.min(ANTHROPIC_DURATION, filmSec)),
+  sectionAt: anthropicSectionAt,
+  stylePrompt: ANTHROPIC_STYLE_PROMPT,
+  lyrics: ANTHROPIC_LYRICS
+};
+
 export const FILMS: Record<FilmId, Film> = {
   jev: build(
     'jev',
@@ -260,23 +279,32 @@ export const FILMS: Record<FilmId, Film> = {
     '#E8AA38',
     AI_SHORT_CHAPTERS, AI_SHORT_DURATION, renderAiShort, aiShortSong,
     { canvasWidth: 720, canvasHeight: 1280, narrationDefault: false, musicDefault: false, captionsDefault: false, songDefault: true }
+  ),
+  anthropic: build(
+    'anthropic',
+    'The Anthropic Story',
+    'Research lab → Claude → public questions · 2021–2026 · 1:51 edit',
+    'A factual, portrait-format short tracing Anthropic from its 2021 research beginnings through Constitutional AI, Claude, computer use, Claude Code, and The Anthropic Institute—ending with open questions, not a claim that safety is solved.',
+    '#C96F4A',
+    ANTHROPIC_CHAPTERS, ANTHROPIC_DURATION, renderAnthropic, anthropicSong,
+    { canvasWidth: 720, canvasHeight: 1280, narrationDefault: false, musicDefault: false, captionsDefault: false, songDefault: true }
   )
 };
 
-export const FILM_LIST: Film[] = [FILMS.jev, FILMS.evolution, FILMS.uber, FILMS.openai, FILMS['ai-loop'], FILMS['ai-short']];
+export const FILM_LIST: Film[] = [FILMS.jev, FILMS.evolution, FILMS.uber, FILMS.openai, FILMS['ai-loop'], FILMS['ai-short'], FILMS.anthropic];
 
 export const shotDur = (s: Shot) => Math.max(0.5, s.endTime - s.startTime);
 
-/** The AI-finance master runs on a same-length film clock; phrase cues are estimated, not word-aligned. */
+/** Short-film song clocks scale an actual supplied track to the planned visual runtime; provisional cues are not treated as measured alignment. */
 export function filmTimeForSongAt(film: Film, songSec: number, actualSongDuration = 0): number {
-  if ((film.id === 'ai-loop' || film.id === 'ai-short') && actualSongDuration > 0) {
+  if ((film.id === 'ai-loop' || film.id === 'ai-short' || film.id === 'anthropic') && actualSongDuration > 0) {
     return Math.max(0, Math.min(film.duration, songSec / actualSongDuration * film.duration));
   }
   return film.song?.filmTimeForSong(songSec) ?? Math.max(0, Math.min(film.duration, songSec));
 }
 
 export function songTimeForFilmAt(film: Film, filmSec: number, actualSongDuration = 0): number {
-  if ((film.id === 'ai-loop' || film.id === 'ai-short') && actualSongDuration > 0) {
+  if ((film.id === 'ai-loop' || film.id === 'ai-short' || film.id === 'anthropic') && actualSongDuration > 0) {
     return Math.max(0, Math.min(actualSongDuration, filmSec / film.duration * actualSongDuration));
   }
   return film.song?.songTimeForFilm(filmSec) ?? Math.max(0, Math.min(film.duration, filmSec));

@@ -9,6 +9,10 @@ export interface RecipeData {
   anchors: Array<{ lyric: string; shot: string }>;
   /** set when the track already exists and is aligned */
   synced?: string;
+  /** set when further generation or timing work remains */
+  pending?: string;
+  /** true when a master is present but not yet aligned */
+  hasMaster?: boolean;
 }
 
 const CopyBtn: React.FC<{ text: string; label: string }> = ({ text, label }) => {
@@ -49,12 +53,12 @@ export const SongRecipe: React.FC<{ data: RecipeData }> = ({ data }) => {
             <p className="text-[11px] text-slate-400">
               {data.synced
                 ? `${data.synced} This panel keeps the source recipe and visual anchors.`
-                : "Generate this in Suno, then send me the MP3 and I'll measure it and pin every lyric to its shot."}
+                : data.pending || "Generate this in Suno, then send me the MP3 and I'll measure it and pin every lyric to its shot."}
             </p>
           </div>
         </div>
         <span className="text-[10px] font-mono px-2 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 whitespace-nowrap">
-          {data.synced ? 'synced' : 'step 1 of 3'}
+          {data.synced ? 'synced' : data.hasMaster ? 'master received · map pending' : 'new song · awaiting master'}
         </span>
       </div>
 
@@ -129,6 +133,8 @@ export const SongRecipe: React.FC<{ data: RecipeData }> = ({ data }) => {
         {data.synced ? (
           <><span className="text-amber-300 font-bold">Integrated:</span> the MP3 was decoded and transcribed with word
           timestamps, and every lyric is pinned to the shot it describes. Use Song Mode above to play the aligned result.</>
+        ) : data.pending ? (
+          <><span className="text-amber-300 font-bold">{data.hasMaster ? 'Master received:' : 'Next step:'}</span> {data.pending}</>
         ) : (
           <><span className="text-amber-300 font-bold">Then:</span> send me the MP3 (or a raw URL) and I'll decode it,
           recover word-level timings, and pin each lyric to the shot that illustrates it — the same pipeline that got the
