@@ -489,7 +489,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ film, onTimeUpdate }) 
 
           <span className="text-[11px] font-mono text-slate-400">
             {isSongMode
-              ? `film + music · ${film.song?.bpm || '?'} BPM · lyrics mapped to shots`
+              ? film.id === 'ai-short'
+                ? `film + music · ${film.song?.bpm || '?'} BPM · ASR phrase cues`
+                : `film + music · ${film.song?.bpm || '?'} BPM · lyrics mapped to shots`
               : 'shots stretch to fit the voice — never rushed'}
           </span>
         </div>

@@ -49,7 +49,7 @@ const RECIPES: Record<string, RecipeData> = {
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'video' | 'playground' | 'storyboard' | 'architecture'>('video');
-  const [filmId, setFilmId] = useState<FilmId>('ai-loop');
+  const [filmId, setFilmId] = useState<FilmId>('ai-short');
   const film = FILMS[filmId];
   const [syncedTime, setSyncedTime] = useState<number>(0);
 
@@ -68,7 +68,7 @@ export function App() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-cyan-400 p-0.5 shadow-lg shadow-cyan-500/10">
               <div className="w-full h-full bg-[#0b0f19] rounded-[10px] flex items-center justify-center">
                 <span className="font-mono font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-cyan-300">
-                  {filmId === 'ai-loop' ? 'LOOP' : filmId === 'evolution' ? 'AI' : filmId === 'uber' ? 'PIN' : filmId === 'openai' ? '|' : 'JEV'}
+                  {filmId === 'ai-short' ? 'AI!' : filmId === 'ai-loop' ? 'LOOP' : filmId === 'evolution' ? 'AI' : filmId === 'uber' ? 'PIN' : filmId === 'openai' ? '|' : 'JEV'}
                 </span>
               </div>
             </div>
@@ -76,9 +76,9 @@ export function App() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                  {filmId === 'ai-loop' ? 'The Money Loop' : filmId === 'evolution' ? 'The Long Thaw' : filmId === 'uber' ? 'Press The Button' : filmId === 'openai' ? 'The Text Box' : 'Jev Explained'}
+                  {filmId === 'ai-short' ? 'Ask, Learn, Try Again!' : filmId === 'ai-loop' ? 'The Money Loop' : filmId === 'evolution' ? 'The Long Thaw' : filmId === 'uber' ? 'Press The Button' : filmId === 'openai' ? 'The Text Box' : 'Jev Explained'}
                   <span className="text-xs font-mono font-medium text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                    {filmId === 'ai-loop' ? 'AI finance · 2:12' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '2008 → Now' : filmId === 'openai' ? '2015 → Now' : 'System One'}
+                    {filmId === 'ai-short' ? '1:25 · 9:16 Short' : filmId === 'ai-loop' ? 'AI finance · 2:12' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '2008 → Now' : filmId === 'openai' ? '2015 → Now' : 'System One'}
                   </span>
                 </h1>
               </div>
@@ -164,7 +164,9 @@ export function App() {
                 Two ways to watch — Narrated Film or the Song:
               </strong>{' '}
               <span className="text-slate-300">
-                {filmId === 'ai-loop' ? (
+                {filmId === 'ai-short' ? (
+                  <><strong>Ask, Learn, Try Again!</strong> is a separate 84.8-second, 9:16 sing-along—not a replacement for <em>The Long Thaw</em>. Its supplied Suno master plays by default with the painted milestone scenes. Phrase cues use word-level Whisper timestamps from this render; they’re estimates, not forced-aligned or hand-audited word boundaries.</>
+                ) : filmId === 'ai-loop' ? (
                   <><strong>The Money Loop</strong> opens in Song Mode with your supplied 2:11 Suno master. The new watercolor scenes stage the deals with a varied cast, moving props, and the Jevons film’s expressive character language. Lyric cues are phrase-level estimates, not exact word alignment; narration stays off.</>
                 ) : filmId === 'openai' ? (
                   <>In <strong>Narrated Film</strong>, speech drives the picture word by word. <strong>Song Mode</strong> now plays the supplied 4:24 <em>Still Waiting For Input</em> master. Its real vocal structure — including omitted metadata repeats, repeated chorus lines and the long outro tail — drives CARET, BLOOM and the historical scenes.</>
@@ -184,13 +186,13 @@ export function App() {
               60 FPS Canvas Engine
             </span>
             <span className="text-[11px] font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-              {filmId === 'ai-loop' ? 'Suno master · 2:11' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '40M trips / day' : filmId === 'openai' ? '~1B weekly users' : '70ms Decision Latency'}
+              {filmId === 'ai-short' ? 'Suno master · 1:25' : filmId === 'ai-loop' ? 'Suno master · 2:11' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '40M trips / day' : filmId === 'openai' ? '~1B weekly users' : '70ms Decision Latency'}
             </span>
           </div>
         </div>
 
         {/* Film selector */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
           {FILM_LIST.map((f) => {
             const on = f.id === filmId;
             return (
@@ -208,7 +210,7 @@ export function App() {
                     className="text-[10px] font-mono px-1.5 py-0.5 rounded-full border"
                     style={{ color: f.accent, borderColor: `${f.accent}66`, backgroundColor: `${f.accent}18` }}
                   >
-                    {f.id === 'ai-loop' ? 'film + Suno · phrase-estimated' : f.song?.url ? 'film + synced song' : f.hasSong ? 'film · audio pending' : 'film · song pending'}
+                    {f.id === 'ai-short' ? 'film + Suno · ASR phrase cues' : f.id === 'ai-loop' ? 'film + Suno · phrase-estimated' : f.song?.url ? 'film + synced song' : f.hasSong ? 'film · audio pending' : 'film · song pending'}
                   </span>
                 </div>
                 <div className="text-[11px] text-slate-400 leading-snug">{f.subtitle}</div>
@@ -240,7 +242,7 @@ export function App() {
                     >
                       Act {c.number}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-500">{c.duration}s</span>
+                    <span className="text-[10px] font-mono text-slate-500">{c.duration.toFixed(1)}s</span>
                   </div>
                   <div className="text-xs font-semibold text-slate-200 line-clamp-1 mb-1">
                     {c.title}
@@ -341,10 +343,12 @@ export function App() {
             <div>
               <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <Layers className="w-5 h-5 text-cyan-400" />
-                {filmId === 'evolution' ? 'The Long Thaw — Production Map' : filmId === 'uber' ? 'Press The Button — Production Map' : filmId === 'openai' ? 'The Text Box — Production Map' : 'The PDoomVideo x TypeSafe Jev Architecture Matrix'}
+                {filmId === 'ai-short' ? 'Ask, Learn, Try Again! — Production Map' : filmId === 'evolution' ? 'The Long Thaw — Production Map' : filmId === 'uber' ? 'Press The Button — Production Map' : filmId === 'openai' ? 'The Text Box — Production Map' : filmId === 'ai-loop' ? 'The Money Loop — Production Map' : 'The PDoomVideo x TypeSafe Jev Architecture Matrix'}
               </h2>
               <p className="text-xs text-slate-400">
-                How this implementation faithfully adopts the Claude Opus 5.5 PDoomVideo generative pipeline
+                {filmId === 'ai-short'
+                  ? 'Portrait-first painted animation, a recurring cast, and an explicitly provisional lyric cue plan.'
+                  : 'How this implementation follows the PDoomVideo-inspired generative Canvas pipeline.'}
               </p>
             </div>
             <span className="font-mono text-xs text-slate-400">
@@ -354,9 +358,11 @@ export function App() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-amber-400 font-bold block mb-1">{filmId === 'uber' ? 'Custom PIN Cast' : filmId === 'openai' ? 'Caret & Bloom' : 'Clawd Character'}</span>
+              <span className="text-amber-400 font-bold block mb-1">{filmId === 'ai-short' ? 'Moving Ensemble' : filmId === 'uber' ? 'Custom PIN Cast' : filmId === 'openai' ? 'Caret & Bloom' : 'Clawd Character'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'openai'
+                {filmId === 'ai-short'
+                  ? 'A recurring researcher, learners, early machines, and a bright little robot dance, build, shiver through the winters, and celebrate each milestone.'
+                  : filmId === 'openai'
                   ? 'A blinking text cursor leads, beside a six-petal knot whose petals light as the model scales.'
                   : filmId === 'uber'
                   ? 'No Clawd: a map Pin leads riders, drivers, painted cars, live phone screens, city grids and regulators.'
@@ -367,9 +373,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-cyan-400 font-bold block mb-1">{filmId === 'openai' ? 'Polish Layer' : filmId === 'uber' || filmId === 'evolution' ? 'Measured Song Clock' : 'Single-Pass Scoring'}</span>
+              <span className="text-cyan-400 font-bold block mb-1">{filmId === 'ai-short' ? 'ASR Phrase Cue Map' : filmId === 'openai' ? 'Polish Layer' : filmId === 'uber' || filmId === 'evolution' ? 'Measured Song Clock' : 'Single-Pass Scoring'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'openai'
+                {filmId === 'ai-short'
+                  ? 'Phrase starts are estimated from word-level Whisper timestamps on the supplied 84.79-second master; the sung-word boundaries are not forced-aligned or hand-audited.'
+                  : filmId === 'openai'
                   ? 'Layered bloom glows, three-plane depth skylines, light shafts and drop-shadowed panels on every card.'
                   : filmId === 'uber'
                   ? 'All 53 lyric lines are force-aligned to Whisper word timestamps from the real 4:09 master.'
@@ -380,9 +388,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-rose-400 font-bold block mb-1">{filmId === 'openai' ? 'Eleven Years' : filmId === 'uber' ? 'The Marketplace Flywheel' : filmId === 'evolution' ? 'Seven Historical Eras' : 'Jevons Paradox (1865)'}</span>
+              <span className="text-rose-400 font-bold block mb-1">{filmId === 'ai-short' ? 'Key AI Milestones' : filmId === 'openai' ? 'Eleven Years' : filmId === 'uber' ? 'The Marketplace Flywheel' : filmId === 'evolution' ? 'Seven Historical Eras' : 'Jevons Paradox (1865)'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'openai'
+                {filmId === 'ai-short'
+                  ? 'Turing and Dartmouth; AI winters and backprop; Deep Blue, ImageNet and AlexNet; Transformers, ChatGPT, multimodal systems and human oversight.'
+                  : filmId === 'openai'
                   ? 'Charter, scaling laws, GPT-3, the text box, five days in November, reasoning models, Stargate, the PBC.'
                   : filmId === 'uber'
                   ? 'Drivers shorten waits; shorter waits create riders; riders raise utilisation; earnings attract drivers.'
@@ -393,9 +403,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-purple-400 font-bold block mb-1">{filmId === 'uber' || filmId === 'evolution' ? 'Content-Matched Visuals' : 'Dual Mind Architecture'}</span>
+              <span className="text-purple-400 font-bold block mb-1">{filmId === 'ai-short' || filmId === 'uber' || filmId === 'evolution' ? 'Content-Matched Visuals' : 'Dual Mind Architecture'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'openai'
+                {filmId === 'ai-short'
+                  ? 'Each lyric cue gets its own illustrated beat: imitation game, 1956 workshop, winter, network, chessboard, image cards, GPU, tokens, chat and multimodal props.'
+                  : filmId === 'openai'
                   ? 'Every figure is from OpenAI’s own posts or contemporaneous reporting: 117M, 175B, 745 of 770, $500B, ~26/27%.'
                   : filmId === 'uber'
                   ? 'Paris, cease-and-desist, China, the reckoning, Tempe, the IPO, first profit and driverless cars land on their lyrics.'
@@ -428,7 +440,13 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-4 font-mono text-[11px]">
-            {filmId === 'openai' ? (
+            {filmId === 'ai-short' ? (
+              <>
+                <span>Turing · 1950</span><span>•</span>
+                <span>Dartmouth · 1956 → multimodal AI</span><span>•</span>
+                <span>84.8s · 9:16 · supplied Suno render</span>
+              </>
+            ) : filmId === 'openai' ? (
               <>
                 <span>Founded December 2015</span><span>•</span>
                 <span>Charter to PBC</span><span>•</span>

@@ -26,9 +26,12 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
   };
 
   const ready = trackEngine.ready;
-  const activeSection = song.sectionAt(songSec);
-  const activeCueIndex = song.cues.findIndex(c => songSec >= c.at && songSec < c.to);
-  const nextCue = song.cues.find(c => c.at > songSec);
+  const cueTime = film.id === 'ai-short' && ready && trackEngine.duration > 0
+    ? filmTimeForSongAt(film, songSec, trackEngine.duration)
+    : songSec;
+  const activeSection = song.sectionAt(cueTime);
+  const activeCueIndex = song.cues.findIndex(c => cueTime >= c.at && cueTime < c.to);
+  const nextCue = song.cues.find(c => c.at > cueTime);
 
   const handleFile = async (f?: File | null) => {
     if (!f) return;
@@ -79,7 +82,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
                 );
               }
               if (nextCue) {
-                const away = nextCue.at - songSec;
+                const away = nextCue.at - cueTime;
                 return (
                   <span className="text-slate-500 truncate">
                     next cue in {away.toFixed(1)}s
@@ -144,16 +147,20 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
             </div>
             {err && <span className="text-[10px] text-rose-400 font-mono block mt-1">{err}</span>}
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed break-all">
-              {song.url
-                ? `default: ${decodeURIComponent(song.url.split('/').slice(-1)[0])} — section landmarks match this render; lyric-line boundaries are estimates.`
-                : 'No bundled audio yet. Cue estimates are for the supplied Suno render and may not match a replacement track.'}
+              {film.id === 'ai-short'
+                ? ready
+                  ? 'The supplied 84.79s Suno master is loaded. Phrase cue starts come from word-level Whisper timestamps; check them by listening before treating them as final.'
+                  : 'The bundled Suno master is 84.79s. Phrase cue starts are estimated from word-level Whisper timestamps on this track.'
+                : song.url
+                  ? `default: ${decodeURIComponent(song.url.split('/').slice(-1)[0])} — section landmarks match this render; lyric-line boundaries are estimates.`
+                  : 'No bundled audio yet. Cue estimates are for the supplied Suno render and may not match a replacement track.'}
             </p>
           </div>
 
           <div className="lg:col-span-2 p-3 rounded-xl bg-slate-900 border border-slate-800">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-bold text-amber-300 font-mono">
-                ESTIMATED LYRIC → FILM MAP
+                {film.id === 'ai-short' ? 'PROVISIONAL LYRIC → FILM PLAN' : 'ESTIMATED LYRIC → FILM MAP'}
               </span>
               <span className="text-[10px] font-mono text-slate-500">
                 film now: {filmTimeForSongAt(film, songSec, trackEngine.duration).toFixed(1)}s
@@ -181,7 +188,9 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
               })}
             </div>
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed">
-              Section boundaries are estimated from the stereo mix; individual line boundaries are syllable-weighted estimates, not forced-aligned word onsets. Following your latest timing note, the ending visuals advance progressively (3/6/9 seconds) so the full bubble-question reveal begins 9 seconds before its estimated cue. Song mode remains caption-free.
+              {film.id === 'ai-short'
+                ? 'The map is based on word-level Whisper timestamp inference from the supplied song and its embedded lyric text. It is phrase-level, not forced alignment; ASR timing can drift on sung syllables and ad-libs, so audition the cut before calling it final.'
+                : 'Section boundaries are estimated from the stereo mix; individual line boundaries are syllable-weighted estimates, not forced-aligned word onsets. Following your latest timing note, the ending visuals advance progressively (3/6/9 seconds) so the full bubble-question reveal begins 9 seconds before its estimated cue. Song mode remains caption-free.'}
             </p>
           </div>
           {(song.stylePrompt || song.lyrics) && (
@@ -200,7 +209,9 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
               {song.lyrics && (
                 <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-amber-300 font-mono">LYRICS · TRACK 2:11.64</span>
+                    <span className="text-[11px] font-bold text-amber-300 font-mono">
+                      {film.id === 'ai-short' ? 'LYRICS · 1:25 SHORT · PROVISIONAL CUES' : 'LYRICS · TRACK 2:11.64'}
+                    </span>
                     <button onClick={() => copyText('lyrics', song.lyrics)} className="flex items-center gap-1 text-[10px] font-mono text-cyan-300 hover:text-white cursor-pointer">
                       <Copy className="w-3 h-3" /> {copied === 'lyrics' ? 'Copied' : 'Copy'}
                     </button>

@@ -1,8 +1,14 @@
-# Procedural Animated Film Engine: The Story of OpenAI
+# Procedural Animated Film Studio
 
-A generative, pure-code 60 FPS Canvas 2D animated film player and recorder slaved to AI-composed musical soundtracks from Suno AI and multi-voice speech synthesis. Built in React, Vite, Tailwind CSS, and HTML5 Canvas.
+A generative, pure-code 60 FPS Canvas 2D animated film player and recorder, with musical soundtracks and multi-voice speech synthesis. Built in React, Vite, Tailwind CSS, and HTML5 Canvas.
 
 Homage to John Heibel's [PDoomVideo](https://github.com/JohnHeibel/PDoomVideo).
+
+## Live site
+
+**[Watch the films on GitHub Pages](https://knarayanareddy.github.io/3dexperimentation/)** — an interactive static site with six selectable animated films and their soundtracks. The canvas animation is rendered in the browser; use **Export** in the player to record a shareable video.
+
+For first-time publication, set **Settings → Pages → Build and deployment → Source → GitHub Actions**. The included workflow builds the repository-base-path version and deploys it on pushes to `main`.
 
 ---
 
@@ -25,7 +31,16 @@ Homage to John Heibel's [PDoomVideo](https://github.com/JohnHeibel/PDoomVideo).
 * **Runtime**: 4 minutes 22 seconds · 104 BPM
 * **Narrative**: Turing, Perceptrons, AI winters, the data flood, and the Transformer revolution.
 
-### 4. Seventy Milliseconds (What Jev Is & How It Works)
+### 4. Ask, Learn, Try Again! (A Sing-Along History of AI)
+* **Runtime**: 1 minute 25 seconds · 120 BPM · 9:16 portrait
+* **Narrative**: Turing, Dartmouth, AI winters, backpropagation, Deep Blue, AlexNet, Transformers, ChatGPT, and current multimodal/tool-using systems.
+* **Soundtrack**: The supplied Suno master plays with phrase cues estimated from word-level timestamps; individual sung-word boundaries are not forced-aligned.
+
+### 5. The Money Loop (AI Finance)
+* **Runtime**: 2 minutes 12 seconds · satirical watercolor short
+* **Soundtrack**: Supplied Suno master with phrase-level visual cues.
+
+### 6. Seventy Milliseconds (What Jev Is & How It Works)
 * **Runtime**: 3 minutes 36 seconds · 106.5 BPM
 * **Narrative**: Jevons paradox, Kahneman's System 1 vs System 2 thinking, and single-pass transformer decision latency.
 
@@ -49,9 +64,9 @@ npm run dev
 
 Open **`http://localhost:5173/`** in your browser.
 
-### Single-File Production Build
+### Production Build
 
 ```bash
 npm run build
 ```
-Inlines all code, CSS, and assets into a single self-contained `dist/index.html`.
+The Vite single-file plugin inlines the application JavaScript and CSS into `dist/index.html`; soundtrack MP3s remain in `dist/audio/` so the Pages build can stream them independently. The GitHub Pages workflow sets the repository base path and deploys on pushes to `main` (or by manual workflow dispatch).
