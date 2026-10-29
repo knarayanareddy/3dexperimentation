@@ -9,7 +9,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
+const githubPagesBase = process.env.GITHUB_PAGES === "true" ? "/3dexperimentation/" : "/";
+
 export default defineConfig({
+  base: githubPagesBase,
+  define: {
+    // vite-plugin-singlefile emits a relative document base; keep public media URLs
+    // anchored to the repository subpath on GitHub Pages.
+    __APP_BASE_PATH__: JSON.stringify(githubPagesBase),
+  },
   plugins: [react(), tailwindcss(), viteSingleFile()],
   server: {
     // Arena's preview uses a dynamic e2b.app host. Permit that suffix without
