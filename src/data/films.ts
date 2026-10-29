@@ -7,6 +7,11 @@ import { AI_LOOP_CHAPTERS, AI_LOOP_DURATION } from './aiLoop';
 import { AI_SHORT_CHAPTERS } from './aiShort';
 import { ANTHROPIC_CHAPTERS } from './anthropic';
 import { renderAnthropic } from '../engine/chapters/anthropic';
+import { BRI_CHAPTERS } from './bri';
+import { renderBri } from '../engine/chapters/bri';
+import {
+  BRI_DURATION, BRI_TRACK_DURATION, BRI_BPM, BRI_TRACK_TITLE, BRI_LYRICS, BRI_STYLE_PROMPT, BRI_SYNC_CUES, briSectionAt
+} from './briSong';
 import { renderAiLoop } from '../engine/chapters/aiLoop';
 import { renderAiShort } from '../engine/chapters/aiShort';
 import {
@@ -66,7 +71,7 @@ import {
   openAISectionAt
 } from './openaiSync';
 
-export type FilmId = 'jev' | 'evolution' | 'uber' | 'openai' | 'ai-loop' | 'ai-short' | 'anthropic';
+export type FilmId = 'jev' | 'evolution' | 'uber' | 'openai' | 'ai-loop' | 'ai-short' | 'anthropic' | 'bri';
 
 /** Prefix bundled public assets with Vite's base so subpath hosting (GitHub Pages) works. */
 const publicAsset = (path: string) => `${__APP_BASE_PATH__}${path.replace(/^\/+/, '')}`;
@@ -229,6 +234,19 @@ const anthropicSong: SongConfig = {
   lyrics: ANTHROPIC_LYRICS
 };
 
+const briSong: SongConfig = {
+  title: BRI_TRACK_TITLE,
+  url: publicAsset('audio/bri-map-it-mind-the-cost.mp3'),
+  duration: BRI_TRACK_DURATION,
+  bpm: BRI_BPM,
+  cues: BRI_SYNC_CUES,
+  filmTimeForSong: songSec => Math.max(0, Math.min(BRI_DURATION, songSec)),
+  songTimeForFilm: filmSec => Math.max(0, Math.min(BRI_DURATION, filmSec)),
+  sectionAt: briSectionAt,
+  stylePrompt: BRI_STYLE_PROMPT,
+  lyrics: BRI_LYRICS
+};
+
 export const FILMS: Record<FilmId, Film> = {
   jev: build(
     'jev',
@@ -288,23 +306,32 @@ export const FILMS: Record<FilmId, Film> = {
     '#C96F4A',
     ANTHROPIC_CHAPTERS, ANTHROPIC_DURATION, renderAnthropic, anthropicSong,
     { canvasWidth: 720, canvasHeight: 1280, narrationDefault: false, musicDefault: false, captionsDefault: false, songDefault: true }
+  ),
+  bri: build(
+    'bri',
+    'The Belt, the Road & the Receipts',
+    'A playful map journey · benefits, risks & receipts · 1:48',
+    'A lively, balanced short on the Belt and Road Initiative: two 2013 proposals, a varied network, conditional modelled gains, and project-specific risks. Schematic routes; no claim that BRI is one road or one uniform project.',
+    '#C66A45',
+    BRI_CHAPTERS, BRI_DURATION, renderBri, briSong,
+    { canvasWidth: 720, canvasHeight: 1280, narrationDefault: false, musicDefault: false, captionsDefault: false, songDefault: true }
   )
 };
 
-export const FILM_LIST: Film[] = [FILMS.jev, FILMS.evolution, FILMS.uber, FILMS.openai, FILMS['ai-loop'], FILMS['ai-short'], FILMS.anthropic];
+export const FILM_LIST: Film[] = [FILMS.jev, FILMS.evolution, FILMS.uber, FILMS.openai, FILMS['ai-loop'], FILMS['ai-short'], FILMS.anthropic, FILMS.bri];
 
 export const shotDur = (s: Shot) => Math.max(0.5, s.endTime - s.startTime);
 
 /** Short-film song clocks scale an actual supplied track to the planned visual runtime; provisional cues are not treated as measured alignment. */
 export function filmTimeForSongAt(film: Film, songSec: number, actualSongDuration = 0): number {
-  if ((film.id === 'ai-loop' || film.id === 'ai-short' || film.id === 'anthropic') && actualSongDuration > 0) {
+  if ((film.id === 'ai-loop' || film.id === 'ai-short' || film.id === 'anthropic' || film.id === 'bri') && actualSongDuration > 0) {
     return Math.max(0, Math.min(film.duration, songSec / actualSongDuration * film.duration));
   }
   return film.song?.filmTimeForSong(songSec) ?? Math.max(0, Math.min(film.duration, songSec));
 }
 
 export function songTimeForFilmAt(film: Film, filmSec: number, actualSongDuration = 0): number {
-  if ((film.id === 'ai-loop' || film.id === 'ai-short' || film.id === 'anthropic') && actualSongDuration > 0) {
+  if ((film.id === 'ai-loop' || film.id === 'ai-short' || film.id === 'anthropic' || film.id === 'bri') && actualSongDuration > 0) {
     return Math.max(0, Math.min(actualSongDuration, filmSec / film.duration * actualSongDuration));
   }
   return film.song?.songTimeForFilm(filmSec) ?? Math.max(0, Math.min(film.duration, filmSec));

@@ -26,12 +26,12 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
   };
 
   const ready = trackEngine.ready;
-  const cueTime = (film.id === 'ai-short' || film.id === 'anthropic') && ready && trackEngine.duration > 0
+  const cueTime = (film.id === 'ai-short' || film.id === 'anthropic' || film.id === 'bri') && ready && trackEngine.duration > 0
     ? filmTimeForSongAt(film, songSec, trackEngine.duration)
     : songSec;
   const activeSection = song.sectionAt(cueTime);
   const activeCueIndex = song.cues.findIndex(c => cueTime >= c.at && cueTime < c.to);
-  const mapClock = film.id === 'anthropic' ? cueTime : songSec;
+  const mapClock = film.id === 'anthropic' || film.id === 'bri' ? cueTime : songSec;
   const displayDuration = ready && trackEngine.duration > 0 ? trackEngine.duration : song.duration;
   const nextCue = song.cues.find(c => c.at > cueTime);
 
@@ -149,7 +149,11 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
             </div>
             {err && <span className="text-[10px] text-rose-400 font-mono block mt-1">{err}</span>}
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed break-all">
-              {film.id === 'anthropic'
+              {film.id === 'bri'
+                ? ready
+                  ? 'Bundled Suno master loaded: 104.96 seconds. The 24 line landmarks follow the intended 48-bar structure and are scaled to the track; no sung-word ASR or hand-timed onset pass has been done yet.'
+                  : 'Bundled Suno render is loading. The 24 lyric landmarks are structural estimates; listen through and adjust any drift.'
+                : film.id === 'anthropic'
                 ? ready
                   ? 'The 9-second intro trim is loaded (about 1:51 total). Your noted 0:12 vocal entrance should now land near 0:03. The first lyric caption waits until 0:03; the remaining 4.5-second landmarks are provisional and need listening review.'
                   : 'The 9-second intro-trimmed MP3 is loading. Cue positions remain provisional until the lyrics are checked against the vocal.'
@@ -166,7 +170,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
           <div className="lg:col-span-2 p-3 rounded-xl bg-slate-900 border border-slate-800">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-bold text-amber-300 font-mono">
-                {film.id === 'anthropic' ? 'PROVISIONAL STORYBOARD TARGETS' : film.id === 'ai-short' ? 'PROVISIONAL LYRIC → FILM PLAN' : 'ESTIMATED LYRIC → FILM MAP'}
+                {film.id === 'bri' ? 'ESTIMATED LYRIC → FILM MAP · REVIEW CUES' : film.id === 'anthropic' ? 'PROVISIONAL STORYBOARD TARGETS' : film.id === 'ai-short' ? 'PROVISIONAL LYRIC → FILM PLAN' : 'ESTIMATED LYRIC → FILM MAP'}
               </span>
               <span className="text-[10px] font-mono text-slate-500">
                 film now: {filmTimeForSongAt(film, songSec, trackEngine.duration).toFixed(1)}s
@@ -184,7 +188,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
                          : done ? 'text-slate-500' : 'text-slate-400'
                     }`}
                   >
-                    <span className="w-16 shrink-0 tabular-nums">{film.id === 'anthropic' ? `film ${l.at.toFixed(1)}s` : `${l.at.toFixed(2)}s`}</span>
+                    <span className="w-16 shrink-0 tabular-nums">{film.id === 'anthropic' || film.id === 'bri' ? `film ${l.at.toFixed(1)}s` : `${l.at.toFixed(2)}s`}</span>
                     <span className="flex-1 truncate">{l.label}</span>
                     <span className="w-24 shrink-0 text-right tabular-nums text-cyan-400/80">
                       film {l.film[0].toFixed(1)}–{l.film[1].toFixed(1)}s
@@ -194,7 +198,9 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
               })}
             </div>
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed">
-              {film.id === 'anthropic'
+              {film.id === 'bri'
+                ? 'The 104.96s render is proportionally mapped across the 108s film clock. Cue starts are evenly spaced from the intended two-bars-per-line arrangement, not forced-aligned or hand-audited; listen to the master and refine them before final export.'
+                : film.id === 'anthropic'
                 ? 'The first vocal entrance at 0:03 is set from your timing note. Later 4.5-second lyric landmarks are provisional estimates, not measured vocal starts. Listen through and tell me where they drift so I can refine the remaining cues.'
                 : film.id === 'ai-short'
                 ? 'The map is based on word-level Whisper timestamp inference from the supplied song and its embedded lyric text. It is phrase-level, not forced alignment; ASR timing can drift on sung syllables and ad-libs, so audition the cut before calling it final.'
@@ -218,7 +224,7 @@ export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nu
                 <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-bold text-amber-300 font-mono">
-                      {film.id === 'anthropic' ? 'LYRICS · 9S INTRO TRIM · CUES TO REVIEW' : film.id === 'ai-short' ? 'LYRICS · 1:25 SHORT · PROVISIONAL CUES' : 'LYRICS · TRACK 2:11.64'}
+                      {film.id === 'bri' ? 'LYRICS · 1:44.96 MASTER · CUE REVIEW' : film.id === 'anthropic' ? 'LYRICS · 9S INTRO TRIM · CUES TO REVIEW' : film.id === 'ai-short' ? 'LYRICS · 1:25 SHORT · PROVISIONAL CUES' : 'LYRICS · TRACK 2:11.64'}
                     </span>
                     <button onClick={() => copyText('lyrics', song.lyrics)} className="flex items-center gap-1 text-[10px] font-mono text-cyan-300 hover:text-white cursor-pointer">
                       <Copy className="w-3 h-3" /> {copied === 'lyrics' ? 'Copied' : 'Copy'}
