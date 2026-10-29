@@ -32,6 +32,7 @@ import {
   ANTHROPIC_TRACK_TITLE, ANTHROPIC_STYLE_PROMPT, ANTHROPIC_EXCLUDE,
   ANTHROPIC_LYRICS, ANTHROPIC_SECTIONS, ANTHROPIC_SYNC_CUES
 } from './data/anthropicSong';
+import { BRI_TRACK_TITLE, BRI_TRACK_DURATION, BRI_STYLE_PROMPT, BRI_EXCLUDE, BRI_LYRICS, BRI_SECTIONS, BRI_SYNC_CUES } from './data/briSong';
 
 const RECIPES: Record<string, RecipeData> = {
   evolution: {
@@ -58,12 +59,19 @@ const RECIPES: Record<string, RecipeData> = {
     anchors: ANTHROPIC_SYNC_CUES.map(cue => ({ lyric: cue.label, shot: cue.section || 'Storyboard beat' })),
     hasMaster: true,
     pending: 'I removed 9 seconds from the beginning of the 2:00 edit. The new MP3 measures 111.05 seconds; based on your note that vocals began at about 12 seconds, the first lyric should now enter at about 3 seconds. Later 4.5-second cue marks remain estimates—please review them against the master.'
+  },
+  bri: {
+    title: BRI_TRACK_TITLE, style: BRI_STYLE_PROMPT, exclude: BRI_EXCLUDE, lyrics: BRI_LYRICS,
+    sections: BRI_SECTIONS.map((section, index) => ({ label: section.name, act: index + 1 })),
+    anchors: BRI_SYNC_CUES.map(cue => ({ lyric: cue.label, shot: cue.section || 'Storyboard beat' })),
+    hasMaster: true,
+    pending: `The bundled Suno master measures ${BRI_TRACK_DURATION.toFixed(2)} seconds. The 24 lyric cues are evenly distributed from the intended 48-bar structure and proportionally mapped to the 1:48 film; they have not been ASR- or hand-aligned. Review the audio and refine any drift.`
   }
 };
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'video' | 'playground' | 'storyboard' | 'architecture'>('video');
-  const [filmId, setFilmId] = useState<FilmId>('anthropic');
+  const [filmId, setFilmId] = useState<FilmId>('bri');
   const film = FILMS[filmId];
   const [syncedTime, setSyncedTime] = useState<number>(0);
 
@@ -82,7 +90,7 @@ export function App() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-cyan-400 p-0.5 shadow-lg shadow-cyan-500/10">
               <div className="w-full h-full bg-[#0b0f19] rounded-[10px] flex items-center justify-center">
                 <span className="font-mono font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-cyan-300">
-                  {filmId === 'ai-short' ? 'AI!' : filmId === 'ai-loop' ? 'LOOP' : filmId === 'evolution' ? 'AI' : filmId === 'uber' ? 'PIN' : filmId === 'openai' ? '|' : filmId === 'anthropic' ? 'ANTH' : 'JEV'}
+                  {filmId === 'bri' ? 'BRI' : filmId === 'ai-short' ? 'AI!' : filmId === 'ai-loop' ? 'LOOP' : filmId === 'evolution' ? 'AI' : filmId === 'uber' ? 'PIN' : filmId === 'openai' ? '|' : filmId === 'anthropic' ? 'ANTH' : 'JEV'}
                 </span>
               </div>
             </div>
@@ -90,9 +98,9 @@ export function App() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                  {filmId === 'ai-short' ? 'Ask, Learn, Try Again!' : filmId === 'ai-loop' ? 'The Money Loop' : filmId === 'evolution' ? 'The Long Thaw' : filmId === 'uber' ? 'Press The Button' : filmId === 'openai' ? 'The Text Box' : filmId === 'anthropic' ? 'The Anthropic Story' : 'Jev Explained'}
+                  {filmId === 'bri' ? 'The Belt, the Road & the Receipts' : filmId === 'ai-short' ? 'Ask, Learn, Try Again!' : filmId === 'ai-loop' ? 'The Money Loop' : filmId === 'evolution' ? 'The Long Thaw' : filmId === 'uber' ? 'Press The Button' : filmId === 'openai' ? 'The Text Box' : filmId === 'anthropic' ? 'The Anthropic Story' : 'Jev Explained'}
                   <span className="text-xs font-mono font-medium text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                    {filmId === 'ai-short' ? '1:25 · 9:16 Short' : filmId === 'ai-loop' ? 'AI finance · 2:12' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '2008 → Now' : filmId === 'openai' ? '2015 → Now' : filmId === 'anthropic' ? '1:51 · 9:16 Short' : 'System One'}
+                    {filmId === 'bri' ? '1:48 · 9:16 Short' : filmId === 'ai-short' ? '1:25 · 9:16 Short' : filmId === 'ai-loop' ? 'AI finance · 2:12' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '2008 → Now' : filmId === 'openai' ? '2015 → Now' : filmId === 'anthropic' ? '1:51 · 9:16 Short' : 'System One'}
                   </span>
                 </h1>
               </div>
@@ -175,10 +183,12 @@ export function App() {
             </span>
             <div>
               <strong className="text-white font-semibold">
-                {filmId === 'anthropic' ? '1:51 intro-trimmed edit · cue review pending:' : 'Two ways to watch — Narrated Film or the Song:'}
+                {filmId === 'bri' ? '1:48 map short · research notes attached:' : filmId === 'anthropic' ? '1:51 intro-trimmed edit · cue review pending:' : 'Two ways to watch — Narrated Film or the Song:'}
               </strong>{' '}
               <span className="text-slate-300">
-                {filmId === 'anthropic' ? (
+                {filmId === 'bri' ? (
+                  <><strong>The Belt, the Road &amp; the Receipts</strong> is an 8-act, 24-shot animated map journey. Its bundled Suno master measures 104.96 seconds; the 1:48 picture is proportionally mapped to the full track. Lyric cues follow the intended 48-bar structure, not ASR or hand-timed onsets, so please review for drift. The script separates China’s stated aims from World Bank model projections and AidData’s historical estimates; every map is schematic.</>
+                ) : filmId === 'anthropic' ? (
                   <><strong>The Anthropic Story</strong> now uses your trimmed master: I removed about 9 seconds from the 2:00 edit. Based on your note that vocals began at about 0:12, the first sung line should now arrive around 0:03. I adjusted the opening scene and delayed its lyric caption to that point. Later cue marks remain estimated; please listen through and flag any drift.</>
                 ) : filmId === 'ai-short' ? (
                   <><strong>Ask, Learn, Try Again!</strong> is a separate 84.8-second, 9:16 sing-along—not a replacement for <em>The Long Thaw</em>. Its supplied Suno master plays by default with the painted milestone scenes. Phrase cues use word-level Whisper timestamps from this render; they’re estimates, not forced-aligned or hand-audited word boundaries.</>
@@ -193,7 +203,7 @@ export function App() {
                 ) : (
                   <>In <strong>Narrated Film</strong>, speech drives the picture word by word. <strong>Song Mode</strong> is pure visuals + <em>JEV.mp3</em>, with every measured lyric pinned to its matching shot.</>
                 )}
-                {' '}{filmId === 'anthropic' ? 'The current edit is 1:51; review the later cue points and fade against the audio.' : <>Use <strong>Export</strong> to record a shareable video with the active song embedded.</>}
+                {' '}{filmId === 'bri' ? 'The master is loaded; listen through and adjust the estimated lyric cues before final export.' : filmId === 'anthropic' ? 'The current edit is 1:51; review the later cue points and fade against the audio.' : <>Use <strong>Export</strong> to record a shareable video with the active song embedded.</>}
               </span>
             </div>
           </div>
@@ -202,13 +212,13 @@ export function App() {
               60 FPS Canvas Engine
             </span>
             <span className="text-[11px] font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-              {filmId === 'anthropic' ? 'Suno master · 1:51 intro trim · sync review' : filmId === 'ai-short' ? 'Suno master · 1:25' : filmId === 'ai-loop' ? 'Suno master · 2:11' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '40M trips / day' : filmId === 'openai' ? '~1B weekly users' : '70ms Decision Latency'}
+              {filmId === 'bri' ? 'Suno master · 1:44.96 · cue review' : filmId === 'anthropic' ? 'Suno master · 1:51 intro trim · sync review' : filmId === 'ai-short' ? 'Suno master · 1:25' : filmId === 'ai-loop' ? 'Suno master · 2:11' : filmId === 'evolution' ? '1950 → Now' : filmId === 'uber' ? '40M trips / day' : filmId === 'openai' ? '~1B weekly users' : '70ms Decision Latency'}
             </span>
           </div>
         </div>
 
         {/* Film selector */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           {FILM_LIST.map((f) => {
             const on = f.id === filmId;
             return (
@@ -226,7 +236,7 @@ export function App() {
                     className="text-[10px] font-mono px-1.5 py-0.5 rounded-full border"
                     style={{ color: f.accent, borderColor: `${f.accent}66`, backgroundColor: `${f.accent}18` }}
                   >
-                    {f.id === 'anthropic' ? 'film + draft · master pending' : f.id === 'ai-short' ? 'film + Suno · ASR phrase cues' : f.id === 'ai-loop' ? 'film + Suno · phrase-estimated' : f.song?.url ? 'film + synced song' : f.hasSong ? 'film · audio pending' : 'film · song pending'}
+                    {f.id === 'bri' ? 'film + Suno · cue review' : f.id === 'anthropic' ? 'film + draft · master pending' : f.id === 'ai-short' ? 'film + Suno · ASR phrase cues' : f.id === 'ai-loop' ? 'film + Suno · phrase-estimated' : f.song?.url ? 'film + synced song' : f.hasSong ? 'film · audio pending' : 'film · song pending'}
                   </span>
                 </div>
                 <div className="text-[11px] text-slate-400 leading-snug">{f.subtitle}</div>
@@ -242,7 +252,7 @@ export function App() {
             <VideoPlayer film={film} onTimeUpdate={setSyncedTime} />
 
             {/* Quick Act Cards Grid below player */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-2.5">
               {film.chapters.map((c) => (
                 <div
                   key={c.id}
@@ -359,10 +369,12 @@ export function App() {
             <div>
               <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <Layers className="w-5 h-5 text-cyan-400" />
-                {filmId === 'anthropic' ? 'The Anthropic Story — Production Map' : filmId === 'ai-short' ? 'Ask, Learn, Try Again! — Production Map' : filmId === 'evolution' ? 'The Long Thaw — Production Map' : filmId === 'uber' ? 'Press The Button — Production Map' : filmId === 'openai' ? 'The Text Box — Production Map' : filmId === 'ai-loop' ? 'The Money Loop — Production Map' : 'The PDoomVideo x TypeSafe Jev Architecture Matrix'}
+                {filmId === 'bri' ? 'The Belt, the Road & the Receipts — Production Map' : filmId === 'anthropic' ? 'The Anthropic Story — Production Map' : filmId === 'ai-short' ? 'Ask, Learn, Try Again! — Production Map' : filmId === 'evolution' ? 'The Long Thaw — Production Map' : filmId === 'uber' ? 'Press The Button — Production Map' : filmId === 'openai' ? 'The Text Box — Production Map' : filmId === 'ai-loop' ? 'The Money Loop — Production Map' : 'The PDoomVideo x TypeSafe Jev Architecture Matrix'}
               </h2>
               <p className="text-xs text-slate-400">
-                {filmId === 'anthropic'
+                {filmId === 'bri'
+                  ? 'One hundred and eight seconds, eight acts, twenty-four shots. Illustrative map only; forecast and historical research are clearly dated and labeled.'
+                  : filmId === 'anthropic'
                   ? 'A 1:51 portrait edit: the nine-second opening instrumental was shortened, with the first lyric caption now delayed to the vocal entrance; later cue landmarks remain provisional.'
                   : filmId === 'ai-short'
                   ? 'Portrait-first painted animation, a recurring cast, and an explicitly provisional lyric cue plan.'
@@ -376,9 +388,11 @@ export function App() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-amber-400 font-bold block mb-1">{filmId === 'anthropic' ? 'Research Ensemble' : filmId === 'ai-short' ? 'Moving Ensemble' : filmId === 'uber' ? 'Custom PIN Cast' : filmId === 'openai' ? 'Caret & Bloom' : 'Clawd Character'}</span>
+              <span className="text-amber-400 font-bold block mb-1">{filmId === 'bri' ? 'A Map With a Mascot' : filmId === 'anthropic' ? 'Research Ensemble' : filmId === 'ai-short' ? 'Moving Ensemble' : filmId === 'uber' ? 'Custom PIN Cast' : filmId === 'openai' ? 'Caret & Bloom' : 'Clawd Character'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'anthropic'
+                {filmId === 'bri'
+                  ? 'A generic cargo-box traveler bounces between schematic route ribbons, rail, port and market icons. It is a guide through the explainer—not a stand-in for a country or community.'
+                  : filmId === 'anthropic'
                   ? 'A generic researcher-and-user ensemble carries the story; an abstract light/interface motif represents Claude without implying personhood or reproducing official portraits.'
                   : filmId === 'ai-short'
                   ? 'A recurring researcher, learners, early machines, and a bright little robot dance, build, shiver through the winters, and celebrate each milestone.'
@@ -393,9 +407,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-cyan-400 font-bold block mb-1">{filmId === 'anthropic' ? 'Provisional Music Map' : filmId === 'ai-short' ? 'ASR Phrase Cue Map' : filmId === 'openai' ? 'Polish Layer' : filmId === 'uber' || filmId === 'evolution' ? 'Measured Song Clock' : 'Single-Pass Scoring'}</span>
+              <span className="text-cyan-400 font-bold block mb-1">{filmId === 'bri' ? 'Provisional Song Map' : filmId === 'anthropic' ? 'Provisional Music Map' : filmId === 'ai-short' ? 'ASR Phrase Cue Map' : filmId === 'openai' ? 'Polish Layer' : filmId === 'uber' || filmId === 'evolution' ? 'Measured Song Clock' : 'Single-Pass Scoring'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'anthropic'
+                {filmId === 'bri'
+                  ? 'The bundled Suno master measures 104.96 seconds; the 108-second picture maps proportionally to it. Twenty-four line cues use the intended two-bars-per-line grid, not ASR or hand-timed onsets; listen and revise.'
+                  : filmId === 'anthropic'
                   ? 'The 106.7 BPM / 48-bar song is only a composition target. All 24 phrase starts are provisional storyboard landmarks; no soundtrack exists to measure yet.'
                   : filmId === 'ai-short'
                   ? 'Phrase starts are estimated from word-level Whisper timestamps on the supplied 84.79-second master; the sung-word boundaries are not forced-aligned or hand-audited.'
@@ -410,9 +426,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-rose-400 font-bold block mb-1">{filmId === 'anthropic' ? 'Anthropic Timeline' : filmId === 'ai-short' ? 'Key AI Milestones' : filmId === 'openai' ? 'Eleven Years' : filmId === 'uber' ? 'The Marketplace Flywheel' : filmId === 'evolution' ? 'Seven Historical Eras' : 'Jevons Paradox (1865)'}</span>
+              <span className="text-rose-400 font-bold block mb-1">{filmId === 'bri' ? 'Research Spine' : filmId === 'anthropic' ? 'Anthropic Timeline' : filmId === 'ai-short' ? 'Key AI Milestones' : filmId === 'openai' ? 'Eleven Years' : filmId === 'uber' ? 'The Marketplace Flywheel' : filmId === 'evolution' ? 'Seven Historical Eras' : 'Jevons Paradox (1865)'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'anthropic'
+                {filmId === 'bri'
+                  ? '2013 Belt + Maritime Road proposals; 2023 official white paper and stated aims; 2019 World Bank transport-corridor model; 2021 AidData project-study snapshot (data through 2017). Not a live project counter.'
+                  : filmId === 'anthropic'
                   ? '2021 research beginnings; 2022 Constitutional AI; Claude in 2023; vision, Artifacts, and computer use in 2024; Claude 4 and Claude Code in 2025; the Anthropic Institute in 2026.'
                   : filmId === 'ai-short'
                   ? 'Turing and Dartmouth; AI winters and backprop; Deep Blue, ImageNet and AlexNet; Transformers, ChatGPT, multimodal systems and human oversight.'
@@ -427,9 +445,11 @@ export function App() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-purple-400 font-bold block mb-1">{filmId === 'anthropic' || filmId === 'ai-short' || filmId === 'uber' || filmId === 'evolution' ? 'Content-Matched Visuals' : 'Dual Mind Architecture'}</span>
+              <span className="text-purple-400 font-bold block mb-1">{filmId === 'bri' || filmId === 'anthropic' || filmId === 'ai-short' || filmId === 'uber' || filmId === 'evolution' ? 'Content-Matched Visuals' : 'Dual Mind Architecture'}</span>
               <p className="text-slate-400 font-sans leading-relaxed">
-                {filmId === 'anthropic'
+                {filmId === 'bri'
+                  ? 'Twenty-four caption-led frames: origin, land/sea distinction, official aims, a conditional travel-time model, debt and safeguard questions, historical implementation evidence, and a project-by-project close.'
+                  : filmId === 'anthropic'
                   ? 'Twenty-four lyric landmarks each have a dedicated scene: research aims, Constitutional AI, Claude, model families, computer use, code, public impacts, and an open coda.'
                   : filmId === 'ai-short'
                   ? 'Each lyric cue gets its own illustrated beat: imitation game, 1956 workshop, winter, network, chessboard, image cards, GPU, tokens, chat and multimodal props.'
@@ -458,6 +478,18 @@ export function App() {
               </div>
             </div>
           )}
+          {filmId === 'bri' && (
+            <div className="mt-5 p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300">
+              <div className="font-mono font-bold text-amber-300 mb-2">SOURCE CHECK · DATED CLAIMS · EDITORIAL CAVEATS</div>
+              <p className="text-slate-400 leading-relaxed mb-3">China’s 2023 white paper is used for China’s own stated aims and corridor framing—not as independent verification of outcomes. The World Bank’s “up to 12%” figure is a conditional 2019 model projection for completed corridors, not an observed result. AidData’s “35%” is a 2021 historical study finding for its BRI infrastructure sample (underlying finance dataset through 2017), not a live figure for every BRI project. Debt risks vary by borrower, contract, and project; no blanket “debt trap” claim is made. Every route drawing is schematic and not to scale.</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-2 font-mono text-[10px]">
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://english.www.gov.cn/archive/whitepaper/202310/10/content_WS6524b55fc6d0868f4e8e014c.html" target="_blank" rel="noreferrer">China · 2023 BRI white paper</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://documents1.worldbank.org/curated/en/715511560787699851/pdf/Main-Report.pdf" target="_blank" rel="noreferrer">World Bank · 2019 model + risks</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.aiddata.org/publications/banking-on-the-belt-and-road" target="_blank" rel="noreferrer">AidData · 2021 report</a>
+                <a className="text-cyan-300 hover:text-cyan-200 underline" href="https://www.aiddata.org/data/aiddatas-global-chinese-development-finance-dataset-version-2-0" target="_blank" rel="noreferrer">AidData · dataset scope</a>
+              </div>
+            </div>
+          )}
         </section>
       </main>
 
@@ -481,7 +513,13 @@ export function App() {
           </div>
 
           <div className="flex items-center gap-4 font-mono text-[11px]">
-            {filmId === 'anthropic' ? (
+            {filmId === 'bri' ? (
+              <>
+                <span>2013 · Belt + Maritime Road</span><span>•</span>
+                <span>World Bank 2019 model · AidData 2021 study</span><span>•</span>
+                <span>1:48 · schematic · cue review</span>
+              </>
+            ) : filmId === 'anthropic' ? (
               <>
                 <span>Founded 2021</span><span>•</span>
                 <span>Claude · 2023 → Claude 4 · 2025</span><span>•</span>
