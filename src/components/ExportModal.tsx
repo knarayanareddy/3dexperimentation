@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Camera, Download, Check, X, Film, Loader2, AlertTriangle, Music4, Video } from 'lucide-react';
 import { Chapter } from '../types/video';
 import { VideoExporter, ExportMode } from '../engine/exporter';
+import { trackEngine } from '../engine/track';
 
 
 interface ExportModalProps {
@@ -42,6 +43,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   const supported = VideoExporter.isSupported();
   const isSong = mode === 'song';
+  const songReady = trackEngine.ready;
+  const exportWidth = film.canvasWidth ?? 1280;
+  const exportHeight = film.canvasHeight ?? 720;
   const exportMode: ExportMode = isSong ? 'song' : 'silent';
   const songDuration = film.song?.duration ?? duration;
 
@@ -148,7 +152,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <Video className="w-4 h-4 text-rose-400" /> Export video file
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                Records the painted film at 1280x720 / 30fps and embeds the audio,
+                Records the painted film at {exportWidth}×{exportHeight} / 30fps and embeds the audio,
                 producing a shareable WebM.
               </p>
             </div>
@@ -170,8 +174,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           )}
 
+          {isSong && !songReady && (
+            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-950/40 border border-amber-500/30">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-[10.5px] text-amber-200/90 leading-relaxed">
+                Load the generated audio in Song Studio before recording. The user-supplied track will be embedded and its duration will drive the film.
+              </p>
+            </div>
+          )}
+
           {!supported && (
-            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-rose-950/40 border border-rose-500/30">
+            <div className="flex items-start gap-2 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/30">
               <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
               <p className="text-[10.5px] text-rose-200/90">
                 Video recording isn't available in this browser. Chrome or Edge on desktop works best.
@@ -225,7 +238,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {phase !== 'recording' && supported && (
             <button
               onClick={beginVideoExport}
-              disabled={!supported}
+              disabled={!supported || (isSong && !songReady)}
               className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition-all ${
                 isSong
                   ? 'bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 shadow-lg'
@@ -234,7 +247,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             >
               {isSong ? <Music4 className="w-4 h-4" /> : <Video className="w-4 h-4" />}
               {isSong
-                ? `Record video with song (${fmt(songDuration)})`
+                ? songReady ? `Record video with song (${fmt(trackEngine.duration || songDuration)})` : 'Load audio to enable song export'
                 : `Record silent video (${fmt(duration)})`}
             </button>
           )}
@@ -264,7 +277,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 font-mono text-[10.5px] text-slate-400 leading-relaxed">
           <span className="text-cyan-400 font-bold">Renderer spec:</span> recording runs in real
           time with the audio element as the clock, so the picture in the file is driven by the
-          same time source you hear. 1280x720 @ 30fps, VP9/Opus WebM.
+          same time source you hear. {exportWidth}×{exportHeight} @ 30fps, VP9/Opus WebM.
         </div>
       </div>
     </div>

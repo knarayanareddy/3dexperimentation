@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { Music4, Upload, Link2, SlidersHorizontal, CheckCircle2, Loader2, AudioLines } from 'lucide-react';
-import { SongConfig } from '../data/films';
+import { Music4, Upload, Link2, SlidersHorizontal, CheckCircle2, Loader2, AudioLines, Copy } from 'lucide-react';
+import { Film, SongConfig, filmTimeForSongAt } from '../data/films';
 import { trackEngine } from '../engine/track';
 
 interface SongStudioProps {
+  film: Film;
   song: SongConfig;
   onLoaded: () => void;
   nudge: number;
@@ -12,11 +13,17 @@ interface SongStudioProps {
   loading: boolean;
 }
 
-export const SongStudio: React.FC<SongStudioProps> = ({ song, onLoaded, nudge, onNudge, songSec, loading }) => {
+export const SongStudio: React.FC<SongStudioProps> = ({ film, song, onLoaded, nudge, onNudge, songSec, loading }) => {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [url, setUrl] = useState('');
   const [err, setErr] = useState('');
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState('');
+
+  const copyText = async (key: string, value?: string) => {
+    if (!value || !navigator.clipboard) return;
+    try { await navigator.clipboard.writeText(value); setCopied(key); window.setTimeout(() => setCopied(''), 1600); } catch { setCopied(''); }
+  };
 
   const ready = trackEngine.ready;
   const activeSection = song.sectionAt(songSec);
@@ -48,10 +55,10 @@ export const SongStudio: React.FC<SongStudioProps> = ({ song, onLoaded, nudge, o
             </div>
             <div className="text-[11px] text-slate-400 font-mono truncate">
               {loading
-                ? 'loading JEV.mp3 …'
+                ? 'loading track…'
                 : ready
-                  ? `${trackEngine.duration.toFixed(1)}s · ${song.bpm} BPM · synced`
-                  : 'track not loaded'}
+                  ? `${trackEngine.duration.toFixed(1)}s · ${song.bpm} BPM · track loaded`
+                  : song.url ? 'track not loaded' : 'audio pending · load your Suno render below'}
             </div>
           </div>
         </div>
@@ -137,17 +144,19 @@ export const SongStudio: React.FC<SongStudioProps> = ({ song, onLoaded, nudge, o
             </div>
             {err && <span className="text-[10px] text-rose-400 font-mono block mt-1">{err}</span>}
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed break-all">
-              default: {decodeURIComponent(song.url.split('/').slice(-1)[0])} — timings are calibrated to this render.
+              {song.url
+                ? `default: ${decodeURIComponent(song.url.split('/').slice(-1)[0])} — section landmarks match this render; lyric-line boundaries are estimates.`
+                : 'No bundled audio yet. Cue estimates are for the supplied Suno render and may not match a replacement track.'}
             </p>
           </div>
 
           <div className="lg:col-span-2 p-3 rounded-xl bg-slate-900 border border-slate-800">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-bold text-amber-300 font-mono">
-                MEASURED LYRIC → FILM (live)
+                ESTIMATED LYRIC → FILM MAP
               </span>
               <span className="text-[10px] font-mono text-slate-500">
-                film now: {song.filmTimeForSong(songSec).toFixed(1)}s
+                film now: {filmTimeForSongAt(film, songSec, trackEngine.duration).toFixed(1)}s
               </span>
             </div>
             <div className="max-h-48 overflow-y-auto space-y-0.5 pr-1">
@@ -165,17 +174,42 @@ export const SongStudio: React.FC<SongStudioProps> = ({ song, onLoaded, nudge, o
                     <span className="w-14 shrink-0 tabular-nums">{l.at.toFixed(2)}s</span>
                     <span className="flex-1 truncate">{l.label}</span>
                     <span className="w-24 shrink-0 text-right tabular-nums text-cyan-400/80">
-                      film {l.film[0]}–{l.film[1]}s
+                      film {l.film[0].toFixed(1)}–{l.film[1].toFixed(1)}s
                     </span>
                   </div>
                 );
               })}
             </div>
             <p className="text-[10px] text-slate-500 font-mono mt-2 leading-relaxed">
-              Cue times are measured from the supplied vocal track. Each lyric is pinned
-              to the shot that illustrates it; song mode itself remains caption-free.
+              Section boundaries are estimated from the stereo mix; individual line boundaries are syllable-weighted estimates, not forced-aligned word onsets. Following your latest timing note, the ending visuals advance progressively (3/6/9 seconds) so the full bubble-question reveal begins 9 seconds before its estimated cue. Song mode remains caption-free.
             </p>
           </div>
+          {(song.stylePrompt || song.lyrics) && (
+            <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {song.stylePrompt && (
+                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-emerald-300 font-mono">SUNO STYLE PROMPT</span>
+                    <button onClick={() => copyText('style', song.stylePrompt)} className="flex items-center gap-1 text-[10px] font-mono text-cyan-300 hover:text-white cursor-pointer">
+                      <Copy className="w-3 h-3" /> {copied === 'style' ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">{song.stylePrompt}</p>
+                </div>
+              )}
+              {song.lyrics && (
+                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-amber-300 font-mono">LYRICS · TRACK 2:11.64</span>
+                    <button onClick={() => copyText('lyrics', song.lyrics)} className="flex items-center gap-1 text-[10px] font-mono text-cyan-300 hover:text-white cursor-pointer">
+                      <Copy className="w-3 h-3" /> {copied === 'lyrics' ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap font-mono text-[10px] text-slate-300 leading-relaxed">{song.lyrics}</pre>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

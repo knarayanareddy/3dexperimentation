@@ -11,6 +11,11 @@ const __dirname = path.dirname(__filename);
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), viteSingleFile()],
+  server: {
+    // Arena's preview uses a dynamic e2b.app host. Permit that suffix without
+    // disabling Vite's host validation for every arbitrary hostname.
+    allowedHosts: [".e2b.app"],
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

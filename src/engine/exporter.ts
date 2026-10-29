@@ -16,7 +16,8 @@
  */
 
 import { renderFrame } from './animator';
-import { Film, filmShotIndexAt } from '../data/films';
+import { Film, filmShotIndexAt, filmTimeForSongAt } from '../data/films';
+import { trackEngine } from './track';
 
 export type ExportMode = 'song' | 'silent';
 
@@ -79,8 +80,8 @@ export class VideoExporter {
   }
 
   public async start(opts: ExportOpts): Promise<void> {
-    const W = opts.width ?? 1280;
-    const H = opts.height ?? 720;
+    const W = opts.width ?? opts.film.canvasWidth ?? 1280;
+    const H = opts.height ?? opts.film.canvasHeight ?? 720;
     const fps = opts.fps ?? 30;
     this.cancelled = false;
 
@@ -120,10 +121,12 @@ export class VideoExporter {
         await this.ac.resume();
 
         // fresh element + object URL so the player's element is untouched
-        const resp = await fetch(song.url);
+        const trackUrl = trackEngine.getSourceForExport() || song.url;
+        if (!trackUrl) throw new Error('No audio track loaded');
+        const resp = await fetch(trackUrl);
         if (!resp.ok) throw new Error(`fetch ${resp.status}`);
         const buf = await resp.arrayBuffer();
-        this.objUrl = URL.createObjectURL(new Blob([buf], { type: 'audio/mpeg' }));
+        this.objUrl = URL.createObjectURL(new Blob([buf], { type: resp.headers.get('content-type') || 'audio/mpeg' }));
 
         this.audioEl = new Audio(this.objUrl);
         this.audioEl.crossOrigin = 'anonymous';
@@ -179,7 +182,8 @@ export class VideoExporter {
 
     // ---- drive the film from the AUDIO clock (or wall clock if silent) ----
     const film = opts.film;
-    const totalSec = opts.mode === 'song' ? film.song!.duration : film.duration;
+    const audioDuration = this.audioEl?.duration && Number.isFinite(this.audioEl.duration) ? this.audioEl.duration : 0;
+    const totalSec = opts.mode === 'song' ? (audioDuration || film.song!.duration) : film.duration;
     this.boil = 0;
     this.lastTs = performance.now();
     this.startedAt = performance.now();
@@ -195,7 +199,7 @@ export class VideoExporter {
 
       if (opts.mode === 'song' && this.audioEl) {
         elapsed = this.audioEl.currentTime;
-        nominal = film.song!.filmTimeForSong(elapsed);
+        nominal = filmTimeForSongAt(film, elapsed, audioDuration);
       } else {
         elapsed = (performance.now() - this.startedAt) / 1000;
         nominal = Math.min(film.duration, elapsed);
